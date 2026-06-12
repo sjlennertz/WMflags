@@ -871,6 +871,56 @@ body.quiz-active .question-area #question{
   }
 }
 
+
+/* ── Antwort-Feedback ebenfalls oben fixiert ── */
+#feedback.quiz-feedback{
+  top:8px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:min(760px, calc(100vw - 18px))!important;
+  background:rgba(9,22,46,.995)!important;
+  border-width:2px!important;
+  border-radius:18px!important;
+  box-shadow:0 12px 40px rgba(0,0,0,.58), 0 0 0 1px rgba(255,255,255,.08) inset!important;
+}
+#feedback.quiz-feedback.good{
+  border-color:rgba(126,203,139,.72)!important;
+}
+#feedback.quiz-feedback.bad{
+  border-color:rgba(232,112,112,.72)!important;
+}
+#feedback.quiz-feedback::before{
+  display:none!important;
+}
+.quiz-restart-bar{
+  display:none;
+  justify-content:center;
+  margin:10px auto 0;
+  width:min(760px, calc(100vw - 18px));
+}
+body.quiz-active .quiz-restart-bar{
+  display:flex;
+}
+.quiz-question-overlay .quiz-restart-btn{
+  display:none!important;
+}
+.quiz-restart-bar .quiz-restart-btn{
+  min-width:170px;
+  font-size:15px;
+}
+@media(max-width:520px){
+  #feedback.quiz-feedback{
+    top:6px!important;
+    width:calc(100vw - 12px)!important;
+  }
+  .quiz-restart-bar{
+    width:calc(100vw - 12px);
+  }
+  .quiz-restart-bar .quiz-restart-btn{
+    width:100%;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -954,7 +1004,6 @@ body.quiz-active .question-area #question{
       <div class="quiz-question-label">Quizfrage</div>
       <div id="quizQuestionText" class="quiz-question-text"></div>
       <div class="quiz-question-actions">
-        <button id="restartQuizBtn" class="btn quiz-restart-btn" type="button" onclick="restartQuizRound()">Neu starten</button>
         <button id="cancelQuestionBtn" class="btn cancel-question-btn" type="button" onclick="cancelQuizQuestion()">abbrechen</button>
       </div>
     </div>
@@ -977,6 +1026,11 @@ body.quiz-active .question-area #question{
 </div>
 
 <div id="scheduleView" class="schedule-view"></div>
+
+<!-- ── Quiz Neustart ── -->
+<div id="quizRestartBar" class="quiz-restart-bar">
+  <button class="btn quiz-restart-btn" type="button" onclick="restartQuizRound()">Neu starten</button>
+</div>
 
 <!-- ── Flag grid ── -->
 <div id="grid" class="grid"></div>
