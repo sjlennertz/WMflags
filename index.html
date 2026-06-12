@@ -825,6 +825,52 @@ body.quiz-active .question-area #question{
   }
 }
 
+
+/* ── Quizfrage: oben fixiert, deckender, mit Neustart ── */
+.quiz-question-overlay{
+  top:8px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  z-index:285!important;
+  width:min(760px, calc(100vw - 18px))!important;
+}
+.quiz-question-card{
+  background:rgba(9,22,46,.995)!important;
+  border:2px solid rgba(232,201,106,.78)!important;
+  box-shadow:0 12px 40px rgba(0,0,0,.58), 0 0 0 1px rgba(255,255,255,.08) inset!important;
+  padding:14px 14px 12px!important;
+}
+.quiz-question-actions{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.quiz-restart-btn{
+  background:linear-gradient(135deg,#c9a84c,#e8c96a)!important;
+  color:#0a1628!important;
+  border-color:transparent!important;
+}
+.cancel-question-btn{
+  margin-top:0!important;
+}
+@media(max-width:520px){
+  .quiz-question-overlay{
+    top:6px!important;
+    width:calc(100vw - 12px)!important;
+  }
+  .quiz-question-card{
+    padding:12px 10px 10px!important;
+  }
+  .quiz-question-actions{
+    gap:8px;
+  }
+  .quiz-question-actions .btn{
+    flex:1 1 130px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -907,7 +953,10 @@ body.quiz-active .question-area #question{
     <div class="quiz-question-card">
       <div class="quiz-question-label">Quizfrage</div>
       <div id="quizQuestionText" class="quiz-question-text"></div>
-      <button id="cancelQuestionBtn" class="btn cancel-question-btn" type="button" onclick="cancelQuizQuestion()">Frage abbrechen</button>
+      <div class="quiz-question-actions">
+        <button id="restartQuizBtn" class="btn quiz-restart-btn" type="button" onclick="restartQuizRound()">Neu starten</button>
+        <button id="cancelQuestionBtn" class="btn cancel-question-btn" type="button" onclick="cancelQuizQuestion()">abbrechen</button>
+      </div>
     </div>
   </div>
   <div id="apiStatus" style="font-size:12px;color:#8daed8;margin-top:4px;"></div>
@@ -3750,6 +3799,23 @@ function cancelQuizQuestion(){
   clearHL();
   setFeedback("");
   quizQuestionRecorded=false;
+  current=null;
+  nextQ();
+}
+
+function restartQuizRound(){
+  if(mode!=="quiz") return;
+  stopSpeech();
+  clearHL();
+  setFeedback("");
+  commitSession();
+  sCorrect=0;
+  sTotal=0;
+  updateScore();
+  quizQueue=shuffleQuizQueue(active);
+  quizRoundTotal=quizQueue.length;
+  quizQuestionRecorded=false;
+  locked=false;
   current=null;
   nextQ();
 }
