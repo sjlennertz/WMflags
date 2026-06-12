@@ -1,0 +1,3489 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<!-- GitHub Pages single-file version -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WM 2026 Flaggen-Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Arial',sans-serif;background:#0a1628;min-height:100vh;color:#fff}
+
+/* ── Player overlay ── */
+.overlay{position:fixed;inset:0;background:rgba(5,12,28,0.97);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:30px}
+.overlay-logo{display:flex;align-items:center;gap:10px}
+.overlay-logo span{font-size:24px;font-weight:900;letter-spacing:3px;color:#fff;text-transform:uppercase}
+.overlay h2{font-size:20px;font-weight:900;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;text-align:center}
+.overlay p{color:#aac4e8;font-size:15px;text-align:center}
+.player-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:4px}
+.pbtn{padding:14px 32px;border-radius:10px;border:2px solid rgba(201,168,76,0.45);background:rgba(201,168,76,0.08);color:#e8d5a3;font-size:18px;font-weight:700;cursor:pointer;transition:all 0.15s;letter-spacing:1px}
+.pbtn:hover,.pbtn:active{background:rgba(201,168,76,0.28);border-color:#c9a84c;transform:scale(1.05)}
+.custom-row{display:flex;gap:8px;margin-top:4px}
+.custom-input{padding:11px 14px;border-radius:8px;border:1px solid rgba(201,168,76,0.4);background:rgba(255,255,255,0.07);color:#fff;font-size:15px;width:165px}
+.custom-input::placeholder{color:#445}
+.ok-btn{padding:11px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0a1628;font-weight:700;font-size:15px;cursor:pointer}
+
+/* ── Header ── */
+.header{background:linear-gradient(135deg,#0a1628 0%,#1a3a5c 50%,#0a1628 100%);border-bottom:2px solid #c9a84c;padding:14px 20px 10px;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(60deg,transparent,transparent 30px,rgba(201,168,76,0.04) 30px,rgba(201,168,76,0.04) 31px)}
+.header-inner{position:relative;z-index:1}
+.hlogo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:3px}
+.header h1{font-size:21px;font-weight:900;letter-spacing:2px;text-transform:uppercase}
+.header-sub{font-size:11px;letter-spacing:4px;color:#c9a84c;text-transform:uppercase;margin-top:2px}
+.gold-line{width:80px;height:2px;background:linear-gradient(90deg,transparent,#c9a84c,transparent);margin:7px auto 0}
+
+/* ── Player bar ── */
+.player-bar{background:#071828;border-bottom:1px solid rgba(201,168,76,0.15);padding:7px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.pbar-left{display:flex;align-items:center;gap:10px}
+.pbar-name{font-size:13px;color:#c9a84c;font-weight:700;letter-spacing:1px}
+.pbar-score{font-size:13px;color:#aac4e8}
+.pbar-btn{padding:5px 10px;border-radius:6px;border:1px solid rgba(170,196,232,0.3);background:rgba(255,255,255,0.05);color:#aac4e8;font-size:11px;cursor:pointer}
+
+/* ── Controls ── */
+.controls-wrap{background:#0e2040;border-bottom:1px solid rgba(201,168,76,0.2);padding:10px 14px}
+.ctrl-row{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-bottom:5px}
+.ctrl-row:last-child{margin-bottom:0}
+.btn{padding:7px 13px;border-radius:6px;border:1px solid rgba(201,168,76,0.4);background:rgba(201,168,76,0.1);color:#e8d5a3;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s}
+.btn:hover{background:rgba(201,168,76,0.25);border-color:#c9a84c}
+.btn-main{background:linear-gradient(135deg,#c9a84c,#e8c96a)!important;color:#0a1628!important;border-color:transparent!important;font-weight:700!important}
+.btn-main:hover{background:linear-gradient(135deg,#dbb85a,#f0d87a)!important}
+.btn-grp{background:rgba(255,255,255,0.05)!important;color:#aac4e8!important;border-color:rgba(170,196,232,0.25)!important;font-size:12px!important}
+.btn-grp:hover{background:rgba(255,255,255,0.11)!important;border-color:#aac4e8!important}
+.btn-gold{background:rgba(255,180,50,0.12)!important;border-color:rgba(255,180,50,0.45)!important;color:#ffd580!important}
+
+/* ── Question ── */
+.question-area{padding:14px 18px 8px;text-align:center}
+.q-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#c9a84c;margin-bottom:5px}
+#question{font-size:18px;font-weight:700;color:#fff;min-height:28px}
+#feedback{min-height:24px;margin-top:6px;font-size:14px;font-weight:600;color:#7ecb8b}
+#feedback.wrong{color:#e87070}
+#repeat-btn{margin-top:7px;display:none}
+
+/* ── Ranking panel ── */
+.ranking-wrap{display:none;padding:14px 16px 4px;max-width:500px;margin:0 auto}
+.ranking-wrap.open{display:block}
+.rank-head{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#c9a84c;text-align:center;margin-bottom:10px}
+.rank-row{display:flex;align-items:center;gap:10px;background:#0e2040;border-radius:8px;padding:9px 14px;margin-bottom:6px;border:1px solid rgba(255,255,255,0.06)}
+.rank-medal{font-size:20px;width:26px;text-align:center}
+.rank-name{flex:1;font-weight:700;color:#e8d5a3;font-size:14px}
+.rank-avg{font-size:13px;color:#aac4e8}
+.rank-best{font-size:12px;color:#c9a84c;margin-left:6px}
+.rank-empty{color:#445;font-size:13px;text-align:center;padding:14px}
+.rank-sep{height:1px;background:rgba(201,168,76,0.15);margin:4px 0 10px}
+.rank-clear{display:block;margin:8px auto 14px;padding:6px 16px;border-radius:6px;border:1px solid rgba(229,57,53,0.35);background:rgba(229,57,53,0.08);color:#e87070;font-size:12px;cursor:pointer}
+
+/* ── Grid ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:10px 14px 28px}
+.flag-card{background:#0e2040;border:2px solid rgba(255,255,255,0.07);border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;padding:10px 8px 8px;transition:transform 0.15s,border-color 0.2s,background 0.2s;min-height:148px}
+.flag-card:hover{transform:translateY(-2px);border-color:rgba(201,168,76,0.45)}
+.flag-card.correct{border-color:#4caf50!important;background:rgba(76,175,80,0.14)!important}
+.flag-card.wrong{border-color:#e53935!important;background:rgba(229,57,53,0.14)!important}
+.flag-img-wrap{width:120px;height:80px;display:flex;align-items:center;justify-content:center;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.09);background:#071020}
+.flag-img-wrap img{width:120px;height:80px;object-fit:cover}
+.flag-name{margin-top:8px;font-size:11px;font-weight:700;color:#c8daf5;text-align:center;letter-spacing:.3px;min-height:17px;text-transform:uppercase}
+.flag-name.hidden{visibility:hidden}
+
+/* ── Voice status ── */
+.voice-panel{background:#071828;border-bottom:1px solid rgba(201,168,76,0.15);padding:7px 14px;text-align:center}
+.voice-status{font-size:12px;color:#aac4e8}
+.voice-status strong{color:#e8d5a3}
+
+
+/* ── Big flag modal ── */
+.flag-card{position:relative}
+.zoom-btn{position:absolute;right:6px;top:6px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(201,168,76,0.45);background:rgba(7,16,32,0.85);color:#e8d5a3;font-size:15px;cursor:pointer;z-index:2}
+.zoom-btn:hover,.zoom-btn:active{background:rgba(201,168,76,0.25)}
+.flag-modal{position:fixed;inset:0;background:rgba(5,12,28,0.94);z-index:300;display:none;align-items:center;justify-content:center;padding:22px}
+.flag-modal.open{display:flex}
+.flag-modal-card{width:min(92vw,720px);background:#0e2040;border:2px solid rgba(201,168,76,0.5);border-radius:18px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,0.45);text-align:center}
+.flag-modal-title{font-size:24px;font-weight:900;color:#e8d5a3;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px}
+.flag-modal-img-wrap{background:#071020;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px;display:flex;justify-content:center;align-items:center;min-height:240px}
+.flag-modal-img{width:min(80vw,560px);max-height:360px;object-fit:contain}
+.flag-modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.flag-modal-close{padding:10px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0a1628;font-weight:800;cursor:pointer}
+
+
+.voice-select{margin-top:8px;padding:6px 10px;border-radius:8px;background:#0e2040;color:#e8d5a3;border:1px solid rgba(201,168,76,.4);max-width:320px}
+
+
+/* ── Card action buttons under flag ── */
+.flag-card{position:relative}
+.zoom-btn{position:static!important;width:auto!important;height:auto!important;border-radius:8px!important;padding:6px 10px!important;border:1px solid rgba(201,168,76,0.45)!important;background:rgba(7,16,32,0.85)!important;color:#e8d5a3!important;font-size:13px!important;cursor:pointer!important}
+.kit-btn{position:static;width:auto;height:auto;border-radius:8px;padding:6px 10px;border:1px solid rgba(201,168,76,0.45);background:rgba(7,16,32,0.85);color:#e8d5a3;font-size:13px;cursor:pointer}
+.card-actions{display:flex;gap:6px;justify-content:center;margin-top:7px;margin-bottom:2px}
+.kit-modal{position:fixed;inset:0;background:rgba(5,12,28,0.94);z-index:310;display:none;align-items:center;justify-content:center;padding:22px}
+.kit-modal.open{display:flex}
+.kit-modal-card{width:min(94vw,820px);background:#0e2040;border:2px solid rgba(201,168,76,0.5);border-radius:18px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,0.45);text-align:center}
+.kit-modal-title{font-size:24px;font-weight:900;color:#e8d5a3;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px}
+.kit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.kit-box{background:#071020;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px}
+.kit-box h3{font-size:15px;color:#aac4e8;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.kit-img{width:100%;max-height:300px;object-fit:contain;border-radius:8px}
+.kit-note{font-size:11px;color:#8daed8;margin-top:10px;line-height:1.35}
+.kit-modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.kit-modal-close{padding:10px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0a1628;font-weight:800;cursor:pointer}
+
+
+/* ── Wikimedia Commons composite kits ── */
+.commons-kit-wrap{height:300px;display:flex;align-items:center;justify-content:center;gap:0;background:#071020;border-radius:8px;overflow:hidden}
+.commons-kit-wrap img{image-rendering:auto;object-fit:contain}
+.commons-arm{width:82px;max-height:240px}
+.commons-body{width:140px;max-height:260px}
+.commons-fallback{display:none}
+.kit-source-link{color:#e8d5a3;text-decoration:underline}
+
+
+/* ── Wikimedia full kit: shirt + shorts + socks ── */
+.commons-kit-wrap{height:330px;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#071020;border-radius:8px;overflow:hidden;padding:10px}
+.commons-shirt{width:150px;max-height:190px;object-fit:contain}
+.commons-shorts{width:92px;max-height:52px;object-fit:contain}
+.commons-socks{width:86px;max-height:72px;object-fit:contain}
+.team-info{margin:8px 0 12px;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.18);border-radius:10px;color:#aac4e8;font-size:13px;line-height:1.45}
+.team-info strong{color:#e8d5a3}
+
+
+.kit-error-note{font-size:11px;color:#e8d5a3;margin-top:8px;line-height:1.35}
+.missing-kit-note{display:none;color:#e8d5a3;font-size:13px;line-height:1.35;padding:18px;border:1px dashed rgba(201,168,76,.45);border-radius:10px;background:#071020}
+
+/* ── Sharper big flag view ── */
+.flag-modal-card{width:min(96vw,900px)!important}
+.flag-modal-img-wrap{min-height:280px!important;background:#071020!important}
+.flag-modal-img{
+  width:auto!important;
+  max-width:92vw!important;
+  max-height:72vh!important;
+  object-fit:contain!important;
+  image-rendering:auto!important;
+}
+
+
+/* ── Country info in big flag view ── */
+.country-info-box{margin-top:14px;text-align:left;background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:12px;color:#aac4e8;font-size:14px;line-height:1.45}
+.country-info-row{margin-bottom:7px}
+.country-info-row strong{color:#e8d5a3}
+.match-list{margin-top:6px;padding-left:18px}
+.match-list li{margin:3px 0}
+
+
+/* ── Fix big flag modal overflow ── */
+.flag-modal{overflow:auto!important;align-items:flex-start!important;padding:16px!important}
+.flag-modal-card{width:min(94vw,760px)!important;max-height:none!important;margin:18px auto!important;overflow:visible!important}
+.flag-modal-img-wrap{min-height:auto!important;max-height:42vh!important;padding:10px!important;overflow:hidden!important}
+.flag-modal-img{max-width:88vw!important;max-height:38vh!important;width:auto!important;height:auto!important;object-fit:contain!important}
+.country-info-box{max-height:34vh!important;overflow:auto!important}
+
+
+html,body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,Arial,sans-serif!important;
+  letter-spacing:0.01em;
+}
+h1,h2,h3,.title,.flag-modal-title{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif!important;
+  font-weight:800!important;
+  letter-spacing:0.03em;
+}
+button,.zoom-btn,.kit-btn{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif!important;
+  font-weight:700!important;
+}
+
+
+/* ── Schedule mode ── */
+.schedule-view{display:none;padding:12px 14px 30px;max-width:920px;margin:0 auto}
+.schedule-view.open{display:block}
+.schedule-day{margin:14px 0 18px;background:#0e2040;border:1px solid rgba(201,168,76,.18);border-radius:12px;overflow:hidden}
+.schedule-day.today{border-color:#e8c96a;box-shadow:0 0 0 2px rgba(201,168,76,.18)}
+.schedule-day-title{padding:10px 12px;background:rgba(201,168,76,.12);color:#e8d5a3;font-weight:900;letter-spacing:.04em;text-transform:uppercase;display:flex;justify-content:space-between;gap:10px}
+.schedule-match{padding:10px 12px;border-top:1px solid rgba(255,255,255,.06);display:grid;grid-template-columns:82px 1fr;gap:10px;align-items:start}
+.schedule-time{color:#c9a84c;font-weight:900}
+.schedule-teams{color:#fff;font-weight:800}
+.schedule-meta{font-size:12px;color:#aac4e8;margin-top:3px}
+.schedule-note{font-size:12px;color:#8daed8;text-align:center;margin:8px auto 0;line-height:1.4}
+
+
+.schedule-match.done{background:rgba(76,175,80,.08)}
+.result-badge{display:inline-block;margin-left:8px;padding:2px 6px;border-radius:999px;background:rgba(76,175,80,.16);color:#7ecb8b;font-size:11px;font-weight:800}
+
+
+/* ── Requested UI refinements ── */
+.btn.mode-btn,
+.btn.btn-main.mode-btn,
+.btn.btn-grp.mode-btn{
+  background:rgba(126,203,255,0.16)!important;
+  border-color:rgba(126,203,255,0.45)!important;
+  color:#cdeeff!important;
+}
+.btn.mode-btn.active-mode,
+.btn.btn-main.mode-btn.active-mode,
+.btn.btn-grp.mode-btn.active-mode{
+  background:linear-gradient(135deg,#c9a84c,#e8c96a)!important;
+  color:#0a1628!important;
+  border-color:transparent!important;
+}
+.settings-wrap{position:relative;margin-left:auto}
+.settings-btn{padding:7px 11px;border-radius:8px;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.1);color:#e8d5a3;font-size:16px;cursor:pointer}
+.settings-panel{position:absolute;right:0;top:34px;z-index:120;display:none;min-width:220px;background:#0e2040;border:1px solid rgba(201,168,76,.35);border-radius:10px;padding:10px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.settings-panel.open{display:block}
+.settings-panel-title{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#c9a84c;margin-bottom:8px;font-weight:900}
+.schedule-view{display:none;padding:12px 14px 30px;max-width:980px;margin:0 auto}
+.schedule-view.open{display:block}
+.schedule-note{display:none!important}
+.schedule-match{grid-template-columns:62px 78px 92px 1fr!important;gap:10px!important;align-items:center!important}
+.schedule-group{color:#e8d5a3;font-weight:900;text-align:center;background:rgba(201,168,76,.12);border-radius:8px;padding:6px 4px}
+.schedule-flags{display:flex;gap:6px;align-items:center;justify-content:center}
+.schedule-flag{width:34px;height:24px;object-fit:cover;border:1px solid rgba(255,255,255,.18);border-radius:3px;background:#071020}
+.schedule-teams{font-size:14px}
+.schedule-meta{margin-top:4px}
+body.schedule-active .q-label{display:none}
+body.schedule-active #feedback{display:none}
+body.schedule-active #apiStatus{display:none}
+
+
+/* ── Unified button colors ── */
+.controls-wrap .btn,
+.player-bar .pbar-btn,
+.settings-btn,
+.settings-panel .btn{
+  background:rgba(126,203,255,0.16)!important;
+  border-color:rgba(126,203,255,0.45)!important;
+  color:#cdeeff!important;
+}
+.controls-wrap .btn.active-mode,
+.player-bar .pbar-btn.active-mode,
+.settings-btn.active-mode{
+  background:linear-gradient(135deg,#c9a84c,#e8c96a)!important;
+  color:#0a1628!important;
+  border-color:transparent!important;
+}
+.ctrl-row:first-child{justify-content:flex-start}
+.settings-wrap{margin-left:auto}
+
+
+/* ── Schedule table refinements ── */
+.schedule-match{grid-template-columns:62px 118px 86px minmax(190px,1.3fr) minmax(170px,1fr)!important}
+.schedule-venue{color:#aac4e8;font-size:12px;line-height:1.25}
+.schedule-stage{color:#e8d5a3;font-weight:900;text-align:center;background:rgba(201,168,76,.12);border-radius:8px;padding:6px 4px;white-space:nowrap}
+.schedule-flag-placeholder{width:34px;height:24px;display:inline-flex;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,.18);border-radius:3px;color:#8daed8;font-size:11px}
+@media(max-width:640px){.schedule-match{grid-template-columns:54px 104px 72px 1fr!important}.schedule-venue{grid-column:4;margin-top:2px}}
+
+
+/* ── Learning/quiz filters ── */
+body:not(.training-active) #groupButtons{display:none!important}
+.filter-label{font-size:11px;color:#8daed8;text-transform:uppercase;letter-spacing:.08em;margin:8px 6px 2px;width:100%;text-align:center}
+#groupButtons{align-items:center}
+
+
+/* ── Final schedule/visibility refinements ── */
+.schedule-day.today{
+  border:4px solid #e8c96a!important;
+  box-shadow:0 0 0 3px rgba(232,201,106,.25),0 0 22px rgba(232,201,106,.22)!important;
+}
+.schedule-day.today .schedule-day-title{
+  background:linear-gradient(135deg,rgba(201,168,76,.35),rgba(232,201,106,.18))!important;
+}
+.schedule-flags{gap:5px!important}
+.schedule-score{
+  min-width:34px;
+  text-align:center;
+  font-weight:900;
+  color:#e8d5a3;
+  background:rgba(201,168,76,.14);
+  border:1px solid rgba(201,168,76,.28);
+  border-radius:7px;
+  padding:3px 5px;
+  font-size:12px;
+}
+.schedule-score.empty{
+  color:#6f8db8;
+  background:transparent;
+  border-color:transparent;
+}
+body:not(.training-active) #groupButtons{display:none!important}
+body.greeting-active #groupButtons,
+body.schedule-active #groupButtons,
+body.ranking-active #groupButtons{display:none!important}
+
+
+#groupButtons{display:none!important}
+body.training-active #groupButtons{display:flex!important}
+
+
+/* ── Active filter + compact schedule team layout ── */
+.filter-btn.active-mode{
+  background:linear-gradient(135deg,#c9a84c,#e8c96a)!important;
+  color:#0a1628!important;
+  border-color:transparent!important;
+}
+.schedule-match{
+  grid-template-columns:62px minmax(260px,1.6fr) 86px minmax(170px,1fr)!important;
+}
+.schedule-flags{
+  justify-content:flex-start!important;
+  gap:8px!important;
+  flex-wrap:wrap;
+}
+.schedule-team-inline{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-weight:800;
+  color:#fff;
+}
+.schedule-team-inline .schedule-flag{flex:0 0 auto}
+@media(max-width:640px){
+  .schedule-match{grid-template-columns:54px 1fr 72px!important}
+  .schedule-venue{grid-column:2 / 4;margin-top:2px}
+}
+
+
+/* ── Schedule one-line labels + active filter fix ── */
+.schedule-flags{
+  flex-wrap:nowrap!important;
+  overflow:hidden;
+  min-width:0;
+}
+.schedule-team-inline{
+  white-space:nowrap!important;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  min-width:0;
+  flex:0 1 auto;
+  max-width:150px;
+}
+.schedule-team-name{
+  white-space:nowrap!important;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:inline-block;
+  min-width:0;
+  vertical-align:middle;
+}
+.schedule-score{
+  flex:0 0 auto;
+}
+.filter-btn.active-mode{
+  background:linear-gradient(135deg,#c9a84c,#e8c96a)!important;
+  color:#0a1628!important;
+  border-color:transparent!important;
+  box-shadow:0 0 0 2px rgba(232,201,106,.22),0 6px 18px rgba(201,168,76,.18)!important;
+}
+@media(max-width:760px){
+  .schedule-team-inline{max-width:110px}
+}
+@media(max-width:520px){
+  .schedule-team-inline{max-width:82px}
+}
+
+
+/* ── Greeting start state ── */
+body.greeting-active #grid{display:none!important}
+body.greeting-active #repeat-btn{display:none!important}
+body.greeting-active #groupButtons{display:none!important}
+body.greeting-active #feedback{display:none!important}
+body.greeting-active .q-label{display:none!important}
+
+
+/* ── Voice controls moved into settings ── */
+.settings-panel{
+  min-width:280px!important;
+}
+.settings-separator{
+  height:1px;
+  background:rgba(255,255,255,.10);
+  margin:10px 0;
+}
+.voice-settings{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  align-items:stretch;
+}
+.settings-panel .voice-status{
+  text-align:left;
+  line-height:1.35;
+}
+.settings-panel .voice-select{
+  width:100%;
+  max-width:none!important;
+  margin-top:0!important;
+}
+.settings-action{
+  width:100%;
+  justify-content:center;
+}
+
+
+/* ── Greeting and settings cleanup ── */
+body.greeting-active #grid{display:none!important}
+body.greeting-active #groupButtons{display:none!important}
+body.greeting-active #repeat-btn{display:none!important}
+body.greeting-active #feedback{display:none!important}
+body.greeting-active .q-label{display:none!important}
+
+
+.schedule-team-name{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+.schedule-team-inline{max-width:92px!important}
+@media(max-width:760px){.schedule-team-inline{max-width:78px!important}}
+
+
+/* ── Flag statistics ── */
+.stats-wrap{display:none;padding:14px 16px 18px;max-width:1050px;margin:0 auto}
+.stats-wrap.open{display:block}
+.stats-head{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#c9a84c;text-align:center;margin-bottom:12px;font-weight:900}
+.stats-player{background:#0e2040;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 8px 26px rgba(0,0,0,.18)}
+.stats-player h3{margin:0 0 10px;color:#e8d5a3;text-align:center}
+.stats-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:12px}
+.stats-box{background:rgba(7,24,40,.55);border:1px solid rgba(126,203,255,.12);border-radius:12px;padding:10px;overflow:auto}
+.stats-box h4{margin:0 0 8px;color:#7ecbff;text-align:center}
+.stats-table{width:100%;border-collapse:collapse;font-size:12px}
+.stats-table th,.stats-table td{padding:6px 7px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;white-space:nowrap}
+.stats-table th{color:#e8c96a;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.stats-table td.num,.stats-table th.num{text-align:right}
+.stats-empty{color:#8daed8;text-align:center;padding:12px;font-size:13px}
+body.stats-active #grid,
+body.stats-active #groupButtons,
+body.stats-active #repeat-btn,
+body.stats-active #feedback,
+body.stats-active .q-label{display:none!important}
+@media(max-width:760px){.stats-grid{grid-template-columns:1fr}.stats-table{font-size:11px}}
+
+
+/* ── Cleanup: panels and stray controls ── */
+body.ranking-active #grid,
+body.ranking-active #groupButtons,
+body.ranking-active #repeat-btn,
+body.ranking-active #feedback,
+body.ranking-active .q-label{display:none!important}
+body.stats-active #grid,
+body.stats-active #groupButtons,
+body.stats-active #repeat-btn,
+body.stats-active #feedback,
+body.stats-active .q-label{display:none!important}
+
+
+/* ── Compact schedule layout ── */
+.schedule-view{
+  max-width:860px!important;
+}
+.schedule-day{
+  max-width:860px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+.schedule-match{
+  grid-template-columns:58px max-content 72px minmax(130px,1fr)!important;
+  gap:8px!important;
+}
+.schedule-time{
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+.schedule-flags{
+  min-width:0!important;
+  max-width:330px!important;
+}
+.schedule-venue{
+  min-width:0!important;
+}
+@media(max-width:760px){
+  .schedule-view,.schedule-day{max-width:100%!important}
+  .schedule-match{grid-template-columns:54px 1fr 68px!important}
+  .schedule-venue{grid-column:2 / 4!important}
+}
+
+
+.stats-table th.sortable{
+  cursor:pointer;
+  user-select:none;
+}
+.stats-table th.sortable::after{
+  content:" ↕";
+  color:#8daed8;
+  font-weight:700;
+}
+.stats-table th.sortable[data-dir="asc"]::after{
+  content:" ↑";
+  color:#e8c96a;
+}
+.stats-table th.sortable[data-dir="desc"]::after{
+  content:" ↓";
+  color:#e8c96a;
+}
+.settings-panel-title{
+  margin-top:2px;
+}
+
+
+/* ── Abstand zwischen Uhrzeit und Stadion im Spielplan ── */
+.schedule-match{
+  column-gap:12px!important;
+}
+.schedule-venue{
+  padding-left:18px!important;
+  margin-left:4px!important;
+  border-left:1px solid rgba(255,255,255,.12)!important;
+}
+@media(max-width:760px){
+  .schedule-venue{
+    padding-left:0!important;
+    margin-left:0!important;
+    border-left:0!important;
+  }
+}
+
+
+/* ── Trennlinie auch vor der Uhrzeit im Spielplan ── */
+.schedule-time{
+  border-left:1px solid rgba(255,255,255,.12)!important;
+  padding-left:12px!important;
+}
+@media(max-width:760px){
+  .schedule-time{
+    border-left:0!important;
+    padding-left:0!important;
+  }
+}
+
+
+/* ── Spielplan: saubere responsive Trennlinien ohne Versatz ── */
+.schedule-match{
+  column-gap:0!important;
+  grid-template-columns:58px minmax(230px,1fr) 88px minmax(160px,0.85fr)!important;
+}
+.schedule-time,
+.schedule-venue{
+  position:relative;
+  padding-left:16px!important;
+  margin-left:16px!important;
+  border-left:0!important;
+  align-self:stretch;
+  display:flex;
+  align-items:center;
+}
+.schedule-time::before,
+.schedule-venue::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:8px;
+  bottom:8px;
+  width:1px;
+  background:rgba(255,255,255,.14);
+}
+.schedule-time{
+  justify-content:flex-start;
+  text-align:left!important;
+}
+.schedule-venue{
+  line-height:1.25;
+}
+@media(max-width:760px){
+  .schedule-match{
+    grid-template-columns:54px 1fr 72px!important;
+    column-gap:8px!important;
+  }
+  .schedule-time,
+  .schedule-venue{
+    padding-left:0!important;
+    margin-left:0!important;
+    border-left:0!important;
+    display:block;
+  }
+  .schedule-time::before,
+  .schedule-venue::before{
+    display:none!important;
+  }
+  .schedule-venue{
+    grid-column:2 / 4!important;
+    margin-top:2px!important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ── Player overlay ── -->
+<div class="overlay" id="playerOverlay">
+  <div class="overlay-logo">🏆 <span>Flaggen-Lernspiel WM 2026</span> 🏆</div>
+  <h2>Wer spielt heute?</h2>
+  <p>Tippe einfach auf deinen Namen!</p>
+  <div class="player-btns">
+    <button class="pbtn" onclick="selectPlayer('Joshua')">Joshua</button>
+    <button class="pbtn" onclick="selectPlayer('Lilli')">Lilli</button>
+    <button class="pbtn" onclick="selectPlayer('Silas')">Silas</button>
+  </div>
+  <div class="custom-row">
+    <input class="custom-input" id="customName" placeholder="Anderer Name …" maxlength="20"
+      onkeydown="if(event.key==='Enter')selectCustomPlayer()">
+    <button class="ok-btn" onclick="selectCustomPlayer()">OK</button>
+  </div>
+</div>
+
+<!-- ── Header ── -->
+<div class="header">
+  <div class="header-inner">
+    <div class="hlogo">🏆 <h1>FIFA World Cup 2026</h1> 🏆</div>
+    <div class="header-sub">Flaggen-Quiz</div>
+    <div class="gold-line"></div>
+  </div>
+</div>
+
+<!-- ── Player bar ── -->
+<div class="player-bar">
+  <div class="pbar-left">
+    <span class="pbar-name" id="pbarName">–</span>
+    <span class="pbar-score" id="pbarScore"></span>
+  </div>
+  <button class="pbar-btn" onclick="changePlayer()">👤 Spieler wechseln</button>
+  <div class="settings-wrap">
+    <button class="settings-btn" onclick="toggleSettings(event)" title="Einstellungen">⚙️</button>
+    <div class="settings-panel" id="settingsPanel">
+      <div class="settings-panel-title">Einstellungen</div>
+      <button class="btn settings-action" onclick="updateResultsFromApi(true);toggleSettings()">🔄 Ergebnisse aktualisieren</button>
+      <div class="settings-separator"></div>
+      <div class="settings-panel-title">Stimme</div>
+      <div class="voice-settings">
+        <div class="voice-status" id="voiceStatus">🔊 Stimme wird vorbereitet …</div>
+        <select id="voiceSelect" class="voice-select"></select>
+        <button class="btn settings-action" onclick="testVoice()" type="button">🔊 Stimme testen</button>
+      </div>
+
+      <div class="settings-separator"></div>
+      <div class="settings-panel-title">Daten</div>
+      <button class="btn settings-action" onclick="clearScores()" type="button">🗑 Alle Ergebnisse löschen</button>
+      <button class="btn settings-action" onclick="clearFlagStats()" type="button">🗑 Statistik löschen</button>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Controls ── -->
+<div class="controls-wrap">
+  <div class="ctrl-row">
+    <button class="btn mode-btn" data-mode="greet" onclick="greetPlayer()">👋 Begrüßung</button>
+    <button class="btn mode-btn" data-mode="learn-all" onclick="startLearning(allCountries,'learn-all')">🎓 Lernmodus</button>
+    <button class="btn mode-btn" data-mode="quiz-all" onclick="startQuiz(allCountries,'quiz-all')">🎮 Quiz</button>
+    <button class="btn mode-btn" data-mode="schedule" onclick="startSchedule()">📅 Spielplan</button>
+    <button class="btn mode-btn" data-mode="ranking" onclick="toggleRanking()">🏅 Ranking</button>
+    <button class="btn mode-btn" data-mode="stats" onclick="toggleStats()">📊 Statistik</button>
+  </div>
+  <div class="ctrl-row" id="groupButtons"></div>
+</div>
+
+
+<!-- ── Question ── -->
+<div class="question-area">
+  <div class="q-label">Deine Aufgabe</div>
+  <div id="question">Wähle deinen Namen und leg los! 😊</div>
+  <div id="feedback"></div>
+  <div id="apiStatus" style="font-size:12px;color:#8daed8;margin-top:4px;"></div>
+  <button id="repeat-btn" class="btn mode-btn" onclick="repeatQuestion()">🔁 Nochmal vorlesen</button>
+</div>
+
+<!-- ── Ranking ── -->
+<div class="ranking-wrap" id="rankingPanel">
+  <div class="rank-head">🏅 Bestenliste</div>
+  <div id="rankingList"></div>
+</div>
+
+
+<!-- ── Statistik ── -->
+<div class="stats-wrap" id="statsPanel">
+  <div class="stats-head">📊 Flaggen-Statistik</div>
+  <div id="statsList"></div>
+</div>
+
+<div id="scheduleView" class="schedule-view"></div>
+
+<!-- ── Flag grid ── -->
+<div id="grid" class="grid"></div>
+
+
+<div class="flag-modal" id="flagModal" onclick="closeFlagModal(event)">
+  <div class="flag-modal-card" onclick="event.stopPropagation()">
+    <div class="flag-modal-title" id="flagModalTitle"></div>
+    <div class="flag-modal-img-wrap">
+      <img class="flag-modal-img" id="flagModalImg" alt="">
+    </div>
+    <div class="country-info-box" id="flagCountryInfo"></div>
+    <div class="flag-modal-actions">
+      <button class="flag-modal-close" onclick="speakCountry(document.getElementById('flagModalTitle').textContent)">🔊</button>
+      <button class="flag-modal-close" onclick="closeFlagModal()">✕</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="kit-modal" id="kitModal" onclick="closeKitModal(event)">
+  <div class="kit-modal-card" onclick="event.stopPropagation()">
+    <div class="kit-modal-title" id="kitModalTitle"></div>
+    <div class="team-info" id="kitTeamInfo"></div>
+    <div class="kit-grid">
+      <div class="kit-box" id="kitHomeBox">
+        <h3>Heimtrikot</h3>
+        <img class="kit-img" id="kitHomeImg" alt="">
+      </div>
+      <div class="kit-box" id="kitAwayBox">
+        <h3>Auswärtstrikot</h3>
+        <img class="kit-img" id="kitAwayImg" alt="">
+      </div>
+    </div>
+    <div class="kit-note" id="kitNote"></div>
+    <div class="kit-modal-actions">
+      <button class="kit-modal-close" title="Vorlesen" onclick="speakCountry(document.getElementById('kitModalTitle').textContent)">🔊</button>
+      <button class="kit-modal-close" title="Schließen" onclick="closeKitModal()">✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
+const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
+const groupC=[["Brasilien","br"],["Marokko","ma"],["Haiti","ht"],["Schottland","gb-sct"]];
+const groupD=[["USA","us"],["Paraguay","py"],["Australien","au"],["Türkei","tr"]];
+const groupE=[["Deutschland","de"],["Curaçao","cw"],["Elfenbeinküste","ci"],["Ecuador","ec"]];
+const groupF=[["Niederlande","nl"],["Japan","jp"],["Schweden","se"],["Tunesien","tn"]];
+const groupG=[["Belgien","be"],["Ägypten","eg"],["Iran","ir"],["Neuseeland","nz"]];
+const groupH=[["Spanien","es"],["Kap Verde","cv"],["Saudi-Arabien","sa"],["Uruguay","uy"]];
+const groupI=[["Frankreich","fr"],["Senegal","sn"],["Irak","iq"],["Norwegen","no"]];
+const groupJ=[["Argentinien","ar"],["Algerien","dz"],["Österreich","at"],["Jordanien","jo"]];
+const groupK=[["Portugal","pt"],["DR Kongo","cd"],["Usbekistan","uz"],["Kolumbien","co"]];
+const groupL=[["England","gb-eng"],["Kroatien","hr"],["Ghana","gh"],["Panama","pa"]];
+const GROUPS = {A:groupA,B:groupB,C:groupC,D:groupD,E:groupE,F:groupF,G:groupG,H:groupH,I:groupI,J:groupJ,K:groupK,L:groupL};
+const allCountries=[...groupA,...groupB,...groupC,...groupD,...groupE,...groupF,...groupG,...groupH,...groupI,...groupJ,...groupK,...groupL];
+const MATCHES = [
+  {
+    "group": "A",
+    "teams": [
+      "Mexiko",
+      "Südafrika"
+    ],
+    "date": "Do. 11.06.2026",
+    "time": "21:00",
+    "venue": "Estadio Azteca, Mexiko-Stadt"
+  },
+  {
+    "group": "A",
+    "teams": [
+      "Südkorea",
+      "Tschechien"
+    ],
+    "date": "Fr. 12.06.2026",
+    "time": "04:00",
+    "venue": "Estadio Akron, Guadalajara"
+  },
+  {
+    "group": "A",
+    "teams": [
+      "Tschechien",
+      "Südafrika"
+    ],
+    "date": "Do. 18.06.2026",
+    "time": "18:00",
+    "venue": "Mercedes-Benz Stadium, Atlanta"
+  },
+  {
+    "group": "A",
+    "teams": [
+      "Mexiko",
+      "Südkorea"
+    ],
+    "date": "Fr. 19.06.2026",
+    "time": "03:00",
+    "venue": "Estadio Akron, Guadalajara"
+  },
+  {
+    "group": "A",
+    "teams": [
+      "Tschechien",
+      "Mexiko"
+    ],
+    "date": "Do. 25.06.2026",
+    "time": "03:00",
+    "venue": "Estadio Azteca, Mexiko-Stadt"
+  },
+  {
+    "group": "A",
+    "teams": [
+      "Südafrika",
+      "Südkorea"
+    ],
+    "date": "Do. 25.06.2026",
+    "time": "03:00",
+    "venue": "Estadio BBVA, Monterrey"
+  },
+  {
+    "group": "B",
+    "teams": [
+      "Kanada",
+      "Bosnien-Herzegowina"
+    ],
+    "date": "Fr. 12.06.2026",
+    "time": "21:00",
+    "venue": "BMO Field, Toronto"
+  },
+  {
+    "group": "B",
+    "teams": [
+      "Katar",
+      "Schweiz"
+    ],
+    "date": "Sa. 13.06.2026",
+    "time": "21:00",
+    "venue": "Levi's Stadium, San Francisco"
+  },
+  {
+    "group": "B",
+    "teams": [
+      "Schweiz",
+      "Bosnien-Herzegowina"
+    ],
+    "date": "Do. 18.06.2026",
+    "time": "21:00",
+    "venue": "SoFi Stadium, Los Angeles"
+  },
+  {
+    "group": "B",
+    "teams": [
+      "Kanada",
+      "Katar"
+    ],
+    "date": "Fr. 19.06.2026",
+    "time": "00:00",
+    "venue": "BC Place, Vancouver"
+  },
+  {
+    "group": "B",
+    "teams": [
+      "Schweiz",
+      "Kanada"
+    ],
+    "date": "Mi. 24.06.2026",
+    "time": "21:00",
+    "venue": "BC Place, Vancouver"
+  },
+  {
+    "group": "B",
+    "teams": [
+      "Bosnien-Herzegowina",
+      "Katar"
+    ],
+    "date": "Mi. 24.06.2026",
+    "time": "21:00",
+    "venue": "Lumen Field, Seattle"
+  },
+  {
+    "group": "C",
+    "teams": [
+      "Brasilien",
+      "Marokko"
+    ],
+    "date": "So. 14.06.2026",
+    "time": "00:00",
+    "venue": "MetLife Stadium, New Jersey"
+  },
+  {
+    "group": "C",
+    "teams": [
+      "Haiti",
+      "Schottland"
+    ],
+    "date": "So. 14.06.2026",
+    "time": "03:00",
+    "venue": "Gillette Stadium, Boston"
+  },
+  {
+    "group": "C",
+    "teams": [
+      "Schottland",
+      "Marokko"
+    ],
+    "date": "Sa. 20.06.2026",
+    "time": "00:00",
+    "venue": "Gillette Stadium, Boston"
+  },
+  {
+    "group": "C",
+    "teams": [
+      "Brasilien",
+      "Haiti"
+    ],
+    "date": "Sa. 20.06.2026",
+    "time": "02:30",
+    "venue": "Lincoln Financial Field, Philadelphia"
+  },
+  {
+    "group": "C",
+    "teams": [
+      "Schottland",
+      "Brasilien"
+    ],
+    "date": "Do. 25.06.2026",
+    "time": "00:00",
+    "venue": "Hard Rock Stadium, Miami"
+  },
+  {
+    "group": "C",
+    "teams": [
+      "Marokko",
+      "Haiti"
+    ],
+    "date": "Do. 25.06.2026",
+    "time": "00:00",
+    "venue": "Mercedes-Benz Stadium, Atlanta"
+  },
+  {
+    "group": "D",
+    "teams": [
+      "USA",
+      "Paraguay"
+    ],
+    "date": "Sa. 13.06.2026",
+    "time": "03:00",
+    "venue": "SoFi Stadium, Los Angeles"
+  },
+  {
+    "group": "D",
+    "teams": [
+      "Australien",
+      "Türkei"
+    ],
+    "date": "So. 14.06.2026",
+    "time": "06:00",
+    "venue": "BC Place, Vancouver"
+  },
+  {
+    "group": "D",
+    "teams": [
+      "USA",
+      "Australien"
+    ],
+    "date": "Fr. 19.06.2026",
+    "time": "21:00",
+    "venue": "Lumen Field, Seattle"
+  },
+  {
+    "group": "D",
+    "teams": [
+      "Türkei",
+      "Paraguay"
+    ],
+    "date": "Sa. 20.06.2026",
+    "time": "05:00",
+    "venue": "Levi's Stadium, San Francisco"
+  },
+  {
+    "group": "D",
+    "teams": [
+      "Türkei",
+      "USA"
+    ],
+    "date": "Fr. 26.06.2026",
+    "time": "04:00",
+    "venue": "SoFi Stadium, Los Angeles"
+  },
+  {
+    "group": "D",
+    "teams": [
+      "Paraguay",
+      "Australien"
+    ],
+    "date": "Fr. 26.06.2026",
+    "time": "04:00",
+    "venue": "Levi's Stadium, San Francisco"
+  },
+  {
+    "group": "E",
+    "teams": [
+      "Deutschland",
+      "Curaçao"
+    ],
+    "date": "So. 14.06.2026",
+    "time": "19:00",
+    "venue": "NRG Stadium, Houston"
+  },
+  {
+    "group": "E",
+    "teams": [
+      "Elfenbeinküste",
+      "Ecuador"
+    ],
+    "date": "Mo. 15.06.2026",
+    "time": "01:00",
+    "venue": "Lincoln Financial Field, Philadelphia"
+  },
+  {
+    "group": "E",
+    "teams": [
+      "Deutschland",
+      "Elfenbeinküste"
+    ],
+    "date": "Sa. 20.06.2026",
+    "time": "22:00",
+    "venue": "BMO Field, Toronto"
+  },
+  {
+    "group": "E",
+    "teams": [
+      "Ecuador",
+      "Curaçao"
+    ],
+    "date": "So. 21.06.2026",
+    "time": "02:00",
+    "venue": "Arrowhead Stadium, Kansas City"
+  },
+  {
+    "group": "E",
+    "teams": [
+      "Curaçao",
+      "Elfenbeinküste"
+    ],
+    "date": "Do. 25.06.2026",
+    "time": "22:00",
+    "venue": "Lincoln Financial Field, Philadelphia"
+  },
+  {
+    "group": "E",
+    "teams": [
+      "Ecuador",
+      "Deutschland"
+    ],
+    "date": "Do. 25.06.2026",
+    "time": "22:00",
+    "venue": "MetLife Stadium, New Jersey"
+  },
+  {
+    "group": "F",
+    "teams": [
+      "Niederlande",
+      "Japan"
+    ],
+    "date": "So. 14.06.2026",
+    "time": "22:00",
+    "venue": "AT&T Stadium, Dallas"
+  },
+  {
+    "group": "F",
+    "teams": [
+      "Schweden",
+      "Tunesien"
+    ],
+    "date": "Mo. 15.06.2026",
+    "time": "04:00",
+    "venue": "Estadio BBVA, Monterrey"
+  },
+  {
+    "group": "F",
+    "teams": [
+      "Niederlande",
+      "Schweden"
+    ],
+    "date": "Sa. 20.06.2026",
+    "time": "19:00",
+    "venue": "NRG Stadium, Houston"
+  },
+  {
+    "group": "F",
+    "teams": [
+      "Tunesien",
+      "Japan"
+    ],
+    "date": "So. 21.06.2026",
+    "time": "06:00",
+    "venue": "Estadio BBVA, Monterrey"
+  },
+  {
+    "group": "F",
+    "teams": [
+      "Japan",
+      "Schweden"
+    ],
+    "date": "Fr. 26.06.2026",
+    "time": "01:00",
+    "venue": "AT&T Stadium, Dallas"
+  },
+  {
+    "group": "F",
+    "teams": [
+      "Tunesien",
+      "Niederlande"
+    ],
+    "date": "Fr. 26.06.2026",
+    "time": "01:00",
+    "venue": "Arrowhead Stadium, Kansas City"
+  },
+  {
+    "group": "G",
+    "teams": [
+      "Belgien",
+      "Ägypten"
+    ],
+    "date": "Mo. 15.06.2026",
+    "time": "21:00",
+    "venue": "Lumen Field, Seattle"
+  },
+  {
+    "group": "G",
+    "teams": [
+      "Iran",
+      "Neuseeland"
+    ],
+    "date": "Di. 16.06.2026",
+    "time": "03:00",
+    "venue": "SoFi Stadium, Los Angeles"
+  },
+  {
+    "group": "G",
+    "teams": [
+      "Belgien",
+      "Iran"
+    ],
+    "date": "So. 21.06.2026",
+    "time": "21:00",
+    "venue": "SoFi Stadium, Los Angeles"
+  },
+  {
+    "group": "G",
+    "teams": [
+      "Neuseeland",
+      "Ägypten"
+    ],
+    "date": "Mo. 22.06.2026",
+    "time": "03:00",
+    "venue": "BC Place, Vancouver"
+  },
+  {
+    "group": "G",
+    "teams": [
+      "Ägypten",
+      "Iran"
+    ],
+    "date": "Sa. 27.06.2026",
+    "time": "05:00",
+    "venue": "Lumen Field, Seattle"
+  },
+  {
+    "group": "G",
+    "teams": [
+      "Neuseeland",
+      "Belgien"
+    ],
+    "date": "Sa. 27.06.2026",
+    "time": "05:00",
+    "venue": "BC Place, Vancouver"
+  },
+  {
+    "group": "H",
+    "teams": [
+      "Spanien",
+      "Kap Verde"
+    ],
+    "date": "Mo. 15.06.2026",
+    "time": "18:00",
+    "venue": "Mercedes-Benz Stadium, Atlanta"
+  },
+  {
+    "group": "H",
+    "teams": [
+      "Saudi-Arabien",
+      "Uruguay"
+    ],
+    "date": "Di. 16.06.2026",
+    "time": "00:00",
+    "venue": "Hard Rock Stadium, Miami"
+  },
+  {
+    "group": "H",
+    "teams": [
+      "Spanien",
+      "Saudi-Arabien"
+    ],
+    "date": "So. 21.06.2026",
+    "time": "18:00",
+    "venue": "Mercedes-Benz Stadium, Atlanta"
+  },
+  {
+    "group": "H",
+    "teams": [
+      "Uruguay",
+      "Kap Verde"
+    ],
+    "date": "Mo. 22.06.2026",
+    "time": "00:00",
+    "venue": "Hard Rock Stadium, Miami"
+  },
+  {
+    "group": "H",
+    "teams": [
+      "Uruguay",
+      "Spanien"
+    ],
+    "date": "Sa. 27.06.2026",
+    "time": "02:00",
+    "venue": "Estadio Akron, Guadalajara"
+  },
+  {
+    "group": "H",
+    "teams": [
+      "Kap Verde",
+      "Saudi-Arabien"
+    ],
+    "date": "Sa. 27.06.2026",
+    "time": "02:00",
+    "venue": "NRG Stadium, Houston"
+  },
+  {
+    "group": "I",
+    "teams": [
+      "Frankreich",
+      "Senegal"
+    ],
+    "date": "Di. 16.06.2026",
+    "time": "21:00",
+    "venue": "MetLife Stadium, New Jersey"
+  },
+  {
+    "group": "I",
+    "teams": [
+      "Irak",
+      "Norwegen"
+    ],
+    "date": "Mi. 17.06.2026",
+    "time": "00:00",
+    "venue": "Gillette Stadium, Boston"
+  },
+  {
+    "group": "I",
+    "teams": [
+      "Frankreich",
+      "Irak"
+    ],
+    "date": "Mo. 22.06.2026",
+    "time": "23:00",
+    "venue": "Lincoln Financial Field, Philadelphia"
+  },
+  {
+    "group": "I",
+    "teams": [
+      "Norwegen",
+      "Senegal"
+    ],
+    "date": "Di. 23.06.2026",
+    "time": "02:00",
+    "venue": "MetLife Stadium, New Jersey"
+  },
+  {
+    "group": "I",
+    "teams": [
+      "Norwegen",
+      "Frankreich"
+    ],
+    "date": "Fr. 26.06.2026",
+    "time": "21:00",
+    "venue": "Gillette Stadium, Boston"
+  },
+  {
+    "group": "I",
+    "teams": [
+      "Senegal",
+      "Irak"
+    ],
+    "date": "Fr. 26.06.2026",
+    "time": "21:00",
+    "venue": "BMO Field, Toronto"
+  },
+  {
+    "group": "J",
+    "teams": [
+      "Argentinien",
+      "Algerien"
+    ],
+    "date": "Mi. 17.06.2026",
+    "time": "03:00",
+    "venue": "Arrowhead Stadium, Kansas City"
+  },
+  {
+    "group": "J",
+    "teams": [
+      "Österreich",
+      "Jordanien"
+    ],
+    "date": "Mi. 17.06.2026",
+    "time": "06:00",
+    "venue": "Levi's Stadium, San Francisco"
+  },
+  {
+    "group": "J",
+    "teams": [
+      "Argentinien",
+      "Österreich"
+    ],
+    "date": "Mo. 22.06.2026",
+    "time": "19:00",
+    "venue": "AT&T Stadium, Dallas"
+  },
+  {
+    "group": "J",
+    "teams": [
+      "Jordanien",
+      "Algerien"
+    ],
+    "date": "Di. 23.06.2026",
+    "time": "05:00",
+    "venue": "Levi's Stadium, San Francisco"
+  },
+  {
+    "group": "J",
+    "teams": [
+      "Algerien",
+      "Österreich"
+    ],
+    "date": "So. 28.06.2026",
+    "time": "04:00",
+    "venue": "Arrowhead Stadium, Kansas City"
+  },
+  {
+    "group": "J",
+    "teams": [
+      "Jordanien",
+      "Argentinien"
+    ],
+    "date": "So. 28.06.2026",
+    "time": "04:00",
+    "venue": "AT&T Stadium, Dallas"
+  },
+  {
+    "group": "K",
+    "teams": [
+      "Portugal",
+      "DR Kongo"
+    ],
+    "date": "Mi. 17.06.2026",
+    "time": "19:00",
+    "venue": "NRG Stadium, Houston"
+  },
+  {
+    "group": "K",
+    "teams": [
+      "Usbekistan",
+      "Kolumbien"
+    ],
+    "date": "Do. 18.06.2026",
+    "time": "04:00",
+    "venue": "Estadio Azteca, Mexiko-Stadt"
+  },
+  {
+    "group": "K",
+    "teams": [
+      "Portugal",
+      "Usbekistan"
+    ],
+    "date": "Di. 23.06.2026",
+    "time": "19:00",
+    "venue": "NRG Stadium, Houston"
+  },
+  {
+    "group": "K",
+    "teams": [
+      "Kolumbien",
+      "DR Kongo"
+    ],
+    "date": "Mi. 24.06.2026",
+    "time": "04:00",
+    "venue": "Estadio Akron, Guadalajara"
+  },
+  {
+    "group": "K",
+    "teams": [
+      "Kolumbien",
+      "Portugal"
+    ],
+    "date": "So. 28.06.2026",
+    "time": "01:30",
+    "venue": "Hard Rock Stadium, Miami"
+  },
+  {
+    "group": "K",
+    "teams": [
+      "DR Kongo",
+      "Usbekistan"
+    ],
+    "date": "So. 28.06.2026",
+    "time": "01:30",
+    "venue": "Mercedes-Benz Stadium, Atlanta"
+  },
+  {
+    "group": "L",
+    "teams": [
+      "England",
+      "Kroatien"
+    ],
+    "date": "Mi. 17.06.2026",
+    "time": "22:00",
+    "venue": "AT&T Stadium, Dallas"
+  },
+  {
+    "group": "L",
+    "teams": [
+      "Ghana",
+      "Panama"
+    ],
+    "date": "Do. 18.06.2026",
+    "time": "01:00",
+    "venue": "BMO Field, Toronto"
+  },
+  {
+    "group": "L",
+    "teams": [
+      "England",
+      "Ghana"
+    ],
+    "date": "Di. 23.06.2026",
+    "time": "22:00",
+    "venue": "Gillette Stadium, Boston"
+  },
+  {
+    "group": "L",
+    "teams": [
+      "Panama",
+      "Kroatien"
+    ],
+    "date": "Mi. 24.06.2026",
+    "time": "01:00",
+    "venue": "BMO Field, Toronto"
+  },
+  {
+    "group": "L",
+    "teams": [
+      "Panama",
+      "England"
+    ],
+    "date": "Sa. 27.06.2026",
+    "time": "23:00",
+    "venue": "MetLife Stadium, New Jersey"
+  },
+  {
+    "group": "L",
+    "teams": [
+      "Kroatien",
+      "Ghana"
+    ],
+    "date": "Sa. 27.06.2026",
+    "time": "23:00",
+    "venue": "Lincoln Financial Field, Philadelphia"
+  }
+];
+
+const KNOCKOUT_MATCHES = [
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "So. 28.06.2026",
+    "time": "—",
+    "teams": [
+      "2. Gruppe A",
+      "2. Gruppe B"
+    ],
+    "venue": "Los Angeles Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Mo. 29.06.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe E",
+      "3. Gruppe A/B/C/D/F"
+    ],
+    "venue": "Boston Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Mo. 29.06.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe F",
+      "2. Gruppe C"
+    ],
+    "venue": "Estadio Monterrey"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Mo. 29.06.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe C",
+      "2. Gruppe F"
+    ],
+    "venue": "Houston Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Di. 30.06.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe I",
+      "3. Gruppe C/D/F/G/H"
+    ],
+    "venue": "New York New Jersey Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Di. 30.06.2026",
+    "time": "—",
+    "teams": [
+      "2. Gruppe E",
+      "2. Gruppe I"
+    ],
+    "venue": "Dallas Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Di. 30.06.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe A",
+      "3. Gruppe C/E/F/H/I"
+    ],
+    "venue": "Mexico City Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Mi. 01.07.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe L",
+      "3. Gruppe E/H/I/J/K"
+    ],
+    "venue": "San Francisco Bay Area Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Mi. 01.07.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe D",
+      "3. Gruppe B/E/F/I/J"
+    ],
+    "venue": "Seattle Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Mi. 01.07.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe G",
+      "3. Gruppe A/E/H/I/J"
+    ],
+    "venue": "Los Angeles Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Do. 02.07.2026",
+    "time": "—",
+    "teams": [
+      "2. Gruppe K",
+      "2. Gruppe L"
+    ],
+    "venue": "Toronto Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Do. 02.07.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe H",
+      "2. Gruppe J"
+    ],
+    "venue": "Los Angeles Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Do. 02.07.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe B",
+      "3. Gruppe E/F/G/I/J"
+    ],
+    "venue": "Vancouver Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Fr. 03.07.2026",
+    "time": "—",
+    "teams": [
+      "2. Gruppe D",
+      "2. Gruppe G"
+    ],
+    "venue": "Kansas City Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Fr. 03.07.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe J",
+      "2. Gruppe H"
+    ],
+    "venue": "Miami Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Fr. 03.07.2026",
+    "time": "—",
+    "teams": [
+      "1. Gruppe K",
+      "3. Gruppe D/E/I/J/L"
+    ],
+    "venue": "Dallas Stadium"
+  },
+  {
+    "stage": "AF",
+    "group": "AF",
+    "date": "Sa. 04.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 73",
+      "Sieger Spiel 75"
+    ],
+    "venue": "Philadelphia Stadium"
+  },
+  {
+    "stage": "AF",
+    "group": "AF",
+    "date": "Sa. 04.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 74",
+      "Sieger Spiel 77"
+    ],
+    "venue": "Houston Stadium"
+  },
+  {
+    "stage": "AF",
+    "group": "AF",
+    "date": "So. 05.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 76",
+      "Sieger Spiel 78"
+    ],
+    "venue": "New York New Jersey Stadium"
+  },
+  {
+    "stage": "AF",
+    "group": "AF",
+    "date": "So. 05.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 79",
+      "Sieger Spiel 80"
+    ],
+    "venue": "Mexico City Stadium"
+  },
+  {
+    "stage": "AF",
+    "group": "AF",
+    "date": "Mo. 06.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 83",
+      "Sieger Spiel 84"
+    ],
+    "venue": "Seattle Stadium"
+  },
+  {
+    "stage": "AF",
+    "group": "AF",
+    "date": "Mo. 06.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 81",
+      "Sieger Spiel 82"
+    ],
+    "venue": "Dallas Stadium"
+  },
+  {
+    "stage": "AF",
+    "group": "AF",
+    "date": "Di. 07.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 86",
+      "Sieger Spiel 88"
+    ],
+    "venue": "Atlanta Stadium"
+  },
+  {
+    "stage": "AF",
+    "group": "AF",
+    "date": "Di. 07.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 85",
+      "Sieger Spiel 87"
+    ],
+    "venue": "Vancouver Stadium"
+  },
+  {
+    "stage": "VF",
+    "group": "VF",
+    "date": "Do. 09.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 89",
+      "Sieger Spiel 90"
+    ],
+    "venue": "Boston Stadium"
+  },
+  {
+    "stage": "VF",
+    "group": "VF",
+    "date": "Fr. 10.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 93",
+      "Sieger Spiel 94"
+    ],
+    "venue": "Los Angeles Stadium"
+  },
+  {
+    "stage": "VF",
+    "group": "VF",
+    "date": "Sa. 11.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 91",
+      "Sieger Spiel 92"
+    ],
+    "venue": "Miami Stadium"
+  },
+  {
+    "stage": "VF",
+    "group": "VF",
+    "date": "Sa. 11.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 95",
+      "Sieger Spiel 96"
+    ],
+    "venue": "Kansas City Stadium"
+  },
+  {
+    "stage": "HF",
+    "group": "HF",
+    "date": "Di. 14.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 97",
+      "Sieger Spiel 98"
+    ],
+    "venue": "Dallas Stadium"
+  },
+  {
+    "stage": "HF",
+    "group": "HF",
+    "date": "Mi. 15.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 99",
+      "Sieger Spiel 100"
+    ],
+    "venue": "Atlanta Stadium"
+  },
+  {
+    "stage": "3P",
+    "group": "3P",
+    "date": "Sa. 18.07.2026",
+    "time": "—",
+    "teams": [
+      "Verlierer Spiel 101",
+      "Verlierer Spiel 102"
+    ],
+    "venue": "Miami Stadium"
+  },
+  {
+    "stage": "Finale",
+    "group": "Finale",
+    "date": "So. 19.07.2026",
+    "time": "—",
+    "teams": [
+      "Sieger Spiel 101",
+      "Sieger Spiel 102"
+    ],
+    "venue": "New York New Jersey Stadium"
+  }
+];
+
+let RESULTS = {
+  "Mexiko|Südafrika": {score:"2:0", status:"Beendet"},
+  "Südkorea|Tschechien": {score:"2:1", status:"Beendet"}
+};
+
+function matchKey(m){
+  return m.teams[0]+"|"+m.teams[1];
+}
+
+function matchResult(m){
+  return RESULTS[matchKey(m)] || null;
+}
+
+function matchDisplayLine(m){
+  const r=matchResult(m);
+  if(r) return `${m.teams[0]} ${r.score} ${m.teams[1]}`;
+  return `${m.teams[0]} – ${m.teams[1]}`;
+}
+
+
+const WORLD_CUP_API_URL = "https://worldcup26.ir/get/games";
+const RESULTS_CACHE_KEY = "wm2026_api_results_cache_v1";
+
+const API_TEAM_MAP = {
+  "Mexico":"Mexiko","South Africa":"Südafrika","Korea Republic":"Südkorea","South Korea":"Südkorea","Czech Republic":"Tschechien","Czechia":"Tschechien",
+  "Canada":"Kanada","Bosnia and Herzegovina":"Bosnien-Herzegowina","Bosnia-Herzegovina":"Bosnien-Herzegowina","Qatar":"Katar","Switzerland":"Schweiz",
+  "Brazil":"Brasilien","Morocco":"Marokko","Haiti":"Haiti","Scotland":"Schottland",
+  "United States":"USA","USA":"USA","Paraguay":"Paraguay","Australia":"Australien","Turkey":"Türkei","Türkiye":"Türkei",
+  "Germany":"Deutschland","Curacao":"Curaçao","Curaçao":"Curaçao","Ivory Coast":"Elfenbeinküste","Côte d'Ivoire":"Elfenbeinküste","Ecuador":"Ecuador",
+  "Netherlands":"Niederlande","Japan":"Japan","Sweden":"Schweden","Tunisia":"Tunesien",
+  "Belgium":"Belgien","Egypt":"Ägypten","Iran":"Iran","New Zealand":"Neuseeland",
+  "Spain":"Spanien","Cape Verde":"Kap Verde","Saudi Arabia":"Saudi-Arabien","Uruguay":"Uruguay",
+  "France":"Frankreich","Senegal":"Senegal","Iraq":"Irak","Norway":"Norwegen",
+  "Argentina":"Argentinien","Algeria":"Algerien","Austria":"Österreich","Jordan":"Jordanien",
+  "Portugal":"Portugal","DR Congo":"DR Kongo","Democratic Republic of the Congo":"DR Kongo","Uzbekistan":"Usbekistan","Colombia":"Kolumbien",
+  "England":"England","Croatia":"Kroatien","Ghana":"Ghana","Panama":"Panama"
+};
+
+function apiStatus(text){
+  const el=document.getElementById("apiStatus");
+  if(el) el.textContent=text || "";
+}
+
+function normalizeTeamName(name){
+  if(!name) return "";
+  const s=String(name).trim();
+  return API_TEAM_MAP[s] || s;
+}
+
+function normalizeForCompare(name){
+  return normalizeTeamName(name)
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]/g,"");
+}
+
+function deepFindString(obj, keys){
+  if(!obj || typeof obj!=="object") return "";
+  for(const key of keys){
+    if(obj[key]!==undefined && obj[key]!==null && typeof obj[key]!=="object") return String(obj[key]);
+  }
+  for(const val of Object.values(obj)){
+    if(val && typeof val==="object"){
+      const found=deepFindString(val,keys);
+      if(found) return found;
+    }
+  }
+  return "";
+}
+
+function deepFindNumber(obj, keys){
+  if(!obj || typeof obj!=="object") return null;
+  for(const key of keys){
+    if(obj[key]!==undefined && obj[key]!==null && obj[key]!=="" && !isNaN(Number(obj[key]))) return Number(obj[key]);
+  }
+  for(const val of Object.values(obj)){
+    if(val && typeof val==="object"){
+      const found=deepFindNumber(val,keys);
+      if(found!==null) return found;
+    }
+  }
+  return null;
+}
+
+function extractArrayFromApi(payload){
+  if(Array.isArray(payload)) return payload;
+  if(!payload || typeof payload!=="object") return [];
+  const common=[payload.games,payload.matches,payload.fixtures,payload.data,payload.result,payload.results];
+  for(const x of common){ if(Array.isArray(x)) return x; }
+  if(payload.data && typeof payload.data==="object"){
+    for(const v of Object.values(payload.data)){ if(Array.isArray(v)) return v; }
+  }
+  for(const v of Object.values(payload)){ if(Array.isArray(v)) return v; }
+  return [];
+}
+
+function extractApiMatch(game){
+  const homeRaw=deepFindString(game,["home_team","homeTeam","home","team1","team_home","home_name","teamA","homeTeamName","home_team_name","team_1"]);
+  const awayRaw=deepFindString(game,["away_team","awayTeam","away","team2","team_away","away_name","teamB","awayTeamName","away_team_name","team_2"]);
+  const home=normalizeTeamName(homeRaw);
+  const away=normalizeTeamName(awayRaw);
+
+  const statusRaw=deepFindString(game,["status","match_status","state","phase","game_status"]);
+  const status=String(statusRaw||"").toLowerCase();
+
+  const homeGoals=deepFindNumber(game,["home_score","homeScore","home_goals","score_home","homeGoals","team1_score","home_team_score","goals_home"]);
+  const awayGoals=deepFindNumber(game,["away_score","awayScore","away_goals","score_away","awayGoals","team2_score","away_team_score","goals_away"]);
+
+  const finished=/finished|full.?time|ended|beendet|final|ft|completed/.test(status);
+  const live=/live|in.?play|half|1h|2h|playing/.test(status);
+
+  if(!home || !away || homeGoals===null || awayGoals===null) return null;
+  if(!finished && !live && status && /scheduled|pre|not.?started/.test(status)) return null;
+
+  return {
+    home, away,
+    score: `${homeGoals}:${awayGoals}`,
+    status: finished ? "Beendet" : live ? "Live" : "Aktualisiert"
+  };
+}
+
+function mergeApiResults(apiMatches){
+  let changed=0;
+  apiMatches.forEach(m=>{
+    const localMatch = MATCHES.find(x=>{
+      const h1=normalizeForCompare(x.teams[0]), a1=normalizeForCompare(x.teams[1]);
+      const h2=normalizeForCompare(m.home), a2=normalizeForCompare(m.away);
+      return (h1===h2 && a1===a2) || (h1===a2 && a1===h2);
+    });
+    if(!localMatch) return;
+
+    const sameOrder = normalizeForCompare(localMatch.teams[0])===normalizeForCompare(m.home);
+    const score = sameOrder ? m.score : m.score.split(":").reverse().join(":");
+    RESULTS[matchKey(localMatch)]={score, status:m.status};
+    changed++;
+  });
+  localStorage.setItem(RESULTS_CACHE_KEY, JSON.stringify(RESULTS));
+  return changed;
+}
+
+function loadCachedApiResults(){
+  try{
+    const cached=JSON.parse(localStorage.getItem(RESULTS_CACHE_KEY)||"{}");
+    if(cached && typeof cached==="object") RESULTS={...RESULTS,...cached};
+  }catch(e){}
+}
+
+async function updateResultsFromApi(manual=false){
+  if(manual) apiStatus("🔄 Ergebnisse werden aktualisiert …");
+  try{
+    const response=await fetch(WORLD_CUP_API_URL,{cache:"no-store"});
+    if(!response.ok) throw new Error("HTTP "+response.status);
+    const payload=await response.json();
+    const rows=extractArrayFromApi(payload);
+    const parsed=rows.map(extractApiMatch).filter(Boolean);
+    const changed=mergeApiResults(parsed);
+    apiStatus("");
+
+    if(typeof renderScheduleHtml==="function"){
+      const schedule=document.getElementById("scheduleView");
+      if(schedule && schedule.classList.contains("open")) schedule.innerHTML=renderScheduleHtml();
+    }
+    return true;
+  }catch(err){
+    apiStatus("⚠️ API nicht erreichbar – gespeicherte Ergebnisse werden verwendet.");
+    if(manual) console.warn("API update failed",err);
+    return false;
+  }
+}
+loadCachedApiResults();
+document.addEventListener("DOMContentLoaded",()=>setTimeout(()=>updateResultsFromApi(false),1200));
+
+
+const CONTINENTS = {
+  "Europa":["Deutschland","Frankreich","Spanien","Niederlande","Belgien","Schweiz","Österreich","Portugal","England","Schottland","Kroatien","Tschechien","Schweden","Norwegen","Türkei","Bosnien-Herzegowina"],
+  "Südamerika":["Brasilien","Argentinien","Uruguay","Kolumbien","Ecuador","Paraguay"],
+  "Nordamerika":["USA","Kanada","Mexiko","Panama","Haiti","Curaçao"],
+  "Afrika":["Marokko","Senegal","Ägypten","Tunesien","Algerien","Ghana","Elfenbeinküste","Südafrika","Kap Verde","DR Kongo"],
+  "Asien":["Japan","Südkorea","Iran","Saudi-Arabien","Katar","Irak","Jordanien","Usbekistan","Australien"],
+  "Ozeanien":["Neuseeland"]
+};
+
+function countriesByNames(names){
+  return allCountries.filter(c=>names.includes(c[0]));
+}
+
+function continentTeams(name){
+  return countriesByNames(CONTINENTS[name] || []);
+}
+
+const COUNTRY_INFO = {
+  "Mexiko": {
+    "capital": "Mexiko-Stadt",
+    "population": "ca. 130 Mio."
+  },
+  "Südafrika": {
+    "capital": "Pretoria, Kapstadt und Bloemfontein",
+    "population": "ca. 64 Mio."
+  },
+  "Südkorea": {
+    "capital": "Seoul",
+    "population": "ca. 52 Mio."
+  },
+  "Tschechien": {
+    "capital": "Prag",
+    "population": "ca. 11 Mio."
+  },
+  "Kanada": {
+    "capital": "Ottawa",
+    "population": "ca. 41 Mio."
+  },
+  "Bosnien-Herzegowina": {
+    "capital": "Sarajevo",
+    "population": "ca. 3 Mio."
+  },
+  "Katar": {
+    "capital": "Doha",
+    "population": "ca. 3 Mio."
+  },
+  "Schweiz": {
+    "capital": "Bern",
+    "population": "ca. 9 Mio."
+  },
+  "Brasilien": {
+    "capital": "Brasília",
+    "population": "ca. 212 Mio."
+  },
+  "Marokko": {
+    "capital": "Rabat",
+    "population": "ca. 38 Mio."
+  },
+  "Haiti": {
+    "capital": "Port-au-Prince",
+    "population": "ca. 12 Mio."
+  },
+  "Schottland": {
+    "capital": "Edinburgh",
+    "population": "ca. 5,5 Mio."
+  },
+  "USA": {
+    "capital": "Washington, D.C.",
+    "population": "ca. 342 Mio."
+  },
+  "Paraguay": {
+    "capital": "Asunción",
+    "population": "ca. 7 Mio."
+  },
+  "Australien": {
+    "capital": "Canberra",
+    "population": "ca. 27 Mio."
+  },
+  "Türkei": {
+    "capital": "Ankara",
+    "population": "ca. 86 Mio."
+  },
+  "Deutschland": {
+    "capital": "Berlin",
+    "population": "ca. 84 Mio."
+  },
+  "Curaçao": {
+    "capital": "Willemstad",
+    "population": "ca. 0,15 Mio."
+  },
+  "Elfenbeinküste": {
+    "capital": "Yamoussoukro",
+    "population": "ca. 32 Mio."
+  },
+  "Ecuador": {
+    "capital": "Quito",
+    "population": "ca. 18 Mio."
+  },
+  "Niederlande": {
+    "capital": "Amsterdam",
+    "population": "ca. 18 Mio."
+  },
+  "Japan": {
+    "capital": "Tokio",
+    "population": "ca. 124 Mio."
+  },
+  "Schweden": {
+    "capital": "Stockholm",
+    "population": "ca. 11 Mio."
+  },
+  "Tunesien": {
+    "capital": "Tunis",
+    "population": "ca. 12 Mio."
+  },
+  "Belgien": {
+    "capital": "Brüssel",
+    "population": "ca. 12 Mio."
+  },
+  "Ägypten": {
+    "capital": "Kairo",
+    "population": "ca. 116 Mio."
+  },
+  "Iran": {
+    "capital": "Teheran",
+    "population": "ca. 92 Mio."
+  },
+  "Neuseeland": {
+    "capital": "Wellington",
+    "population": "ca. 5 Mio."
+  },
+  "Spanien": {
+    "capital": "Madrid",
+    "population": "ca. 49 Mio."
+  },
+  "Kap Verde": {
+    "capital": "Praia",
+    "population": "ca. 0,5 Mio."
+  },
+  "Saudi-Arabien": {
+    "capital": "Riad",
+    "population": "ca. 34 Mio."
+  },
+  "Uruguay": {
+    "capital": "Montevideo",
+    "population": "ca. 3,5 Mio."
+  },
+  "Frankreich": {
+    "capital": "Paris",
+    "population": "ca. 68 Mio."
+  },
+  "Senegal": {
+    "capital": "Dakar",
+    "population": "ca. 19 Mio."
+  },
+  "Irak": {
+    "capital": "Bagdad",
+    "population": "ca. 46 Mio."
+  },
+  "Norwegen": {
+    "capital": "Oslo",
+    "population": "ca. 5,6 Mio."
+  },
+  "Argentinien": {
+    "capital": "Buenos Aires",
+    "population": "ca. 47 Mio."
+  },
+  "Algerien": {
+    "capital": "Algier",
+    "population": "ca. 47 Mio."
+  },
+  "Österreich": {
+    "capital": "Wien",
+    "population": "ca. 9 Mio."
+  },
+  "Jordanien": {
+    "capital": "Amman",
+    "population": "ca. 11 Mio."
+  },
+  "Portugal": {
+    "capital": "Lissabon",
+    "population": "ca. 10,5 Mio."
+  },
+  "DR Kongo": {
+    "capital": "Kinshasa",
+    "population": "ca. 109 Mio."
+  },
+  "Usbekistan": {
+    "capital": "Taschkent",
+    "population": "ca. 37 Mio."
+  },
+  "Kolumbien": {
+    "capital": "Bogotá",
+    "population": "ca. 53 Mio."
+  },
+  "England": {
+    "capital": "London",
+    "population": "ca. 57 Mio."
+  },
+  "Kroatien": {
+    "capital": "Zagreb",
+    "population": "ca. 4 Mio."
+  },
+  "Ghana": {
+    "capital": "Accra",
+    "population": "ca. 35 Mio."
+  },
+  "Panama": {
+    "capital": "Panama-Stadt",
+    "population": "ca. 4,5 Mio."
+  }
+};
+
+const correctMsgs=[
+"Klasse! Das war %s.",
+"Richtig erkannt! Das ist %s.",
+"Super gemacht! Das war die Flagge von %s.",
+"Perfekt! Du kennst %s schon richtig gut.",
+"Großartig! Das ist tatsächlich %s.",
+"Stark! Die Flagge gehört zu %s.",
+"Wow! Das war %s.",
+"Prima! %s hast du sofort erkannt."
+];
+const wrongMsgs=[
+"Das war noch nicht die richtige Flagge.",
+"Versuche es noch einmal.",
+"Schau noch einmal genau hin.",
+"Fast richtig. Probier es noch einmal.",
+"Die gesuchte Flagge ist noch dabei.",
+"Du schaffst das. Suche weiter."
+];
+const questionMsgs=[
+"Kannst du die Flagge von %s finden?",
+"Wo ist die Flagge von %s?",
+"Zeig mir die Flagge von %s.",
+"Welche Flagge gehört zu %s?",
+"Findest du %s?",
+"Tippe auf die Flagge von %s."
+];
+const greetMsgs=["Hallo %s! Schön, dass du dabei bist – zeig mal, was du draufhast!","Hey %s! Bereit für die WM 2026? Los geht's, du schaffst das!","Hi %s! Heute lernen wir die Flaggen aller 48 WM-Teams – viel Spaß!","Willkommen, %s! Mach dich warm – die Flaggen warten auf dich!","Na %s, bist du bereit? Dann mal los!"];
+
+let mode="learn", active=allCountries, current=null, locked=false;
+let trainingMode="learn";
+let player="", sCorrect=0, sTotal=0;
+
+// ── Scores (localStorage) ────────────────────────────────
+const STORE="wm2026_scores";
+function loadScores(){try{return JSON.parse(localStorage.getItem(STORE)||"{}");}catch(e){return {};}}
+function saveScores(d){localStorage.setItem(STORE,JSON.stringify(d));}
+function commitSession(){
+  if(!player||sTotal===0)return;
+  const d=loadScores();
+  if(!d[player])d[player]={bestPct:0,bestCorrect:0,games:0,totalCorrect:0,totalQuestions:0};
+  const p=d[player];
+  const pct=Math.round(sCorrect/sTotal*100);
+  p.games++;
+  p.totalCorrect+=sCorrect;
+  p.totalQuestions+=sTotal;
+  if(pct>p.bestPct){p.bestPct=pct;p.bestCorrect=sCorrect;}
+  saveScores(d);
+}
+function clearScores(){
+  if(confirm("Wirklich alle Ergebnisse löschen?"))
+    {localStorage.removeItem(STORE);renderRanking();}
+}
+function renderRanking(){
+  const d=loadScores();
+  const el=document.getElementById("rankingList");
+  const entries=Object.entries(d);
+  if(!entries.length){el.innerHTML='<div class="rank-empty">Noch keine Ergebnisse – spielt los! ⚽</div>';return;}
+  entries.sort((a,b)=>b[1].bestPct-a[1].bestPct||b[1].totalCorrect-a[1].totalCorrect);
+  const medals=["🥇","🥈","🥉"];
+  el.innerHTML=entries.map(([name,p],i)=>{
+    const avg=p.games?Math.round(p.totalCorrect/p.games):0;
+    return `<div class="rank-row">
+      <span class="rank-medal">${medals[i]||"#"+(i+1)}</span>
+      <span class="rank-name">${name}</span>
+      <span class="rank-avg">Ø ${avg} richtig/Spiel</span>
+      <span class="rank-best">Rekord: ${p.bestPct}%</span>
+    </div>`;
+  }).join("");
+}
+function toggleRanking(){
+  const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
+  setBodyMode("ranking-active");
+  setActiveMode("ranking");
+  leaveScheduleView();
+  const grid=document.getElementById("grid"); if(grid) grid.style.display="none";
+  const p=document.getElementById("rankingPanel");
+  if(!p) return;
+  p.style.display="";
+  p.classList.add("open");
+  const q=document.getElementById("question");
+  if(q) q.textContent="Ranking";
+  renderRanking();
+}
+
+
+// ── Flag statistics (localStorage) ───────────────────────
+const FLAG_STATS_STORE="wm2026_flag_stats_v1";
+
+function loadFlagStats(){
+  try{
+    const d=JSON.parse(localStorage.getItem(FLAG_STATS_STORE)||"{}");
+    if(!d.players) d.players={};
+    return d;
+  }catch(e){
+    return {players:{}};
+  }
+}
+
+function saveFlagStats(d){
+  localStorage.setItem(FLAG_STATS_STORE,JSON.stringify(d));
+}
+
+function currentPlayerName(){
+  return player || "Unbekannt";
+}
+
+function ensureFlagStatsPlayer(d,name){
+  if(!d.players[name]) d.players[name]={learn:{},quiz:{}};
+  if(!d.players[name].learn) d.players[name].learn={};
+  if(!d.players[name].quiz) d.players[name].quiz={};
+  return d.players[name];
+}
+
+function ensureQuizFlagStats(playerStats,country){
+  if(!playerStats.quiz[country]) playerStats.quiz[country]={shown:0,correct:0,wrong:0};
+  if(typeof playerStats.quiz[country].shown!=="number") playerStats.quiz[country].shown=0;
+  if(typeof playerStats.quiz[country].correct!=="number") playerStats.quiz[country].correct=0;
+  if(typeof playerStats.quiz[country].wrong!=="number") playerStats.quiz[country].wrong=0;
+  return playerStats.quiz[country];
+}
+
+function recordLearningFlag(country){
+  const d=loadFlagStats();
+  const p=ensureFlagStatsPlayer(d,currentPlayerName());
+  p.learn[country]=(p.learn[country]||0)+1;
+  saveFlagStats(d);
+}
+
+function recordQuizShown(country){
+  const d=loadFlagStats();
+  const p=ensureFlagStatsPlayer(d,currentPlayerName());
+  const q=ensureQuizFlagStats(p,country);
+  q.shown++;
+  saveFlagStats(d);
+}
+
+function recordQuizAnswer(country,isCorrect){
+  const d=loadFlagStats();
+  const p=ensureFlagStatsPlayer(d,currentPlayerName());
+  const q=ensureQuizFlagStats(p,country);
+  if(isCorrect) q.correct++;
+  else q.wrong++;
+  saveFlagStats(d);
+}
+
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[ch]));
+}
+
+function renderStats(){
+  const d=loadFlagStats();
+  const el=document.getElementById("statsList");
+  if(!el) return;
+  const entries=Object.entries(d.players||{});
+  if(!entries.length){
+    el.innerHTML='<div class="stats-empty">Noch keine Statistik vorhanden. Im Lernmodus Flaggen antippen oder ein Quiz spielen.</div>';
+    return;
+  }
+
+  el.innerHTML=entries.map(([name,p])=>{
+    const learnRows=Object.entries(p.learn||{})
+      .sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0],"de"))
+      .map(([country,count])=>`<tr><td>${escapeHtml(country)}</td><td class="num">${count}</td></tr>`)
+      .join("");
+
+    const quizRows=Object.entries(p.quiz||{})
+      .sort((a,b)=>(b[1].shown-a[1].shown) || a[0].localeCompare(b[0],"de"))
+      .map(([country,q])=>{
+        const shown=q.shown||0, correct=q.correct||0, wrong=q.wrong||0;
+        const answered=correct+wrong;
+        const pct=answered?Math.round(correct/answered*100):0;
+        return `<tr>
+          <td>${escapeHtml(country)}</td>
+          <td class="num">${shown}</td>
+          <td class="num">${correct}</td>
+          <td class="num">${wrong}</td>
+          <td class="num">${answered?pct+"%":"–"}</td>
+        </tr>`;
+      })
+      .join("");
+
+    return `<div class="stats-player">
+      <h3>${escapeHtml(name)}</h3>
+      <div class="stats-grid">
+        <div class="stats-box">
+          <h4>Lernmodus: angesehene Flaggen</h4>
+          ${learnRows ? `<table class="stats-table"><thead><tr><th class="sortable" onclick="sortStatsTable(this,0,\'text\')">Flagge</th><th class="num sortable" onclick="sortStatsTable(this,1,\'number\')">angesehen</th></tr></thead><tbody>${learnRows}</tbody></table>` : '<div class="stats-empty">Noch keine Flaggen angesehen.</div>'}
+        </div>
+        <div class="stats-box">
+          <h4>Quiz: Fragen & Antworten</h4>
+          ${quizRows ? `<table class="stats-table"><thead><tr><th class="sortable" onclick="sortStatsTable(this,0,\'text\')">Flagge</th><th class="num sortable" onclick="sortStatsTable(this,1,\'number\')">Anzahl</th><th class="num sortable" onclick="sortStatsTable(this,2,\'number\')">richtig</th><th class="num sortable" onclick="sortStatsTable(this,3,\'number\')">falsch</th><th class="num sortable" onclick="sortStatsTable(this,4,\'number\')">Quote</th></tr></thead><tbody>${quizRows}</tbody></table>` : '<div class="stats-empty">Noch keine Quizfragen.</div>'}
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+
+function sortStatsTable(th,colIndex,type){
+  const table=th.closest("table");
+  if(!table || !table.tBodies.length) return;
+  const tbody=table.tBodies[0];
+  const current=th.dataset.dir==="asc" ? "desc" : "asc";
+
+  table.querySelectorAll("th.sortable").forEach(h=>{
+    h.dataset.dir="";
+    h.removeAttribute("aria-sort");
+  });
+  th.dataset.dir=current;
+  th.setAttribute("aria-sort", current==="asc" ? "ascending" : "descending");
+
+  const rows=Array.from(tbody.rows);
+  rows.sort((a,b)=>{
+    const av=(a.cells[colIndex]?.textContent || "").trim();
+    const bv=(b.cells[colIndex]?.textContent || "").trim();
+
+    if(type==="number"){
+      const an=av==="–" ? -1 : Number(av.replace("%","").replace(",","."));
+      const bn=bv==="–" ? -1 : Number(bv.replace("%","").replace(",","."));
+      return current==="asc" ? an-bn : bn-an;
+    }
+
+    return current==="asc"
+      ? av.localeCompare(bv,"de",{sensitivity:"base"})
+      : bv.localeCompare(av,"de",{sensitivity:"base"});
+  });
+  rows.forEach(row=>tbody.appendChild(row));
+}
+
+function toggleStats(){
+  setBodyMode("stats-active");
+  setActiveMode("stats");
+  leaveScheduleView();
+  const ranking=document.getElementById("rankingPanel");
+  if(ranking){ ranking.classList.remove("open"); ranking.style.display=""; }
+  const grid=document.getElementById("grid");
+  if(grid) grid.style.display="none";
+  const p=document.getElementById("statsPanel");
+  if(!p) return;
+  p.classList.add("open");
+  const q=document.getElementById("question");
+  if(q) q.textContent="Statistik";
+  renderStats();
+}
+
+function clearFlagStats(){
+  if(confirm("Wirklich die komplette Flaggen-Statistik löschen?")){
+    localStorage.removeItem(FLAG_STATS_STORE);
+    renderStats();
+  }
+}
+
+// ── Player ───────────────────────────────────────────────
+
+function buildGroupButtons(){
+  const row=document.getElementById("groupButtons");
+  if(!row) return;
+  const groupButtons = Object.keys(GROUPS).map(k=>
+    `<button class="btn mode-btn filter-btn" data-filter="group-${k}" onclick="applyTrainingFilter('group','${k}')">Gruppe ${k}</button>`
+  ).join("");
+  const continentButtons = Object.keys(CONTINENTS).map(k=>
+    `<button class="btn mode-btn filter-btn" data-filter="continent-${k}" onclick="applyTrainingFilter('continent','${k}')">${k}</button>`
+  ).join("");
+  row.innerHTML = `
+    <span class="filter-label">Alle Teams</span>
+    <button class="btn mode-btn filter-btn active-mode" data-filter="all" onclick="applyTrainingFilter('all','all')">Alle 48</button>
+    <span class="filter-label">Gruppen</span>
+    ${groupButtons}
+    <span class="filter-label">Kontinente</span>
+    ${continentButtons}
+  `;
+}
+
+function setActiveFilter(filterId){
+  document.querySelectorAll(".filter-btn").forEach(btn=>{
+    btn.classList.toggle("active-mode", btn.dataset.filter===filterId);
+  });
+}
+
+function applyTrainingFilter(type,value){
+  let list=allCountries;
+  let filterId="all";
+
+  if(type==="group"){
+    list=GROUPS[value] || allCountries;
+    filterId="group-"+value;
+  }else if(type==="continent"){
+    list=continentTeams(value);
+    filterId="continent-"+value;
+  }
+
+  if(trainingMode==="quiz"){
+    startQuiz(list, "quiz-all", false);
+  }else{
+    startLearning(list, "learn-all", false);
+  }
+  setActiveFilter(filterId);
+}
+
+function selectPlayer(name){
+  if(typeof buildGroupButtons==="function") buildGroupButtons();
+  player=name;
+  sCorrect=0;sTotal=0;
+  document.getElementById("playerOverlay").style.display="none";
+  document.getElementById("pbarName").textContent=name;
+  updateScore();
+  greetPlayer();
+}
+function selectCustomPlayer(){
+  const v=document.getElementById("customName").value.trim();
+  if(v)selectPlayer(v);
+}
+function changePlayer(){
+  commitSession();
+  sCorrect=0;sTotal=0;
+  document.getElementById("playerOverlay").style.display="flex";
+}
+function updateScore(){
+  document.getElementById("pbarScore").textContent=sTotal>0?`${sCorrect} / ${sTotal} richtig`:"";
+}
+
+// ── TTS: beste verfügbare iPad-/Safari-Stimme ──────────────────────
+let _bestVoice = null;
+let _audioUnlocked = false;
+let _speakTimer = null;
+let _speakId = 0;
+let _lastText = "";
+let _lastTextAt = 0;
+
+const speechNameFix = {
+  "USA":"Vereinigte Staaten",
+  "DR Kongo":"D. R. Kongo",
+  "Curaçao":"Kurasau",
+  "Bosnien-Herzegowina":"Bosnien und Herzegowina",
+  "Elfenbeinküste":"Elfenbein Küste",
+  "Saudi-Arabien":"Saudi Arabien",
+  "Südkorea":"Süd Korea",
+  "Neuseeland":"Neu Seeland",
+  "Kap Verde":"Kap Verde",
+  "Usbekistan":"Usbekistan"
+};
+
+function naturalText(text){
+  let t = String(text || "")
+    .replace(/[😀-🙏🌀-🗿☀-➿]/gu,"")
+    .replace(/\s+/g," ")
+    .trim();
+
+  Object.entries(speechNameFix).forEach(([from,to])=>{
+    t = t.replaceAll(from, to);
+  });
+
+  return t
+    .replace(/^Super!?\s*$/i, "Super gemacht!")
+    .replace(/!+/g, "!")
+    .replace(/\?+/g, "?");
+}
+
+function updateVoiceStatus(msg){
+  const el=document.getElementById("voiceStatus");
+  if(el) el.innerHTML=msg;
+}
+
+function voiceScore(v){
+  const name=(v.name || "").toLowerCase();
+  const lang=(v.lang || "").toLowerCase();
+  const uri=(v.voiceURI || "").toLowerCase();
+  const text=name+" "+uri;
+  let s=0;
+
+  // Sprache ist am wichtigsten.
+  if(lang==="de-de") s+=1000;
+  else if(lang.startsWith("de-")) s+=850;
+  else if(lang==="de") s+=750;
+  else s-=1000;
+
+  // Standardwunsch: Google Deutsch, wenn der Browser diese Stimme anbietet.
+  if(/google\s+deutsch/.test(text)) s+=2000;
+  if(/google.*deutsch|deutsch.*google/.test(text)) s+=1800;
+  if(/google/.test(text) && /de[-_]?de|deutsch|german/.test(text)) s+=1600;
+
+  // Danach hochwertige deutsche Stimmen bevorzugen.
+  if(/premium|enhanced|erweitert|natural|neural|eloquence|high quality/.test(text)) s+=220;
+
+  // Apple/iPadOS-Stimmen als Fallback, wenn Google Deutsch nicht verfügbar ist.
+  if(/apple|siri|com\.apple/.test(text)) s+=160;
+
+  // Typische deutsche Stimmen.
+  if(/anna/.test(text)) s+=180;
+  if(/siri/.test(text)) s+=170;
+  if(/helena/.test(text)) s+=145;
+  if(/petra/.test(text)) s+=120;
+  if(/katja/.test(text)) s+=105;
+  if(/yannick|markus|martin/.test(text)) s+=80;
+
+  if(v.localService) s+=50;
+  if(v.default) s+=30;
+
+  // Kompakte/Basic-Stimmen eher vermeiden.
+  if(/compact|kompakt|basic|legacy/.test(text)) s-=180;
+
+  return s;
+}
+
+function allVoicesSorted(){
+  if(!("speechSynthesis" in window)) return [];
+  return (speechSynthesis.getVoices() || [])
+    .slice()
+    .sort((a,b)=>voiceScore(b)-voiceScore(a));
+}
+
+
+let _manualVoiceName = localStorage.getItem("wm_voice_choice") || "";
+
+function preferGoogleDeutschIfAvailable(german){
+  if(_manualVoiceName) return;
+  const googleDeutsch = german.find(v=>/google\s+deutsch/i.test(v.name || v.voiceURI || ""))
+    || german.find(v=>/google/i.test((v.name||"")+" "+(v.voiceURI||"")) && /de[-_]?de|deutsch|german/i.test((v.lang||"")+" "+(v.name||"")+" "+(v.voiceURI||"")));
+  if(googleDeutsch){
+    _manualVoiceName = googleDeutsch.name;
+    localStorage.setItem("wm_voice_choice", _manualVoiceName);
+  }
+}
+
+function populateVoiceSelector(){
+  const sel=document.getElementById("voiceSelect");
+  if(!sel || !("speechSynthesis" in window)) return;
+
+  const german=(speechSynthesis.getVoices()||[])
+    .filter(v=>(v.lang||"").toLowerCase().startsWith("de"))
+    .sort((a,b)=>voiceScore(b)-voiceScore(a));
+  preferGoogleDeutschIfAvailable(german);
+
+  sel.innerHTML="";
+
+  german.forEach((v,i)=>{
+    const o=document.createElement("option");
+    o.value=v.name;
+    o.textContent=(i===0?"⭐ ":"")+v.name+" ("+v.lang+")";
+    sel.appendChild(o);
+  });
+
+  if(_manualVoiceName && german.some(v=>v.name===_manualVoiceName)){
+    sel.value=_manualVoiceName;
+  }
+
+  sel.onchange=()=>{
+    _manualVoiceName=sel.value;
+    localStorage.setItem("wm_voice_choice",_manualVoiceName);
+    chooseBestVoice();
+    testVoice();
+  };
+}
+
+function chooseBestVoice(){
+  if(!("speechSynthesis" in window)) return null;
+
+  const voices=allVoicesSorted();
+  const german=voices.filter(v=>(v.lang || "").toLowerCase().startsWith("de"));
+  preferGoogleDeutschIfAvailable(german);
+
+  if(!german.length){
+    _bestVoice=null;
+    updateVoiceStatus("🔊 Safari meldet keine deutsche Stimme – iPad-Systemstimme wird verwendet.");
+    return null;
+  }
+
+  const manual=german.find(v=>v.name===_manualVoiceName);
+  _bestVoice=manual || german[0];
+
+  const label=_bestVoice.name || "iPad-Systemstimme";
+  const lang=_bestVoice.lang || "de";
+  updateVoiceStatus(`🔊 Standardstimme: <strong>${label}</strong> (${lang})`);
+
+  return _bestVoice;
+}
+
+function initVoices(){ populateVoiceSelector();
+  updateVoiceStatus("🔊 Suche Standardstimme Google Deutsch …");
+  chooseBestVoice();
+
+  // Safari/iPad lädt Stimmen oft verzögert. Mehrere Durchläufe erhöhen die Trefferquote.
+  [150,400,900,1600,2800,4500].forEach(ms=>{
+    setTimeout(chooseBestVoice,ms);
+  });
+}
+
+function unlockAudio(){
+  if(_audioUnlocked) return;
+  _audioUnlocked=true;
+
+  try{
+    const AudioCtx=window.AudioContext || window.webkitAudioContext;
+    if(AudioCtx){
+      const ctx=new AudioCtx();
+      if(ctx.state==="suspended") ctx.resume();
+    }
+  }catch(e){}
+
+  chooseBestVoice();
+}
+
+function waitForSpeechIdle(maxWait=450){
+  return new Promise(resolve=>{
+    const start=Date.now();
+    const tick=()=>{
+      if(!("speechSynthesis" in window)) return resolve();
+      if(!speechSynthesis.speaking && !speechSynthesis.pending) return resolve();
+      if(Date.now()-start>maxWait) return resolve();
+      setTimeout(tick,40);
+    };
+    tick();
+  });
+}
+
+function waitUntilSpeechFinished(maxWait=5000){
+  return new Promise(resolve=>{
+    const start=Date.now();
+    const tick=()=>{
+      if(!("speechSynthesis" in window)) return resolve();
+      if(!speechSynthesis.speaking && !speechSynthesis.pending) return resolve();
+      if(Date.now()-start>maxWait) return resolve();
+      setTimeout(tick,100);
+    };
+    tick();
+  });
+}
+
+function stopSpeech(){
+  _speakId++;
+  if(_speakTimer){
+    clearTimeout(_speakTimer);
+    _speakTimer=null;
+  }
+  if("speechSynthesis" in window){
+    try{ speechSynthesis.cancel(); }catch(e){}
+  }
+}
+
+async function speak(text, opts={}){
+  if(!("speechSynthesis" in window)) return;
+
+  const clean=naturalText(text);
+  if(!clean) return;
+
+  unlockAudio();
+
+  const now=Date.now();
+  const allowRepeat=opts.force===true;
+  if(!allowRepeat && clean===_lastText && now-_lastTextAt<1200) return;
+
+  _lastText=clean;
+  _lastTextAt=now;
+
+  stopSpeech();
+  const myId=_speakId;
+
+  await waitForSpeechIdle();
+  if(myId!==_speakId) return;
+
+  _speakTimer=setTimeout(()=>{
+    if(myId!==_speakId) return;
+
+    const u=new SpeechSynthesisUtterance(clean);
+    u.lang="de-DE";
+
+    const voice=chooseBestVoice();
+
+    // Wichtig: Nur eine deutsche Stimme fest setzen.
+    // Wenn Safari Premium nicht meldet, darf keine falsche Stimme erzwungen werden.
+    if(voice && (voice.lang || "").toLowerCase().startsWith("de")){
+      u.voice=voice;
+    }
+
+    // Etwas natürlicher auf iPad: nicht zu langsam, leicht tiefer.
+    u.rate=opts.rate || 0.90;
+    u.pitch=opts.pitch || 0.96;
+    u.volume=1.0;
+
+    u.onend=()=>{};
+    u.onerror=()=>{};
+
+    try{ speechSynthesis.speak(u); }catch(e){}
+  }, opts.delay || 130);
+}
+
+function speakCountry(countryName){
+  speak(countryName,{rate:0.88,pitch:0.96,force:true});
+}
+
+function testVoice(){
+  speak("Hallo! Ich bin bereit für das WM Flaggen Quiz. Welche Flagge gehört zu Deutschland?",{force:true});
+}
+
+if("speechSynthesis" in window){
+  speechSynthesis.onvoiceschanged=initVoices;
+}
+document.addEventListener("DOMContentLoaded",initVoices);
+document.addEventListener("touchstart",unlockAudio,{once:true});
+document.addEventListener("click",unlockAudio,{once:true});
+
+
+function closePanels(){
+  const ranking=document.getElementById("rankingPanel");
+  if(ranking){ ranking.classList.remove("open"); ranking.style.display=""; }
+  const stats=document.getElementById("statsPanel");
+  if(stats) stats.classList.remove("open");
+}
+
+// ── UI helpers ───────────────────────────────────────────
+function setFeedback(text,isWrong){
+  const el=document.getElementById("feedback");
+  el.textContent=text;el.className=isWrong?"wrong":"";
+}
+function greetPlayer(){
+  const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
+  setBodyMode("greeting-active");
+  setActiveMode("greet");
+  leaveScheduleView();
+  const ranking=document.getElementById("rankingPanel") || document.getElementById("ranking");
+  if(ranking){ ranking.classList.remove("open"); ranking.style.display=""; }
+  const grid=document.getElementById("grid");
+  if(grid) grid.style.display="none";
+  const repeat=document.getElementById("repeat-btn");
+  if(repeat) repeat.style.display="none";
+
+  const name=player || "";
+  const scores=loadScores();
+  const isReturning=!!(name && scores && scores[name] && scores[name].games>0);
+
+  const firstTimeMsgs=[
+    "Hallo %s! Schön, dass du dabei bist. Such dir einen Spielmodus aus.",
+    "Willkommen %s! Heute lernst du die Flaggen der WM 2026.",
+    "Hi %s! Bereit für dein erstes Flaggen-Abenteuer?",
+    "Schön, dass du da bist, %s! Starte mit Lernmodus, Quiz oder Spielplan."
+  ];
+  const returningMsgs=[
+    "Hallo %s! Schön, dass du wieder da bist. Such dir einen Spielmodus aus.",
+    "Willkommen zurück, %s! Machen wir mit den WM-Flaggen weiter.",
+    "Hi %s! Bereit für die nächste Runde?",
+    "Schön dich wiederzusehen, %s! Heute holen wir neue Punkte."
+  ];
+  const fallbackMsgs=[
+    "Hallo! Such dir einen Spielmodus aus.",
+    "Willkommen beim Flaggen-Lernspiel zur WM 2026!",
+    "Bereit für Flaggen, Quiz und Spielplan?"
+  ];
+
+  const pool=name ? (isReturning?returningMsgs:firstTimeMsgs) : fallbackMsgs;
+  const template=pool[Math.floor(Math.random()*pool.length)];
+  const text=name ? template.replace("%s",name) : template;
+  const q=document.getElementById("question");
+  if(q) q.textContent=text;
+  setFeedback("");
+  speak(text,{force:true});
+}
+function repeatQuestion(){
+  if(mode==="quiz"&&current){
+    const q=document.getElementById("question").textContent || ("Welche Flagge gehört zu "+current[0]+"?");
+    speak(q,{force:true});
+  }
+}
+
+
+
+
+
+const TEAM_INFO = {
+  "Mexiko":["Nordamerika","Santiago Giménez"], "Südafrika":["Afrika","Percy Tau"], "Südkorea":["Asien","Son Heung-min"], "Tschechien":["Europa","Patrik Schick"],
+  "Kanada":["Nordamerika","Alphonso Davies"], "Bosnien-Herzegowina":["Europa","Edin Džeko"], "Katar":["Asien","Akram Afif"], "Schweiz":["Europa","Granit Xhaka"],
+  "Brasilien":["Südamerika","Vinícius Júnior"], "Marokko":["Afrika","Achraf Hakimi"], "Haiti":["Nordamerika","Duckens Nazon"], "Schottland":["Europa","Scott McTominay"],
+  "USA":["Nordamerika","Christian Pulisic"], "Paraguay":["Südamerika","Miguel Almirón"], "Australien":["Asien","Mathew Ryan"], "Türkei":["Europa","Arda Güler"],
+  "Deutschland":["Europa","Jamal Musiala"], "Curaçao":["Nordamerika","Leandro Bacuna"], "Elfenbeinküste":["Afrika","Simon Adingra"], "Ecuador":["Südamerika","Moisés Caicedo"],
+  "Niederlande":["Europa","Virgil van Dijk"], "Japan":["Asien","Kaoru Mitoma"], "Schweden":["Europa","Alexander Isak"], "Tunesien":["Afrika","Ellyes Skhiri"],
+  "Belgien":["Europa","Kevin De Bruyne"], "Ägypten":["Afrika","Mohamed Salah"], "Iran":["Asien","Mehdi Taremi"], "Neuseeland":["Ozeanien","Chris Wood"],
+  "Spanien":["Europa","Lamine Yamal"], "Kap Verde":["Afrika","Ryan Mendes"], "Saudi-Arabien":["Asien","Salem Al-Dawsari"], "Uruguay":["Südamerika","Federico Valverde"],
+  "Frankreich":["Europa","Kylian Mbappé"], "Senegal":["Afrika","Sadio Mané"], "Irak":["Asien","Aymen Hussein"], "Norwegen":["Europa","Erling Haaland"],
+  "Argentinien":["Südamerika","Lionel Messi"], "Algerien":["Afrika","Riyad Mahrez"], "Österreich":["Europa","David Alaba"], "Jordanien":["Asien","Mousa Al-Taamari"],
+  "Portugal":["Europa","Cristiano Ronaldo"], "DR Kongo":["Afrika","Yoane Wissa"], "Usbekistan":["Asien","Eldor Shomurodov"], "Kolumbien":["Südamerika","Luis Díaz"],
+  "England":["Europa","Harry Kane"], "Kroatien":["Europa","Luka Modrić"], "Ghana":["Afrika","Mohammed Kudus"], "Panama":["Nordamerika","Michael Murillo"]
+};
+
+const KIT_CODES = {
+  "Mexiko":"mex", "Südafrika":"rsa", "Südkorea":"kor", "Tschechien":"cze",
+  "Kanada":"can", "Bosnien-Herzegowina":"bih", "Katar":"qat", "Schweiz":"sui",
+  "Brasilien":"bra", "Marokko":"mar", "Haiti":"hai", "Schottland":"sco",
+  "USA":"usa", "Paraguay":"par", "Australien":"aus", "Türkei":"tur",
+  "Deutschland":"ger", "Curaçao":"cuw", "Elfenbeinküste":"civ", "Ecuador":"ecu",
+  "Niederlande":"ned", "Japan":"jpn", "Schweden":"swe", "Tunesien":"tun",
+  "Belgien":"bel", "Ägypten":"egy", "Iran":"irn", "Neuseeland":"nzl",
+  "Spanien":"esp", "Kap Verde":"cpv", "Saudi-Arabien":"ksa", "Uruguay":"uru",
+  "Frankreich":"fra", "Senegal":"sen", "Irak":"irq", "Norwegen":"nor",
+  "Argentinien":"arg", "Algerien":"alg", "Österreich":"aut", "Jordanien":"jor",
+  "Portugal":"por", "DR Kongo":"cod", "Usbekistan":"uzb", "Kolumbien":"col",
+  "England":"eng", "Kroatien":"cro", "Ghana":"gha", "Panama":"pan"
+};
+
+function commonsFileUrl(fileName){
+  return "https://commons.wikimedia.org/wiki/Special:Redirect/file/"+encodeURIComponent(fileName);
+}
+
+function kitPartFile(country, kind, part){
+  const code=KIT_CODES[country];
+  const suffix=kind==="home" ? "h" : "a";
+  if(!code) return "";
+  return `Kit ${part} ${code}26${suffix}.png`;
+}
+
+function makeCommonsKit(country, kind){
+  const wrap=document.createElement("div");
+  wrap.className="commons-kit-wrap";
+  wrap.dataset.country=country;
+  wrap.dataset.kind=kind;
+
+  const parts=[
+    ["body","commons-shirt","Trikot"],
+    ["shorts","commons-shorts","Hose"],
+    ["socks","commons-socks","Stutzen"]
+  ];
+
+  let failed=false;
+
+  function showMissing(){
+    if(failed) return;
+    failed=true;
+    wrap.style.display="none";
+    const note=wrap.parentElement ? wrap.parentElement.querySelector(".missing-kit-note") : null;
+    if(note) note.style.display="block";
+  }
+
+  parts.forEach(([part,cls,label])=>{
+    const img=document.createElement("img");
+    img.className=cls;
+    img.alt=country+" "+(kind==="home"?"Heim":"Auswärts")+" "+label;
+    img.src=commonsFileUrl(kitPartFile(country,kind,part));
+    img.onerror=showMissing;
+    wrap.appendChild(img);
+  });
+
+  return wrap;
+}
+
+// SVG-Fallback bleibt erhalten, falls Wikimedia für ein Team/Kit eine Datei nicht liefert.
+function patternSvg(type, accent){
+  if(type==="vertical") return `<path d="M178 82 H230 V455 H178 Z M282 82 H334 V455 H282 Z" fill="${accent}" opacity=".88"/>`;
+  if(type==="pinstripe") return Array.from({length:9},(_,i)=>`<path d="M${150+i*26} 95 V455" stroke="${accent}" stroke-width="5" opacity=".45"/>`).join("");
+  if(type==="stripe") return `<path d="M160 160 H352" stroke="${accent}" stroke-width="20" opacity=".9"/><path d="M170 240 H342" stroke="${accent}" stroke-width="14" opacity=".55"/>`;
+  if(type==="diagonal") return `<path d="M120 420 L372 70 L420 110 L170 455 Z" fill="${accent}" opacity=".85"/>`;
+  if(type==="sash") return `<path d="M105 90 L165 60 L405 455 H335 Z" fill="${accent}" opacity=".88"/>`;
+  if(type==="cross") return `<path d="M235 90 H277 V455 H235 Z M158 220 H354 V262 H158 Z" fill="${accent}" opacity=".9"/>`;
+  if(type==="checker"){let s="";for(let y=92;y<452;y+=44){for(let x=162;x<350;x+=44){if(((x+y)/44)%2<1)s+=`<rect x="${x}" y="${y}" width="44" height="44" fill="${accent}" opacity=".9"/>`;}}return s;}
+  return `<path d="M160 166 H352" stroke="${accent}" stroke-width="18" opacity=".75"/>`;
+}
+
+function fillKitBox(boxId,imgId,country,kind){
+  const box=document.getElementById(boxId);
+  if(!box) return;
+
+  const heading=box.querySelector("h3");
+  box.innerHTML="";
+  if(heading) box.appendChild(heading);
+
+  const commons=makeCommonsKit(country,kind);
+
+  const missing=document.createElement("div");
+  missing.className="missing-kit-note";
+  missing.textContent="Für dieses Team ist derzeit kein Wikimedia-Kit verfügbar.";
+
+  box.appendChild(commons);
+  box.appendChild(missing);
+}
+
+function openKitModal(country,event){
+  if(event) event.stopPropagation();
+  const name=country[0];
+  const modal=document.getElementById("kitModal");
+  document.getElementById("kitModalTitle").textContent=name;
+  const info=TEAM_INFO[name] || ["",""];
+  const infoEl=document.getElementById("kitTeamInfo");
+  if(infoEl) infoEl.innerHTML=`<strong>Kontinent:</strong> ${info[0]}`;
+  fillKitBox("kitHomeBox","kitHomeImg",name,"home");
+  fillKitBox("kitAwayBox","kitAwayImg",name,"away");
+  const code=KIT_CODES[name] || "";
+  const note=document.getElementById("kitNote");
+  note.innerHTML=`Bildquelle in der App: Wikimedia Commons. Für echte Trikotfotos gibt es einen Link zu Football Kit Archive (FKA). Vergleichsquelle: <a class="kit-source-link" href="https://www.footballkitarchive.com/world-cup-2026-kits/" target="_blank" rel="noopener">Football Kit Archive</a>. Hinweis: direkte Football-Kit-Archive-Bild-Hotlinks werden von fremden HTML-Dateien häufig blockiert.`;
+  modal.classList.add("open");
+}
+
+function closeKitModal(event){
+  if(event && event.target && event.target.id!=="kitModal") return;
+  const modal=document.getElementById("kitModal");
+  if(modal) modal.classList.remove("open");
+}
+
+
+function flagSvgUrl(code){
+  if(code==="gb-eng") return "https://flagcdn.com/gb-eng.svg";
+  if(code==="gb-sct") return "https://flagcdn.com/gb-sct.svg";
+  return "https://flagcdn.com/"+code+".svg";
+}
+function flagLargePngUrl(code){
+  if(code==="gb-eng") return "https://flagcdn.com/w1280/gb-eng.png";
+  if(code==="gb-sct") return "https://flagcdn.com/w1280/gb-sct.png";
+  return "https://flagcdn.com/w1280/"+code+".png";
+}
+
+
+function getCountryGroup(countryName){
+  const match = MATCHES.find(m=>m.teams.includes(countryName));
+  if(!match) return null;
+  return {group:match.group};
+}
+
+function getCountryMatches(countryName){
+  return MATCHES
+    .filter(m=>m.teams.includes(countryName))
+    .map(m=>({
+      opponent: m.teams.find(t=>t!==countryName),
+      text: `${m.date}, ${m.time} Uhr: ${matchDisplayLine(m)}`,
+      venue: m.venue
+    }));
+}
+
+function renderCountryInfo(countryName){
+  const info=COUNTRY_INFO[countryName] || {capital:"–",population:"–"};
+  const groupData=getCountryGroup(countryName);
+  const groupLabel=groupData ? "Gruppe "+groupData.group : "Gruppe –";
+  const matches=getCountryMatches(countryName);
+  const matchHtml=matches.length
+    ? `<ul class="match-list">${matches.map(m=>`<li>${m.text}<br><small>${m.venue}</small></li>`).join("")}</ul>`
+    : "Noch keine Spiele hinterlegt.";
+  return `
+    <div class="country-info-row"><strong>Hauptstadt:</strong> ${info.capital}</div>
+    <div class="country-info-row"><strong>Einwohnerzahl:</strong> ${info.population}</div>
+    <div class="country-info-row"><strong>WM 2026:</strong> ${groupLabel}</div>
+    <div class="country-info-row"><strong>Gruppenspiele (deutsche Zeit):</strong>${matchHtml}</div>
+  `;
+}
+
+
+function openFlagModal(country,event){
+  if(event) event.stopPropagation();
+  const modal=document.getElementById("flagModal");
+  const title=document.getElementById("flagModalTitle");
+  const img=document.getElementById("flagModalImg");
+  title.textContent=country[0];
+  const infoBox=document.getElementById("flagCountryInfo");
+  if(infoBox) infoBox.innerHTML=renderCountryInfo(country[0]);
+  img.alt="Große Flagge von "+country[0];
+
+  // Für die Großansicht SVG verwenden: bleibt auf Retina-iPads gestochen scharf.
+  img.onerror=()=>{
+    // Falls SVG ausnahmsweise nicht geladen wird, auf hochauflösendes PNG zurückfallen.
+    img.onerror=()=>{
+      img.style.opacity=0.25;
+    };
+    img.src=flagLargePngUrl(country[1]);
+  };
+
+  img.style.opacity=1;
+  img.src=flagSvgUrl(country[1]);
+
+  modal.classList.add("open");
+}
+function closeFlagModal(event){
+  if(event && event.target && event.target.id!=="flagModal") return;
+  const modal=document.getElementById("flagModal");
+  if(modal) modal.classList.remove("open");
+}
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ closeFlagModal(); closeKitModal(); }
+});
+
+function render(){
+  const g=document.getElementById("grid");
+  g.innerHTML="";
+
+  active.forEach(c=>{
+    const d=document.createElement("div");
+    d.className="flag-card";
+
+    const wrap=document.createElement("div");
+    wrap.className="flag-img-wrap";
+
+    const img=document.createElement("img");
+    img.src=(typeof flagUrl==="function") ? flagUrl(c[1]) : "https://flagcdn.com/w320/"+c[1]+".png";
+    img.loading="lazy";
+    img.alt="Flagge "+c[0];
+    img.onerror=()=>{
+      if(typeof onFlagError==="function"){
+        onFlagError(img,c[0]);
+      }else{
+        img.style.opacity=0.2;
+      }
+    };
+    wrap.appendChild(img);
+
+    if(typeof onFlagError==="function"){
+      const fallback=document.createElement("div");
+      fallback.className="flag-fallback";
+      wrap.appendChild(fallback);
+    }
+
+    const actions=document.createElement("div");
+    actions.className="card-actions";
+
+    const zoom=document.createElement("button");
+    zoom.className="zoom-btn";
+    zoom.type="button";
+    zoom.title="Flagge groß anzeigen";
+    zoom.textContent="🔍";
+    zoom.addEventListener("click",event=>{
+      event.stopPropagation();
+      openFlagModal(c,event);
+    });
+
+    const kit=document.createElement("button");
+    kit.className="kit-btn";
+    kit.type="button";
+    kit.title="Trikots anzeigen";
+    kit.textContent="👕";
+    kit.addEventListener("click",event=>{
+      event.stopPropagation();
+      openKitModal(c,event);
+    });
+
+    actions.appendChild(zoom);
+    actions.appendChild(kit);
+
+    const label=document.createElement("div");
+    label.className="flag-name"+(mode==="quiz"?" hidden":"");
+    label.textContent=c[0];
+
+    d.appendChild(wrap);
+    d.appendChild(actions);
+    d.appendChild(label);
+
+    d.onclick=()=>click(c,d);
+    g.appendChild(d);
+  });
+}
+function clearHL(){document.querySelectorAll(".flag-card").forEach(e=>e.classList.remove("correct","wrong"));}
+
+
+
+function toggleSettings(event){
+  if(event) event.stopPropagation();
+  const panel=document.getElementById("settingsPanel");
+  if(panel) panel.classList.toggle("open");
+}
+document.addEventListener("click",event=>{
+  const panel=document.getElementById("settingsPanel");
+  if(panel && !event.target.closest(".settings-wrap")) panel.classList.remove("open");
+});
+
+
+function setBodyMode(modeName){
+  document.body.classList.remove("training-active","greeting-active","schedule-active","ranking-active","stats-active");
+  if(modeName) document.body.classList.add(modeName);
+}
+
+function setActiveMode(modeId){
+  document.querySelectorAll(".mode-btn:not(.filter-btn)").forEach(btn=>{
+    btn.classList.toggle("active-mode", btn.dataset.mode===modeId);
+  });
+}
+
+function flagUrl(code){
+  return "https://flagcdn.com/w320/"+code+".png";
+}
+
+
+
+
+const FIFA_CODES = {
+  "Mexiko": "MEX",
+  "Südafrika": "RSA",
+  "Südkorea": "KOR",
+  "Tschechien": "CZE",
+  "Kanada": "CAN",
+  "Bosnien-Herzegowina": "BIH",
+  "Katar": "QAT",
+  "Schweiz": "SUI",
+  "Brasilien": "BRA",
+  "Marokko": "MAR",
+  "Haiti": "HAI",
+  "Schottland": "SCO",
+  "USA": "USA",
+  "Paraguay": "PAR",
+  "Australien": "AUS",
+  "Türkei": "TUR",
+  "Deutschland": "GER",
+  "Curaçao": "CUW",
+  "Elfenbeinküste": "CIV",
+  "Ecuador": "ECU",
+  "Niederlande": "NED",
+  "Japan": "JPN",
+  "Schweden": "SWE",
+  "Tunesien": "TUN",
+  "Belgien": "BEL",
+  "Ägypten": "EGY",
+  "Iran": "IRN",
+  "Neuseeland": "NZL",
+  "Spanien": "ESP",
+  "Kap Verde": "CPV",
+  "Saudi-Arabien": "KSA",
+  "Uruguay": "URU",
+  "Frankreich": "FRA",
+  "Senegal": "SEN",
+  "Irak": "IRQ",
+  "Norwegen": "NOR",
+  "Argentinien": "ARG",
+  "Algerien": "ALG",
+  "Österreich": "AUT",
+  "Jordanien": "JOR",
+  "Portugal": "POR",
+  "DR Kongo": "COD",
+  "Usbekistan": "UZB",
+  "Kolumbien": "COL",
+  "England": "ENG",
+  "Kroatien": "CRO",
+  "Ghana": "GHA",
+  "Panama": "PAN"
+};
+
+function fifaCode(name){
+  return FIFA_CODES[name] || "";
+}
+
+function scheduleShortName(name){
+  const map={
+    "Bosnien-Herzegowina":"Bosnien-H.",
+    "Elfenbeinküste":"Elfenbk.",
+    "Saudi-Arabien":"Saudi-Ar.",
+    "Südafrika":"Südafr.",
+    "Südkorea":"Südkorea",
+    "Neuseeland":"Neuseel.",
+    "Niederlande":"Niederl.",
+    "Deutschland":"Deutschl.",
+    "Frankreich":"Frankr.",
+    "Schottland":"Schottl.",
+    "Tschechien":"Tschech.",
+    "Österreich":"Österr.",
+    "Argentinien":"Argent.",
+    "Kolumbien":"Kolumb.",
+    "Paraguay":"Parag.",
+    "Australien":"Austr.",
+    "Usbekistan":"Usbek.",
+    "Kap Verde":"Kap V.",
+    "DR Kongo":"DR Kongo",
+    "Curaçao":"Curaçao"
+  };
+  if(map[name]) return map[name];
+  return String(name)
+    .replace("1. Gruppe","1. Gr.")
+    .replace("2. Gruppe","2. Gr.")
+    .replace("3. Gruppe","3. Gr.")
+    .replace("Sieger Spiel","S.")
+    .replace("Verlierer Spiel","V.");
+}
+
+function scheduleTeamInline(countryName){
+  const code=fifaCode(countryName);
+  const label=code || (typeof scheduleShortName==="function" ? scheduleShortName(countryName) : countryName);
+  const flag=scheduleFlagUrl(countryName);
+  if(flag){
+    return `<span class="schedule-team-inline" title="${countryName}"><img class="schedule-flag" src="${flag}" alt="${countryName}"><span class="schedule-team-name">${label}</span></span>`;
+  }
+  return `<span class="schedule-team-inline" title="${countryName}"><span class="schedule-flag-placeholder">—</span><span class="schedule-team-name">${label}</span></span>`;
+}
+
+function scheduleScoreHtml(m){
+  const r=matchResult(m);
+  return r ? `<span class="schedule-score">${r.score}</span>` : `<span class="schedule-score empty">vs</span>`;
+}
+
+function scheduleFlagUrl(countryName){
+  const found=allCountries.find(c=>c[0]===countryName);
+  if(!found) return "";
+  return (typeof flagUrl==="function") ? flagUrl(found[1]) : "https://flagcdn.com/w320/"+found[1]+".png";
+}
+
+function parseGermanScheduleDate(dateText,timeText){
+  const m=String(dateText).match(/(\d{2})\.(\d{2})\.2026/);
+  if(!m) return new Date(2099,0,1);
+  const hasTime=/^\d{2}:\d{2}$/.test(String(timeText));
+  const h=hasTime ? Number(String(timeText).slice(0,2)) : 23;
+  const min=hasTime ? Number(String(timeText).slice(3,5)) : 59;
+  return new Date(2026, Number(m[2])-1, Number(m[1]), h, min);
+}
+
+function formatTodayKey(d){
+  return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.2026`;
+}
+
+function allScheduleMatches(){
+  const groupMatches = (typeof MATCHES!=="undefined" ? MATCHES : []).map(m=>({...m,stage:"Gr."}));
+  const knockoutMatches = (typeof KNOCKOUT_MATCHES!=="undefined" ? KNOCKOUT_MATCHES : []);
+  return [...groupMatches, ...knockoutMatches]
+    .map((m,i)=>({
+      ...m,
+      idx:i+1,
+      dateObj:parseGermanScheduleDate(m.date,m.time),
+      dateKey:(String(m.date).match(/(\d{2}\.\d{2}\.2026)/)||["",""])[1]
+    }))
+    .sort((a,b)=>a.dateObj-b.dateObj);
+}
+
+function startSchedule(){
+  closePanels();
+  const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
+  setBodyMode("");
+  setActiveMode("schedule");
+  setBodyMode("schedule-active");
+  mode="schedule";
+  locked=false;
+  if(typeof stopSpeech==="function") stopSpeech();
+
+  document.getElementById("repeat-btn").style.display="none";
+  document.getElementById("question").textContent="📅 Spielplan der WM 2026";
+  setFeedback("");
+
+  const grid=document.getElementById("grid");
+  if(grid) grid.style.display="none";
+
+  const schedule=document.getElementById("scheduleView");
+  schedule.classList.add("open");
+  schedule.innerHTML=renderScheduleHtml();
+
+  setTimeout(scrollScheduleToToday,120);
+}
+
+function leaveScheduleView(){
+  document.body.classList.remove("schedule-active");
+  const schedule=document.getElementById("scheduleView");
+  if(schedule){schedule.classList.remove("open");schedule.innerHTML="";}
+  const grid=document.getElementById("grid");
+  if(grid) grid.style.display="";
+}
+
+function renderScheduleHtml(){
+  const matches=allScheduleMatches();
+  if(!matches.length) return '<div class="schedule-note">Noch kein Spielplan hinterlegt.</div>';
+
+  const today=new Date();
+  const todayKey=formatTodayKey(today);
+  let html='';
+  let current="";
+
+  matches.forEach(m=>{
+    if(m.dateKey!==current){
+      if(current) html+='</div>';
+      current=m.dateKey;
+      const isToday=m.dateKey===todayKey;
+      html+=`<div class="schedule-day${isToday?' today':''}" id="schedule-day-${m.dateKey.replaceAll('.','-')}">
+        <div class="schedule-day-title"><span>${m.date}</span><span>${isToday?'Heute':''}</span></div>`;
+    }
+    html+=`<div class="schedule-match${matchResult(m)?' done':''}">
+      <div class="schedule-stage">${m.stage==="Gr." ? "Gr. "+m.group : m.stage}</div>
+      <div class="schedule-flags">
+        ${scheduleTeamInline(m.teams[0])}
+        ${scheduleScoreHtml(m)}
+        
+        ${scheduleTeamInline(m.teams[1])}
+      </div>
+      <div class="schedule-time">${m.time==="—" ? "offen" : m.time+" Uhr"}</div>
+      <div class="schedule-venue">${m.venue}${matchResult(m) ? " · "+matchResult(m).status : ""}</div>
+    </div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+function scrollScheduleToToday(){
+  const matches=allScheduleMatches();
+  if(!matches.length) return;
+
+  const todayStart=new Date();
+  todayStart.setHours(0,0,0,0);
+  let target=matches.find(m=>m.dateObj>=todayStart);
+  if(!target) target=matches[matches.length-1];
+
+  const id="schedule-day-"+target.dateKey.replaceAll(".","-");
+  const el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+// ── Game flow ────────────────────────────────────────────
+function startLearning(list=allCountries, modeId="learn-all", resetFilter=true){
+  closePanels();
+  const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
+  trainingMode="learn";
+  setActiveMode(modeId);
+  setBodyMode("training-active");
+  leaveScheduleView();
+  mode="learn";
+  active=list && list.length ? list : allCountries;
+  locked=false;
+  document.getElementById("question").textContent="Tippe auf eine Flagge, um den Namen zu hören 🎧";
+  document.getElementById("repeat-btn").style.display="none";
+  setFeedback("");
+  if(resetFilter) setActiveFilter("all");
+  const grid=document.getElementById("grid"); if(grid) grid.style.display="grid";
+  render();
+}
+function startQuiz(list,modeId="quiz-all",resetFilter=true){
+  closePanels();
+  const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
+  trainingMode="quiz";
+  setActiveMode(modeId);
+  setBodyMode("training-active");
+  leaveScheduleView();
+  commitSession();
+  sCorrect=0;
+  sTotal=0;
+  updateScore();
+  mode="quiz";
+  active=list && list.length ? list : allCountries;
+  locked=false;
+  document.getElementById("repeat-btn").style.display="inline-block";
+  if(resetFilter) setActiveFilter("all");
+  nextQ();
+  const grid=document.getElementById("grid"); if(grid) grid.style.display="grid";
+  render();
+}
+function nextQ(){
+  current=active[Math.floor(Math.random()*active.length)];
+  recordQuizShown(current[0]);
+  document.getElementById("question").textContent="Welche Flagge gehört zu "+current[0]+" ?";
+  setFeedback("");
+  speak("Welche Flagge gehört zu "+current[0]+"?", {force:true});
+}
+function click(c,el){
+  if(mode==="learn"){recordLearningFlag(c[0]);speakCountry(c[0]);clearHL();el.classList.add("correct");return;}
+  if(locked)return;
+  sTotal++;
+  if(c[0]===current[0]){
+    recordQuizAnswer(current[0],true);
+    locked=true;
+    sCorrect++;updateScore();el.classList.add("correct");
+    const msg=correctMsgs[Math.floor(Math.random()*correctMsgs.length)].replace("%s",c[0]);
+    setFeedback("✅ "+msg,false);
+    speak(msg,{force:true});
+    setTimeout(async ()=>{
+      await waitUntilSpeechFinished();
+      clearHL();
+      setTimeout(()=>{
+        locked=false;
+        nextQ();
+      },700);
+    },500);
+  } else {
+    recordQuizAnswer(current[0],false);
+    updateScore();el.classList.add("wrong");
+    const msg=wrongMsgs[Math.floor(Math.random()*wrongMsgs.length)];
+    setFeedback("❌ "+msg,true);speak(msg,{force:true});
+    setTimeout(()=>el.classList.remove("wrong"),2000);
+  }
+}
+document.addEventListener("DOMContentLoaded",()=>{ if(typeof buildGroupButtons==="function") buildGroupButtons(); });
+document.addEventListener("DOMContentLoaded",()=>{ if(playerName && typeof greetPlayer==="function") greetPlayer(); });
+</script>
+</body>
+</html>
