@@ -995,15 +995,38 @@ body.quiz-active .quiz-restart-bar{
   .hlogo{gap:7px}
 }
 
+
+/* ── Quiz-Overlay: Vorlesen neben Abbrechen ── */
+.quiz-question-actions .repeat-question-btn{
+  margin-top:0!important;
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  background:rgba(126,203,255,.16)!important;
+  border-color:rgba(126,203,255,.45)!important;
+  color:#cdeeff!important;
+}
+.quiz-question-actions .cancel-question-btn{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+}
+body.quiz-stopped .quiz-question-overlay{
+  display:none!important;
+}
+body.quiz-stopped #feedback.quiz-feedback{
+  display:none!important;
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.20</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.22</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
   <div class="overlay-logo">
-    <img class="wc26-logo start" src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png" alt="Offizielles FIFA World Cup 2026 Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
+    <img class="wc26-logo start" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg" alt="Offizielles FIFA World Cup 2026 Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
     <span class="overlay-logo-text">🏆 Flaggen-Lernspiel WM 2026 🏆</span>
     <span class="wc26-logo-fallback">FIFA WORLD CUP 2026</span>
   </div>
@@ -1025,7 +1048,7 @@ body.quiz-active .quiz-restart-bar{
 <div class="header">
   <div class="header-inner">
     <div class="hlogo wc26-brand-row">
-      <img class="wc26-logo header-logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png" alt="Offizielles FIFA World Cup 2026 Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
+      <img class="wc26-logo header-logo" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg" alt="Offizielles FIFA World Cup 2026 Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
       <h1>FIFA World Cup 2026</h1>
       <span class="wc26-logo-fallback">FIFA WORLD CUP 2026</span>
     </div>
@@ -1087,24 +1110,24 @@ body.quiz-active .quiz-restart-bar{
       <div class="quiz-question-label">Quizfrage</div>
       <div id="quizQuestionText" class="quiz-question-text"></div>
       <div class="quiz-question-actions">
+        <button id="repeat-btn" class="btn repeat-question-btn" type="button" onclick="repeatQuestion()">🔁 Nochmal vorlesen</button>
         <button id="cancelQuestionBtn" class="btn cancel-question-btn" type="button" onclick="cancelQuizQuestion()">abbrechen</button>
       </div>
     </div>
   </div>
   <div id="apiStatus" style="font-size:12px;color:#8daed8;margin-top:4px;"></div>
-  <button id="repeat-btn" class="btn mode-btn" onclick="repeatQuestion()">🔁 Nochmal vorlesen</button>
 </div>
 
 <!-- ── Ranking ── -->
 <div class="ranking-wrap" id="rankingPanel">
-  <div class="rank-head"><img class="wc26-panel-logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">🏅 Bestenliste</div>
+  <div class="rank-head"><img class="wc26-panel-logo" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">🏅 Bestenliste</div>
   <div id="rankingList"></div>
 </div>
 
 
 <!-- ── Statistik ── -->
 <div class="stats-wrap" id="statsPanel">
-  <div class="stats-head"><img class="wc26-panel-logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">📊 Flaggen-Statistik</div>
+  <div class="stats-head"><img class="wc26-panel-logo" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">📊 Flaggen-Statistik</div>
   <div id="statsList"></div>
 </div>
 
@@ -1157,8 +1180,8 @@ body.quiz-active .quiz-restart-bar{
 </div>
 
 <script>
-const APP_VERSION="1.20"
-const OFFICIAL_WC2026_LOGO_URL="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png";; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
+const APP_VERSION="1.22";
+const OFFICIAL_WC2026_LOGO_URL="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
 const groupC=[["Brasilien","br"],["Marokko","ma"],["Haiti","ht"],["Schottland","gb-sct"]];
@@ -2659,7 +2682,7 @@ const wrongMsgs=[
 "Versuche es noch einmal.",
 "Schau noch einmal genau hin.",
 "Fast richtig. Probier es noch einmal.",
-"Die gesuchte Flagge ist noch dabei.",
+"Versuche es erneut.",
 "Du schaffst das. Suche weiter."
 ];
 const questionMsgs=[
@@ -2681,7 +2704,7 @@ let player="", sCorrect=0, sTotal=0;
 
 function updateAppVersionBadge(){
   const el=document.getElementById("appVersionBadge");
-  if(el) el.innerHTML='Version <strong>1.20</strong>';
+  if(el) el.innerHTML='Version <strong>'+APP_VERSION+'</strong>';
 }
 document.addEventListener("DOMContentLoaded",updateAppVersionBadge);
 
@@ -3381,7 +3404,8 @@ function greetPlayer(){
 }
 function repeatQuestion(){
   if(mode==="quiz"&&current){
-    const q=document.getElementById("question").textContent || ("Welche Flagge gehört zu "+current[0]+"?");
+    const overlayText=document.getElementById("quizQuestionText")?.textContent;
+    const q=overlayText || document.getElementById("question").textContent || ("Welche Flagge gehört zu "+current[0]+"?");
     speak(q,{force:true});
   }
 }
@@ -3940,17 +3964,22 @@ function markQuizQuestionInStats(){
 }
 
 function cancelQuizQuestion(){
-  if(mode!=="quiz" || locked || !current) return;
+  if(mode!=="quiz" || !current) return;
   stopSpeech();
   clearHL();
   setFeedback("");
+  hideQuizQuestionOverlay();
   quizQuestionRecorded=false;
   current=null;
-  nextQ();
+  locked=true;
+  document.body.classList.add("quiz-stopped");
+  const q=document.getElementById("question");
+  if(q) q.textContent="Quiz gestoppt. Tippe auf „Neu starten“, wenn du wieder beginnen möchtest.";
 }
 
 function restartQuizRound(){
   if(mode!=="quiz") return;
+  document.body.classList.remove("quiz-stopped");
   stopSpeech();
   clearHL();
   setFeedback("");
@@ -4001,6 +4030,7 @@ function startLearning(list=allCountries, modeId="learn-all", resetFilter=true){
   render();
 }
 function startQuiz(list,modeId="quiz-all",resetFilter=true){
+  document.body.classList.remove("quiz-stopped");
   closePanels();
   const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
   trainingMode="quiz";
@@ -4026,6 +4056,7 @@ function startQuiz(list,modeId="quiz-all",resetFilter=true){
 }
 
 function nextQ(){
+  document.body.classList.remove("quiz-stopped");
   setFeedback("");
   clearHL();
   if(!quizQueue.length){
