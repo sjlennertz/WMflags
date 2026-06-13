@@ -921,13 +921,92 @@ body.quiz-active .quiz-restart-bar{
   }
 }
 
+
+/* ── Startbildschirm: Versionsnummer ── */
+.app-version-badge{
+  margin-top:10px;
+  color:#8daed8;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.04em;
+  opacity:.9;
+}
+.app-version-badge strong{
+  color:#e8d5a3;
+}
+
+
+/* ── Offizielles WM-2026-Logo als dezente Branding-Elemente ── */
+.wc26-logo{
+  display:inline-block;
+  object-fit:contain;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.28));
+}
+.wc26-logo.start{
+  width:86px;
+  height:auto;
+  margin:0 auto 10px;
+  display:block;
+}
+.wc26-logo.header-logo{
+  width:44px;
+  height:68px;
+  flex:0 0 auto;
+}
+.wc26-brand-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.wc26-panel-logo{
+  width:30px;
+  height:46px;
+  object-fit:contain;
+  vertical-align:middle;
+  margin-right:8px;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.24));
+}
+.overlay-logo{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+.overlay-logo .overlay-logo-text{
+  display:block;
+}
+.wc26-logo-fallback{
+  display:none;
+  color:#e8d5a3;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.logo-failed .wc26-logo{
+  display:none!important;
+}
+.logo-failed .wc26-logo-fallback{
+  display:inline-block!important;
+}
+@media(max-width:520px){
+  .wc26-logo.start{width:72px}
+  .wc26-logo.header-logo{width:34px;height:52px}
+  .wc26-panel-logo{width:24px;height:36px}
+  .hlogo{gap:7px}
+}
+
 </style>
 </head>
 <body>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.20</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
-  <div class="overlay-logo">🏆 <span>Flaggen-Lernspiel WM 2026</span> 🏆</div>
+  <div class="overlay-logo">
+    <img class="wc26-logo start" src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png" alt="Offizielles FIFA World Cup 2026 Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
+    <span class="overlay-logo-text">🏆 Flaggen-Lernspiel WM 2026 🏆</span>
+    <span class="wc26-logo-fallback">FIFA WORLD CUP 2026</span>
+  </div>
   <h2>Wer spielt heute?</h2>
   <p>Tippe einfach auf deinen Namen!</p>
   <div class="player-btns">
@@ -945,7 +1024,11 @@ body.quiz-active .quiz-restart-bar{
 <!-- ── Header ── -->
 <div class="header">
   <div class="header-inner">
-    <div class="hlogo">🏆 <h1>FIFA World Cup 2026</h1> 🏆</div>
+    <div class="hlogo wc26-brand-row">
+      <img class="wc26-logo header-logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png" alt="Offizielles FIFA World Cup 2026 Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
+      <h1>FIFA World Cup 2026</h1>
+      <span class="wc26-logo-fallback">FIFA WORLD CUP 2026</span>
+    </div>
     <div class="header-sub">Flaggen-Quiz</div>
     <div class="gold-line"></div>
   </div>
@@ -1014,14 +1097,14 @@ body.quiz-active .quiz-restart-bar{
 
 <!-- ── Ranking ── -->
 <div class="ranking-wrap" id="rankingPanel">
-  <div class="rank-head">🏅 Bestenliste</div>
+  <div class="rank-head"><img class="wc26-panel-logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">🏅 Bestenliste</div>
   <div id="rankingList"></div>
 </div>
 
 
 <!-- ── Statistik ── -->
 <div class="stats-wrap" id="statsPanel">
-  <div class="stats-head">📊 Flaggen-Statistik</div>
+  <div class="stats-head"><img class="wc26-panel-logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">📊 Flaggen-Statistik</div>
   <div id="statsList"></div>
 </div>
 
@@ -1074,6 +1157,8 @@ body.quiz-active .quiz-restart-bar{
 </div>
 
 <script>
+const APP_VERSION="1.20"
+const OFFICIAL_WC2026_LOGO_URL="https://upload.wikimedia.org/wikipedia/en/thumb/a/a0/2026_FIFA_World_Cup.svg/310px-2026_FIFA_World_Cup.svg.png";; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
 const groupC=[["Brasilien","br"],["Marokko","ma"],["Haiti","ht"],["Schottland","gb-sct"]];
@@ -2592,6 +2677,13 @@ let currentMistakes=0;
 let quizQueue=[], quizRoundTotal=0, quizQuestionRecorded=false;
 let trainingMode="learn";
 let player="", sCorrect=0, sTotal=0;
+
+
+function updateAppVersionBadge(){
+  const el=document.getElementById("appVersionBadge");
+  if(el) el.innerHTML='Version <strong>1.20</strong>';
+}
+document.addEventListener("DOMContentLoaded",updateAppVersionBadge);
 
 // ── Scores (localStorage) ────────────────────────────────
 const STORE="wm2026_scores";
