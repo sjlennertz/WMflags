@@ -440,7 +440,7 @@ body.greeting-active .q-label{display:none!important}
 .stats-head{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#c9a84c;text-align:center;margin-bottom:12px;font-weight:900}
 .stats-player{background:#0e2040;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 8px 26px rgba(0,0,0,.18)}
 .stats-player h3{margin:0 0 10px;color:#e8d5a3;text-align:center}
-.stats-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:12px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
 .stats-box{background:rgba(7,24,40,.55);border:1px solid rgba(126,203,255,.12);border-radius:12px;padding:10px;overflow:auto}
 .stats-box h4{margin:0 0 8px;color:#7ecbff;text-align:center}
 .stats-table{width:100%;border-collapse:collapse;font-size:12px}
@@ -1073,10 +1073,101 @@ body.quiz-active .flag-img-wrap{
   }
 }
 
+
+/* ── Sprachquiz ── */
+.voice-quiz-panel{
+  display:none;
+  width:min(760px, calc(100vw - 18px));
+  margin:12px auto 8px;
+}
+body.voice-quiz-active .voice-quiz-panel{
+  display:block;
+}
+body.voice-quiz-active #grid{
+  display:none!important;
+}
+body.voice-quiz-active #feedback.quiz-feedback{
+  top:8px!important;
+  transform:translateX(-50%)!important;
+}
+.voice-quiz-card{
+  background:rgba(9,22,46,.995);
+  border:2px solid rgba(232,201,106,.72);
+  border-radius:20px;
+  padding:14px;
+  text-align:center;
+  box-shadow:0 12px 40px rgba(0,0,0,.46);
+}
+.voice-quiz-label{
+  color:#c9a84c;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+.voice-quiz-prompt{
+  color:#fff;
+  font-weight:900;
+  font-size:clamp(20px, 4.5vw, 30px);
+  line-height:1.15;
+  margin-bottom:10px;
+}
+.voice-flag-wrap{
+  background:#071020;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:14px;
+  padding:14px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:210px;
+}
+.voice-quiz-flag{
+  width:min(560px, 82vw);
+  max-height:330px;
+  object-fit:contain;
+}
+.voice-transcript{
+  min-height:24px;
+  margin:10px auto 0;
+  color:#aac4e8;
+  font-weight:800;
+}
+.voice-quiz-actions,
+.voice-manual-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-top:12px;
+}
+.voice-manual-actions{
+  display:none;
+}
+.voice-manual-actions.open{
+  display:flex;
+}
+.voice-speak-btn{
+  background:rgba(126,203,255,.16)!important;
+  border-color:rgba(126,203,255,.45)!important;
+  color:#cdeeff!important;
+}
+body.voice-quiz-active .quiz-restart-bar{
+  display:flex;
+}
+@media(max-width:520px){
+  .voice-quiz-panel{width:calc(100vw - 12px)}
+  .voice-quiz-card{padding:12px 10px;border-radius:16px}
+  .voice-flag-wrap{min-height:160px;padding:10px}
+  .voice-quiz-actions .btn,
+  .voice-manual-actions .btn{flex:1 1 140px}
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.24</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.25</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
@@ -1146,6 +1237,7 @@ body.quiz-active .flag-img-wrap{
     <button class="btn mode-btn" data-mode="greet" onclick="greetPlayer()">👋 Begrüßung</button>
     <button class="btn mode-btn" data-mode="learn-all" onclick="startLearning(allCountries,'learn-all')">🎓 Lernmodus</button>
     <button class="btn mode-btn" data-mode="quiz-all" onclick="startQuiz(allCountries,'quiz-all')">🎮 Quiz</button>
+    <button class="btn mode-btn" data-mode="voice-quiz" onclick="startVoiceQuiz(allCountries,'voice-quiz')">🎤 Sprachquiz</button>
     <button class="btn mode-btn" data-mode="schedule" onclick="startSchedule()">📅 Spielplan</button>
     <button class="btn mode-btn" data-mode="ranking" onclick="toggleRanking()">🏅 Ranking</button>
     <button class="btn mode-btn" data-mode="stats" onclick="toggleStats()">📊 Statistik</button>
@@ -1186,6 +1278,29 @@ body.quiz-active .flag-img-wrap{
 </div>
 
 <div id="scheduleView" class="schedule-view"></div>
+
+
+<!-- ── Sprachquiz ── -->
+<div id="voiceQuizPanel" class="voice-quiz-panel">
+  <div class="voice-quiz-card">
+    <div class="voice-quiz-label">Sprachquiz</div>
+    <div id="voiceQuizPrompt" class="voice-quiz-prompt">Welches Land ist das?</div>
+    <div class="voice-flag-wrap">
+      <img id="voiceQuizFlag" class="voice-quiz-flag" alt="">
+    </div>
+    <div id="voiceTranscript" class="voice-transcript"></div>
+    <div class="voice-quiz-actions">
+      <button class="btn voice-speak-btn" type="button" onclick="startVoiceAnswer()">🎙 Antwort sprechen</button>
+      <button class="btn repeat-question-btn" type="button" onclick="repeatVoiceQuestion()">🔁 Nochmal vorlesen</button>
+      <button class="btn cancel-question-btn" type="button" onclick="cancelVoiceQuestion()">abbrechen</button>
+    </div>
+    <div id="voiceManualActions" class="voice-manual-actions">
+      <button class="btn quiz-restart-btn" type="button" onclick="gradeVoiceAnswer(true)">Richtig werten</button>
+      <button class="btn cancel-question-btn" type="button" onclick="gradeVoiceAnswer(false)">Falsch werten</button>
+      <button class="btn voice-speak-btn" type="button" onclick="startVoiceAnswer()">Nochmal sprechen</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── Quiz Neustart ── -->
 <div id="quizRestartBar" class="quiz-restart-bar">
@@ -1234,7 +1349,7 @@ body.quiz-active .flag-img-wrap{
 </div>
 
 <script>
-const APP_VERSION="1.24";
+const APP_VERSION="1.25";
 const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
@@ -2752,13 +2867,14 @@ const greetMsgs=["Hallo %s! Schön, dass du dabei bist – zeig mal, was du drau
 let mode="learn", active=allCountries, current=null, locked=false;
 let currentMistakes=0;
 let quizQueue=[], quizRoundTotal=0, quizQuestionRecorded=false;
+let voiceQueue=[], voiceRoundTotal=0, voiceRecognition=null, voiceListening=false, lastVoiceText="";
 let trainingMode="learn";
 let player="", sCorrect=0, sTotal=0;
 
 
 function updateAppVersionBadge(){
   const el=document.getElementById("appVersionBadge");
-  if(el) el.innerHTML='Version <strong>'+APP_VERSION+'</strong>';
+  if(el) el.innerHTML='Version <strong>1.25</strong>';
 }
 document.addEventListener("DOMContentLoaded",updateAppVersionBadge);
 
@@ -2837,9 +2953,10 @@ function currentPlayerName(){
 }
 
 function ensureFlagStatsPlayer(d,name){
-  if(!d.players[name]) d.players[name]={learn:{},quiz:{},history:[]};
+  if(!d.players[name]) d.players[name]={learn:{},quiz:{},voice:{},history:[]};
   if(!d.players[name].learn) d.players[name].learn={};
   if(!d.players[name].quiz) d.players[name].quiz={};
+  if(!d.players[name].voice) d.players[name].voice={};
   if(!Array.isArray(d.players[name].history)) d.players[name].history=[];
   return d.players[name];
 }
@@ -2864,6 +2981,8 @@ function historyTypeLabel(item){
   if(item.type==="learn-click") return "🎓 gelernt";
   if(item.type==="quiz-shown") return "👀 gezeigt";
   if(item.type==="quiz-click") return item.result==="correct" ? "✅ geklickt" : "❌ geklickt";
+  if(item.type==="voice-shown") return "🎤 gezeigt";
+  if(item.type==="voice-answer") return item.result==="correct" ? "🎤✅ gesagt" : item.result==="wrong" ? "🎤❌ gesagt" : "🎤❔ unklar";
   return "• Aktion";
 }
 
@@ -2874,6 +2993,37 @@ function ensureQuizFlagStats(playerStats,country){
   if(typeof playerStats.quiz[country].wrong!=="number") playerStats.quiz[country].wrong=0;
   return playerStats.quiz[country];
 }
+
+function ensureVoiceFlagStats(playerStats,country){
+  if(!playerStats.voice) playerStats.voice={};
+  if(!playerStats.voice[country]) playerStats.voice[country]={shown:0,correct:0,wrong:0,unknown:0};
+  if(typeof playerStats.voice[country].shown!=="number") playerStats.voice[country].shown=0;
+  if(typeof playerStats.voice[country].correct!=="number") playerStats.voice[country].correct=0;
+  if(typeof playerStats.voice[country].wrong!=="number") playerStats.voice[country].wrong=0;
+  if(typeof playerStats.voice[country].unknown!=="number") playerStats.voice[country].unknown=0;
+  return playerStats.voice[country];
+}
+
+function recordVoiceShown(country){
+  const d=loadFlagStats();
+  const p=ensureFlagStatsPlayer(d,currentPlayerName());
+  const v=ensureVoiceFlagStats(p,country);
+  v.shown++;
+  addFlagHistory(p,"voice-shown",country,"");
+  saveFlagStats(d);
+}
+
+function recordVoiceAnswer(country,result){
+  const d=loadFlagStats();
+  const p=ensureFlagStatsPlayer(d,currentPlayerName());
+  const v=ensureVoiceFlagStats(p,country);
+  if(result==="correct") v.correct++;
+  else if(result==="wrong") v.wrong++;
+  else v.unknown++;
+  addFlagHistory(p,"voice-answer",country,result);
+  saveFlagStats(d);
+}
+
 
 function recordLearningFlag(country){
   const d=loadFlagStats();
@@ -2944,6 +3094,23 @@ function renderStats(){
           })
           .join("");
 
+        const voiceRows=Object.entries(p.voice||{})
+          .sort((a,b)=>(b[1].shown-a[1].shown) || a[0].localeCompare(b[0],"de"))
+          .map(([country,v])=>{
+            const shown=v.shown||0, correct=v.correct||0, wrong=v.wrong||0, unknown=v.unknown||0;
+            const answered=correct+wrong+unknown;
+            const pct=answered?Math.round(correct/answered*100):0;
+            return `<tr>
+              <td>${escapeHtml(country)}</td>
+              <td class="num">${shown}</td>
+              <td class="num">${correct}</td>
+              <td class="num">${wrong}</td>
+              <td class="num">${unknown}</td>
+              <td class="num">${answered?pct+"%":"–"}</td>
+            </tr>`;
+          })
+          .join("");
+
         return `<div class="stats-player">
           <h3>${escapeHtml(name)}</h3>
           <div class="stats-grid">
@@ -2954,6 +3121,10 @@ function renderStats(){
             <div class="stats-box">
               <h4>Quiz: Fragen & Antworten</h4>
               ${quizRows ? `<table class="stats-table"><thead><tr><th class="sortable" onclick="sortStatsTable(this,0,\\'text\\')">Flagge</th><th class="num sortable" onclick="sortStatsTable(this,1,\\'number\\')">Anzahl</th><th class="num sortable" onclick="sortStatsTable(this,2,\\'number\\')">richtig</th><th class="num sortable" onclick="sortStatsTable(this,3,\\'number\\')">falsch</th><th class="num sortable" onclick="sortStatsTable(this,4,\\'number\\')">Quote</th></tr></thead><tbody>${quizRows}</tbody></table>` : '<div class="stats-empty">Noch keine Quizfragen.</div>'}
+            </div>
+            <div class="stats-box">
+              <h4>Sprachquiz: gesprochene Antworten</h4>
+              ${voiceRows ? `<table class="stats-table"><thead><tr><th>Flagge</th><th class="num">gezeigt</th><th class="num">richtig</th><th class="num">falsch</th><th class="num">unklar</th><th class="num">Quote</th></tr></thead><tbody>${voiceRows}</tbody></table>` : '<div class="stats-empty">Noch keine Sprachquiz-Antworten.</div>'}
             </div>
           </div>
         </div>`;
@@ -2972,7 +3143,7 @@ function renderStats(){
         return `<div class="stats-player">
           <h3>${escapeHtml(name)}</h3>
           <div class="stats-box">
-            <h4>Historie: zuletzt im Lern- und Quizmodus</h4>
+            <h4>Historie: zuletzt im Lern-, Quiz- und Sprachquizmodus</h4>
             ${rows ? `<div class="history-list">${rows}</div>` : '<div class="stats-empty">Noch keine Historie vorhanden.</div>'}
           </div>
         </div>`;
@@ -3086,6 +3257,8 @@ function applyTrainingFilter(type,value){
 
   if(trainingMode==="quiz"){
     startQuiz(list, "quiz-all", false);
+  }else if(trainingMode==="voice"){
+    startVoiceQuiz(list, "voice-quiz", false);
   }else{
     startLearning(list, "learn-all", false);
   }
@@ -3680,7 +3853,7 @@ function render(){
 
   active.forEach(c=>{
     const d=document.createElement("div");
-    d.className="flag-card"+(mode==="quiz" ? " quiz-card" : "");
+    d.className="flag-card"+(mode==="quiz" ? " quiz-card" : "")+(mode==="voiceQuiz" ? " voice-card" : "");
 
     const wrap=document.createElement("div");
     wrap.className="flag-img-wrap";
@@ -3731,7 +3904,7 @@ function render(){
     actions.appendChild(kit);
 
     const label=document.createElement("div");
-    label.className="flag-name"+(mode==="quiz"?" hidden":"");
+    label.className="flag-name"+((mode==="quiz"||mode==="voiceQuiz")?" hidden":"");
     label.textContent=c[0];
 
     d.appendChild(wrap);
@@ -3758,7 +3931,7 @@ document.addEventListener("click",event=>{
 
 
 function setBodyMode(modeName){
-  document.body.classList.remove("training-active","quiz-active","greeting-active","schedule-active","ranking-active","stats-active","feedback-active");
+  document.body.classList.remove("training-active","quiz-active","voice-quiz-active","greeting-active","schedule-active","ranking-active","stats-active","feedback-active");
   if(modeName) document.body.classList.add(modeName);
 }
 
@@ -4032,7 +4205,7 @@ function cancelQuizQuestion(){
 }
 
 function restartQuizRound(){
-  if(mode!=="quiz") return;
+  if(mode!=="quiz" && mode!=="voiceQuiz") return;
   document.body.classList.remove("quiz-stopped");
   stopSpeech();
   clearHL();
@@ -4041,12 +4214,18 @@ function restartQuizRound(){
   sCorrect=0;
   sTotal=0;
   updateScore();
-  quizQueue=shuffleQuizQueue(active);
-  quizRoundTotal=quizQueue.length;
-  quizQuestionRecorded=false;
   locked=false;
   current=null;
-  nextQ();
+  if(mode==="voiceQuiz"){
+    voiceQueue=shuffleQuizQueue(active);
+    voiceRoundTotal=voiceQueue.length;
+    nextVoiceQ();
+  }else{
+    quizQueue=shuffleQuizQueue(active);
+    quizRoundTotal=quizQueue.length;
+    quizQuestionRecorded=false;
+    nextQ();
+  }
 }
 
 function finishQuizRound(){
@@ -4064,9 +4243,251 @@ function finishQuizRound(){
   commitSession();
 }
 
+
+function normalizeVoiceText(text){
+  return String(text||"")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/ß/g,"ss")
+    .replace(/[^a-z0-9äöü\s-]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+const VOICE_ALIASES={
+  "Deutschland":["deutschland","deutsche","germany","german"],
+  "Südkorea":["suedkorea","sudkorea","sued korea","sud korea","korea","south korea"],
+  "Südafrika":["suedafrika","sudafrika","sued afrika","sud afrika","south africa"],
+  "USA":["usa","u s a","amerika","vereinigte staaten","united states","united states of america"],
+  "DR Kongo":["dr kongo","d r kongo","kongo","demokratische republik kongo","congo"],
+  "Elfenbeinküste":["elfenbeinkueste","elfenbeinkuste","cote d ivoire","ivory coast"],
+  "Curaçao":["curacao","curazao"],
+  "Kap Verde":["kap verde","cape verde"],
+  "Saudi-Arabien":["saudi arabien","saudi-arabien","saudi arabia"],
+  "Bosnien-Herzegowina":["bosnien herzegowina","bosnien","bosnia","bosnia and herzegovina"],
+  "Neuseeland":["neuseeland","new zealand"],
+  "Niederlande":["niederlande","holland","netherlands"],
+  "Schottland":["schottland","scotland"],
+  "Tschechien":["tschechien","czechia","czech republic"],
+  "Österreich":["oesterreich","osterreich","austria"],
+  "Ägypten":["aegypten","agypten","egypt"],
+  "Türkei":["tuerkei","turkei","turkey"],
+  "Marokko":["marokko","morocco"],
+  "Mexiko":["mexiko","mexico"],
+  "Brasilien":["brasilien","brazil"],
+  "Frankreich":["frankreich","france"],
+  "Spanien":["spanien","spain"],
+  "England":["england"],
+  "Portugal":["portugal"],
+  "Argentinien":["argentinien","argentina"],
+  "Kolumbien":["kolumbien","colombia"],
+  "Uruguay":["uruguay"],
+  "Paraguay":["paraguay"],
+  "Ecuador":["ecuador"],
+  "Australien":["australien","australia"],
+  "Japan":["japan"],
+  "Iran":["iran"],
+  "Irak":["irak","iraq"],
+  "Katar":["katar","qatar"],
+  "Jordanien":["jordanien","jordan"],
+  "Usbekistan":["usbekistan","uzbekistan"],
+  "Ghana":["ghana"],
+  "Panama":["panama"],
+  "Haiti":["haiti"],
+  "Kanada":["kanada","canada"],
+  "Schweiz":["schweiz","switzerland"],
+  "Tunesien":["tunesien","tunisia"],
+  "Belgien":["belgien","belgium"],
+  "Schweden":["schweden","sweden"],
+  "Norwegen":["norwegen","norway"],
+  "Senegal":["senegal"],
+  "Algerien":["algerien","algeria"],
+  "Kroatien":["kroatien","croatia"]
+};
+
+function aliasesForCountry(country){
+  const base=[country, normalizeVoiceText(country)];
+  const extra=VOICE_ALIASES[country]||[];
+  return Array.from(new Set(base.concat(extra).map(normalizeVoiceText).filter(Boolean)));
+}
+
+function isVoiceAnswerCorrect(country, spoken){
+  const t=normalizeVoiceText(spoken);
+  if(!t) return false;
+  return aliasesForCountry(country).some(alias=>{
+    if(!alias) return false;
+    return t===alias || t.includes(alias) || alias.includes(t);
+  });
+}
+
+function getSpeechRecognitionCtor(){
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
+function showVoiceManualActions(show){
+  const el=document.getElementById("voiceManualActions");
+  if(el) el.classList.toggle("open",!!show);
+}
+
+function setVoiceTranscript(text){
+  const el=document.getElementById("voiceTranscript");
+  if(el) el.textContent=text || "";
+}
+
+function startVoiceQuiz(list=allCountries, modeId="voice-quiz", resetFilter=true){
+  document.body.classList.remove("quiz-stopped");
+  closePanels();
+  const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
+  trainingMode="voice";
+  setActiveMode(modeId);
+  setBodyMode("training-active");
+  document.body.classList.add("voice-quiz-active");
+  leaveScheduleView();
+  commitSession();
+  sCorrect=0;
+  sTotal=0;
+  updateScore();
+  mode="voiceQuiz";
+  active=list && list.length ? list : allCountries;
+  voiceQueue=shuffleQuizQueue(active);
+  voiceRoundTotal=voiceQueue.length;
+  locked=false;
+  if(resetFilter) setActiveFilter("all");
+  const grid=document.getElementById("grid"); if(grid) grid.style.display="none";
+  nextVoiceQ();
+}
+
+function nextVoiceQ(){
+  setFeedback("");
+  clearHL();
+  showVoiceManualActions(false);
+  setVoiceTranscript("");
+  if(!voiceQueue.length){
+    finishVoiceRound();
+    return;
+  }
+  current=voiceQueue.shift();
+  locked=false;
+  const prompt="Welches Land ist das?";
+  const q=document.getElementById("question");
+  if(q) q.textContent=prompt;
+  const promptEl=document.getElementById("voiceQuizPrompt");
+  if(promptEl) promptEl.textContent=prompt;
+  const img=document.getElementById("voiceQuizFlag");
+  if(img){
+    img.alt="Flagge gesucht";
+    img.onerror=()=>{ img.style.opacity=.25; };
+    img.src=flagSvgUrl(current[1]);
+  }
+  recordVoiceShown(current[0]);
+  speak(prompt,{force:true});
+}
+
+function startVoiceAnswer(){
+  if(mode!=="voiceQuiz" || locked || !current) return;
+  const Ctor=getSpeechRecognitionCtor();
+  if(!Ctor){
+    setVoiceTranscript("Spracherkennung wird von diesem Browser leider nicht unterstützt.");
+    setFeedback("🎤 Spracherkennung ist hier nicht verfügbar.",true);
+    return;
+  }
+  try{
+    if(voiceRecognition && voiceListening) voiceRecognition.stop();
+  }catch(e){}
+  voiceRecognition=new Ctor();
+  voiceRecognition.lang="de-DE";
+  voiceRecognition.continuous=false;
+  voiceRecognition.interimResults=false;
+  voiceRecognition.maxAlternatives=3;
+  voiceListening=true;
+  setVoiceTranscript("🎙 Ich höre zu …");
+  showVoiceManualActions(false);
+
+  voiceRecognition.onresult=(event)=>{
+    voiceListening=false;
+    const results=Array.from(event.results?.[0]||[]).map(r=>r.transcript).filter(Boolean);
+    lastVoiceText=results[0]||"";
+    const understood=lastVoiceText ? "Ich habe verstanden: „"+lastVoiceText+"“" : "Ich habe nichts verstanden.";
+    setVoiceTranscript(understood);
+    if(isVoiceAnswerCorrect(current[0], lastVoiceText)){
+      gradeVoiceAnswer(true);
+    }else{
+      showVoiceManualActions(true);
+      setFeedback("Ich habe verstanden: "+(lastVoiceText||"nichts")+". Stimmt das?",true);
+      speak("Ich habe verstanden: "+(lastVoiceText||"nichts")+". Bitte prüfe die Antwort.",{force:true});
+    }
+  };
+  voiceRecognition.onerror=(event)=>{
+    voiceListening=false;
+    setVoiceTranscript("Spracherkennung fehlgeschlagen. Bitte erneut versuchen.");
+    showVoiceManualActions(true);
+  };
+  voiceRecognition.onend=()=>{ voiceListening=false; };
+  voiceRecognition.start();
+}
+
+function gradeVoiceAnswer(isCorrect){
+  if(mode!=="voiceQuiz" || !current) return;
+  locked=true;
+  sTotal++;
+  if(isCorrect){
+    sCorrect++;
+    recordVoiceAnswer(current[0],"correct");
+    updateScore();
+    setFeedback("✅ Richtig! Das ist "+current[0]+".",false);
+    speak("Richtig! Das ist "+current[0]+".",{force:true});
+  }else{
+    recordVoiceAnswer(current[0],"wrong");
+    updateScore();
+    setFeedback("❌ Nicht ganz. Das war "+current[0]+".",true);
+    speak("Nicht ganz. Das war "+current[0]+".",{force:true});
+  }
+  showVoiceManualActions(false);
+  setTimeout(async ()=>{
+    await waitUntilSpeechFinished();
+    setFeedback("");
+    locked=false;
+    nextVoiceQ();
+  },700);
+}
+
+function repeatVoiceQuestion(){
+  if(mode==="voiceQuiz" && current){
+    speak("Welches Land ist das?",{force:true});
+  }
+}
+
+function cancelVoiceQuestion(){
+  if(mode!=="voiceQuiz" || !current) return;
+  try{ if(voiceRecognition && voiceListening) voiceRecognition.stop(); }catch(e){}
+  stopSpeech();
+  setFeedback("");
+  showVoiceManualActions(false);
+  setVoiceTranscript("Sprachquiz gestoppt. Tippe auf „Neu starten“, wenn du wieder beginnen möchtest.");
+  current=null;
+  locked=true;
+  document.body.classList.add("quiz-stopped");
+}
+
+function finishVoiceRound(){
+  locked=true;
+  current=null;
+  showVoiceManualActions(false);
+  setVoiceTranscript("");
+  const msg="🏁 Sprachquiz beendet! Du hast "+sCorrect+" von "+sTotal+" Antworten richtig.";
+  const q=document.getElementById("question");
+  if(q) q.textContent=msg;
+  const promptEl=document.getElementById("voiceQuizPrompt");
+  if(promptEl) promptEl.textContent="Runde beendet";
+  setFeedback(msg,false);
+  speak("Sprachquiz beendet. Du hast "+sCorrect+" von "+sTotal+" Antworten richtig.",{force:true});
+  commitSession();
+}
+
 // ── Game flow ────────────────────────────────────────────
 function startLearning(list=allCountries, modeId="learn-all", resetFilter=true){
   hideQuizQuestionOverlay();
+  try{ if(voiceRecognition && voiceListening) voiceRecognition.stop(); }catch(e){}
   closePanels();
   const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
   trainingMode="learn";
@@ -4128,6 +4549,7 @@ function nextQ(){
 
 function click(c,el){
   if(mode==="learn"){recordLearningFlag(c[0]);speakCountry(c[0]);clearHL();el.classList.add("correct");return;}
+  if(mode==="voiceQuiz") return;
   if(locked || !current)return;
   markQuizQuestionInStats();
   sTotal++;
