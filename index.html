@@ -1164,10 +1164,22 @@ body.voice-quiz-active .quiz-restart-bar{
   .voice-manual-actions .btn{flex:1 1 140px}
 }
 
+
+/* ── Sprachquiz: Auto-Mikrofon und gestoppter Zustand ── */
+body.voice-quiz-stopped .voice-quiz-panel{
+  display:none!important;
+}
+.voice-transcript.listening{
+  color:#dfffe7!important;
+}
+.voice-transcript.timeout{
+  color:#e8d5a3!important;
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.25</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.26</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
@@ -1292,6 +1304,7 @@ body.voice-quiz-active .quiz-restart-bar{
     <div class="voice-quiz-actions">
       <button class="btn voice-speak-btn" type="button" onclick="startVoiceAnswer()">🎙 Antwort sprechen</button>
       <button class="btn repeat-question-btn" type="button" onclick="repeatVoiceQuestion()">🔁 Nochmal vorlesen</button>
+      <button class="btn cancel-question-btn" type="button" onclick="skipVoiceQuestion()">Nächste Flagge</button>
       <button class="btn cancel-question-btn" type="button" onclick="cancelVoiceQuestion()">abbrechen</button>
     </div>
     <div id="voiceManualActions" class="voice-manual-actions">
@@ -1349,7 +1362,7 @@ body.voice-quiz-active .quiz-restart-bar{
 </div>
 
 <script>
-const APP_VERSION="1.25";
+const APP_VERSION="1.26";
 const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
@@ -2867,14 +2880,14 @@ const greetMsgs=["Hallo %s! Schön, dass du dabei bist – zeig mal, was du drau
 let mode="learn", active=allCountries, current=null, locked=false;
 let currentMistakes=0;
 let quizQueue=[], quizRoundTotal=0, quizQuestionRecorded=false;
-let voiceQueue=[], voiceRoundTotal=0, voiceRecognition=null, voiceListening=false, lastVoiceText="";
+let voiceQueue=[], voiceRoundTotal=0, voiceRecognition=null, voiceListening=false, lastVoiceText="", voiceListenTimer=null, voiceQuestionToken=0;
 let trainingMode="learn";
 let player="", sCorrect=0, sTotal=0;
 
 
 function updateAppVersionBadge(){
   const el=document.getElementById("appVersionBadge");
-  if(el) el.innerHTML='Version <strong>1.25</strong>';
+  if(el) el.innerHTML='Version <strong>'+APP_VERSION+'</strong>';
 }
 document.addEventListener("DOMContentLoaded",updateAppVersionBadge);
 
@@ -3121,10 +3134,6 @@ function renderStats(){
             <div class="stats-box">
               <h4>Quiz: Fragen & Antworten</h4>
               ${quizRows ? `<table class="stats-table"><thead><tr><th class="sortable" onclick="sortStatsTable(this,0,\\'text\\')">Flagge</th><th class="num sortable" onclick="sortStatsTable(this,1,\\'number\\')">Anzahl</th><th class="num sortable" onclick="sortStatsTable(this,2,\\'number\\')">richtig</th><th class="num sortable" onclick="sortStatsTable(this,3,\\'number\\')">falsch</th><th class="num sortable" onclick="sortStatsTable(this,4,\\'number\\')">Quote</th></tr></thead><tbody>${quizRows}</tbody></table>` : '<div class="stats-empty">Noch keine Quizfragen.</div>'}
-            </div>
-            <div class="stats-box">
-              <h4>Sprachquiz: gesprochene Antworten</h4>
-              ${voiceRows ? `<table class="stats-table"><thead><tr><th>Flagge</th><th class="num">gezeigt</th><th class="num">richtig</th><th class="num">falsch</th><th class="num">unklar</th><th class="num">Quote</th></tr></thead><tbody>${voiceRows}</tbody></table>` : '<div class="stats-empty">Noch keine Sprachquiz-Antworten.</div>'}
             </div>
           </div>
         </div>`;
@@ -3931,7 +3940,7 @@ document.addEventListener("click",event=>{
 
 
 function setBodyMode(modeName){
-  document.body.classList.remove("training-active","quiz-active","voice-quiz-active","greeting-active","schedule-active","ranking-active","stats-active","feedback-active");
+  document.body.classList.remove("training-active","quiz-active","voice-quiz-active","voice-quiz-stopped","greeting-active","schedule-active","ranking-active","stats-active","feedback-active");
   if(modeName) document.body.classList.add(modeName);
 }
 
@@ -4206,7 +4215,9 @@ function cancelQuizQuestion(){
 
 function restartQuizRound(){
   if(mode!=="quiz" && mode!=="voiceQuiz") return;
-  document.body.classList.remove("quiz-stopped");
+  document.body.classList.remove("quiz-stopped","voice-quiz-stopped");
+  voiceQuestionToken++;
+  stopVoiceListening({abort:true});
   stopSpeech();
   clearHL();
   setFeedback("");
@@ -4335,7 +4346,9 @@ function setVoiceTranscript(text){
 }
 
 function startVoiceQuiz(list=allCountries, modeId="voice-quiz", resetFilter=true){
-  document.body.classList.remove("quiz-stopped");
+  document.body.classList.remove("quiz-stopped","voice-quiz-stopped");
+  voiceQuestionToken++;
+  stopVoiceListening({abort:true});
   closePanels();
   const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
   trainingMode="voice";
@@ -4357,7 +4370,44 @@ function startVoiceQuiz(list=allCountries, modeId="voice-quiz", resetFilter=true
   nextVoiceQ();
 }
 
+
+function stopVoiceListening({abort=false, keepText=false}={}){
+  if(voiceListenTimer){
+    clearTimeout(voiceListenTimer);
+    voiceListenTimer=null;
+  }
+  try{
+    if(voiceRecognition && voiceListening){
+      if(abort && typeof voiceRecognition.abort==="function") voiceRecognition.abort();
+      else voiceRecognition.stop();
+    }
+  }catch(e){}
+  voiceListening=false;
+  if(!keepText){
+    const el=document.getElementById("voiceTranscript");
+    if(el) el.classList.remove("listening","timeout");
+  }
+}
+
+function armVoiceListeningTimeout(){
+  if(voiceListenTimer) clearTimeout(voiceListenTimer);
+  voiceListenTimer=setTimeout(()=>{
+    if(mode==="voiceQuiz" && voiceListening){
+      stopVoiceListening({abort:true, keepText:true});
+      const el=document.getElementById("voiceTranscript");
+      if(el){
+        el.classList.remove("listening");
+        el.classList.add("timeout");
+      }
+      setVoiceTranscript("⏱ Zeit vorbei. Tippe auf „Antwort sprechen“, um es erneut zu versuchen.");
+    }
+  },10000);
+}
+
+
 function nextVoiceQ(){
+  document.body.classList.remove("voice-quiz-stopped","quiz-stopped");
+  stopVoiceListening({abort:true});
   setFeedback("");
   clearHL();
   showVoiceManualActions(false);
@@ -4367,6 +4417,7 @@ function nextVoiceQ(){
     return;
   }
   current=voiceQueue.shift();
+  voiceQuestionToken++;
   locked=false;
   const prompt="Welches Land ist das?";
   const q=document.getElementById("question");
@@ -4377,13 +4428,17 @@ function nextVoiceQ(){
   if(img){
     img.alt="Flagge gesucht";
     img.onerror=()=>{ img.style.opacity=.25; };
+    img.style.opacity=1;
     img.src=flagSvgUrl(current[1]);
   }
   recordVoiceShown(current[0]);
   speak(prompt,{force:true});
+  setTimeout(()=>{
+    if(mode==="voiceQuiz" && current && !locked) startVoiceAnswer(true);
+  },900);
 }
 
-function startVoiceAnswer(){
+function startVoiceAnswer(auto=false){
   if(mode!=="voiceQuiz" || locked || !current) return;
   const Ctor=getSpeechRecognitionCtor();
   if(!Ctor){
@@ -4391,20 +4446,26 @@ function startVoiceAnswer(){
     setFeedback("🎤 Spracherkennung ist hier nicht verfügbar.",true);
     return;
   }
-  try{
-    if(voiceRecognition && voiceListening) voiceRecognition.stop();
-  }catch(e){}
+  stopVoiceListening({abort:true});
+  const token=voiceQuestionToken;
   voiceRecognition=new Ctor();
   voiceRecognition.lang="de-DE";
   voiceRecognition.continuous=false;
   voiceRecognition.interimResults=false;
   voiceRecognition.maxAlternatives=3;
   voiceListening=true;
-  setVoiceTranscript("🎙 Ich höre zu …");
+  const transcriptEl=document.getElementById("voiceTranscript");
+  if(transcriptEl){
+    transcriptEl.classList.remove("timeout");
+    transcriptEl.classList.add("listening");
+  }
+  setVoiceTranscript(auto ? "🎙 Ich höre jetzt 10 Sekunden zu …" : "🎙 Ich höre zu …");
   showVoiceManualActions(false);
+  armVoiceListeningTimeout();
 
   voiceRecognition.onresult=(event)=>{
-    voiceListening=false;
+    if(token!==voiceQuestionToken || mode!=="voiceQuiz" || !current) return;
+    stopVoiceListening({keepText:true});
     const results=Array.from(event.results?.[0]||[]).map(r=>r.transcript).filter(Boolean);
     lastVoiceText=results[0]||"";
     const understood=lastVoiceText ? "Ich habe verstanden: „"+lastVoiceText+"“" : "Ich habe nichts verstanden.";
@@ -4418,16 +4479,26 @@ function startVoiceAnswer(){
     }
   };
   voiceRecognition.onerror=(event)=>{
-    voiceListening=false;
+    if(token!==voiceQuestionToken || mode!=="voiceQuiz" || !current) return;
+    stopVoiceListening({keepText:true});
     setVoiceTranscript("Spracherkennung fehlgeschlagen. Bitte erneut versuchen.");
     showVoiceManualActions(true);
   };
-  voiceRecognition.onend=()=>{ voiceListening=false; };
-  voiceRecognition.start();
+  voiceRecognition.onend=()=>{
+    if(token===voiceQuestionToken) voiceListening=false;
+  };
+  try{
+    voiceRecognition.start();
+  }catch(e){
+    stopVoiceListening({abort:true});
+    setVoiceTranscript("Mikrofon konnte nicht gestartet werden. Bitte den Button erneut antippen.");
+    showVoiceManualActions(true);
+  }
 }
 
 function gradeVoiceAnswer(isCorrect){
   if(mode!=="voiceQuiz" || !current) return;
+  stopVoiceListening({abort:true});
   locked=true;
   sTotal++;
   if(isCorrect){
@@ -4451,6 +4522,27 @@ function gradeVoiceAnswer(isCorrect){
   },700);
 }
 
+
+function skipVoiceQuestion(){
+  if(mode!=="voiceQuiz" || !current || locked) return;
+  stopVoiceListening({abort:true});
+  locked=true;
+  const skipped=current[0];
+  sTotal++;
+  recordVoiceAnswer(skipped,"wrong");
+  updateScore();
+  showVoiceManualActions(false);
+  setFeedback("❌ Übersprungen. Das war "+skipped+".",true);
+  speak("Übersprungen. Das war "+skipped+".",{force:true});
+  setTimeout(async ()=>{
+    await waitUntilSpeechFinished();
+    setFeedback("");
+    locked=false;
+    nextVoiceQ();
+  },600);
+}
+
+
 function repeatVoiceQuestion(){
   if(mode==="voiceQuiz" && current){
     speak("Welches Land ist das?",{force:true});
@@ -4458,18 +4550,22 @@ function repeatVoiceQuestion(){
 }
 
 function cancelVoiceQuestion(){
-  if(mode!=="voiceQuiz" || !current) return;
-  try{ if(voiceRecognition && voiceListening) voiceRecognition.stop(); }catch(e){}
+  if(mode!=="voiceQuiz") return;
+  voiceQuestionToken++;
+  stopVoiceListening({abort:true});
   stopSpeech();
   setFeedback("");
   showVoiceManualActions(false);
-  setVoiceTranscript("Sprachquiz gestoppt. Tippe auf „Neu starten“, wenn du wieder beginnen möchtest.");
+  setVoiceTranscript("");
   current=null;
   locked=true;
-  document.body.classList.add("quiz-stopped");
+  document.body.classList.add("voice-quiz-stopped","quiz-stopped");
+  const q=document.getElementById("question");
+  if(q) q.textContent="Sprachquiz gestoppt. Tippe auf „Neu starten“, wenn du wieder beginnen möchtest.";
 }
 
 function finishVoiceRound(){
+  stopVoiceListening({abort:true});
   locked=true;
   current=null;
   showVoiceManualActions(false);
