@@ -1018,20 +1018,74 @@ body.quiz-stopped #feedback.quiz-feedback{
   display:none!important;
 }
 
+
+/* ── Logo weiß, ohne Zusatztexte ── */
+.hlogo.wc26-brand-row{
+  min-height:72px;
+}
+.hlogo.wc26-brand-row h1,
+.wc26-logo-fallback{
+  display:none!important;
+}
+.q-label{
+  display:none!important;
+}
+.wc26-logo.header-logo{
+  width:58px!important;
+  height:auto!important;
+}
+.wc26-logo.start{
+  width:104px!important;
+}
+@media(max-width:520px){
+  .hlogo.wc26-brand-row{min-height:58px}
+  .wc26-logo.header-logo{width:46px!important}
+  .wc26-logo.start{width:86px!important}
+}
+
+
+/* ── Quizmodus: weniger Leerraum unter den Karten-Aktionen ── */
+body.quiz-active .flag-card{
+  padding-bottom:4px!important;
+  min-height:auto!important;
+}
+body.quiz-active .card-actions{
+  margin-bottom:0!important;
+  padding-bottom:0!important;
+  line-height:1!important;
+}
+body.quiz-active .flag-name.hidden{
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+body.quiz-active .flag-img-wrap{
+  margin-bottom:6px!important;
+}
+@media(max-width:520px){
+  body.quiz-active .flag-card{
+    padding-bottom:3px!important;
+  }
+  body.quiz-active .flag-img-wrap{
+    margin-bottom:5px!important;
+  }
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.22</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.24</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
   <div class="overlay-logo">
-    <img class="wc26-logo start" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg" alt="Offizielles FIFA World Cup 2026 Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
+    <img class="wc26-logo start" src="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" alt="WM-Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
     <span class="overlay-logo-text">🏆 Flaggen-Lernspiel WM 2026 🏆</span>
-    <span class="wc26-logo-fallback">FIFA WORLD CUP 2026</span>
+    
   </div>
   <h2>Wer spielt heute?</h2>
-  <p>Tippe einfach auf deinen Namen!</p>
   <div class="player-btns">
     <button class="pbtn" onclick="selectPlayer('Joshua')">Joshua</button>
     <button class="pbtn" onclick="selectPlayer('Lilli')">Lilli</button>
@@ -1048,9 +1102,9 @@ body.quiz-stopped #feedback.quiz-feedback{
 <div class="header">
   <div class="header-inner">
     <div class="hlogo wc26-brand-row">
-      <img class="wc26-logo header-logo" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg" alt="Offizielles FIFA World Cup 2026 Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
-      <h1>FIFA World Cup 2026</h1>
-      <span class="wc26-logo-fallback">FIFA WORLD CUP 2026</span>
+      <img class="wc26-logo header-logo" src="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" alt="WM-Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
+      
+      
     </div>
     <div class="header-sub">Flaggen-Quiz</div>
     <div class="gold-line"></div>
@@ -1102,7 +1156,7 @@ body.quiz-stopped #feedback.quiz-feedback{
 
 <!-- ── Question ── -->
 <div class="question-area">
-  <div class="q-label">Deine Aufgabe</div>
+  <div class="q-label" aria-hidden="true"></div>
   <div id="question">Wähle deinen Namen und leg los! 😊</div>
   <div id="feedback"></div>
   <div id="quizQuestionOverlay" class="quiz-question-overlay" aria-live="polite">
@@ -1120,14 +1174,14 @@ body.quiz-stopped #feedback.quiz-feedback{
 
 <!-- ── Ranking ── -->
 <div class="ranking-wrap" id="rankingPanel">
-  <div class="rank-head"><img class="wc26-panel-logo" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">🏅 Bestenliste</div>
+  <div class="rank-head"><img class="wc26-panel-logo" src="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">🏅 Bestenliste</div>
   <div id="rankingList"></div>
 </div>
 
 
 <!-- ── Statistik ── -->
 <div class="stats-wrap" id="statsPanel">
-  <div class="stats-head"><img class="wc26-panel-logo" src="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">📊 Flaggen-Statistik</div>
+  <div class="stats-head"><img class="wc26-panel-logo" src="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" alt="" loading="lazy" onerror="document.body.classList.add(\'logo-failed\')">📊 Flaggen-Statistik</div>
   <div id="statsList"></div>
 </div>
 
@@ -1180,8 +1234,8 @@ body.quiz-stopped #feedback.quiz-feedback{
 </div>
 
 <script>
-const APP_VERSION="1.22";
-const OFFICIAL_WC2026_LOGO_URL="https://commons.wikimedia.org/wiki/Special:FilePath/2026_FIFA_World_Cup_emblem.svg"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
+const APP_VERSION="1.24";
+const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
 const groupC=[["Brasilien","br"],["Marokko","ma"],["Haiti","ht"],["Schottland","gb-sct"]];
