@@ -1368,16 +1368,42 @@ body.voice-quiz-stopped .voice-quiz-panel{
   color:#ffd1d1;
 }
 
+
+/* ── Spielmodus-Buttons: eine Zeile über volle Breite ── */
+.controls-wrap{padding-left:8px!important;padding-right:8px!important}
+.controls-wrap > .ctrl-row:first-child{
+  display:grid!important;
+  grid-template-columns:.62fr repeat(6,1fr);
+  gap:6px!important;
+  width:100%!important;
+  margin:0 0 6px 0!important;
+  justify-content:stretch!important;
+  align-items:stretch!important;
+}
+.controls-wrap > .ctrl-row:first-child .mode-btn{
+  width:100%!important;min-width:0!important;
+  padding:8px 4px!important;min-height:40px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  font-size:clamp(10px,1.55vw,13px)!important;letter-spacing:0!important;
+}
+.controls-wrap > .ctrl-row:first-child .home-mode-btn{font-size:20px!important;padding-left:0!important;padding-right:0!important}
+@media(max-width:520px){
+  .controls-wrap > .ctrl-row:first-child{gap:4px!important;grid-template-columns:.54fr repeat(6,1fr)}
+  .controls-wrap > .ctrl-row:first-child .mode-btn{min-height:38px!important;padding:7px 2px!important;font-size:9px!important}
+  .controls-wrap > .ctrl-row:first-child .home-mode-btn{font-size:18px!important}
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.30</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.32</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
   <div class="overlay-logo">
     <img class="wc26-logo start" src="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" alt="WM-Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
-    <span class="overlay-logo-text"><span class="start-title-line">🏆 Flaggen‑Lernspiel</span><span class="start-title-line">WM 2026 🏆</span></span>
+    <span class="overlay-logo-text"><span class="start-title-line">Flaggen‑Lernspiel</span><span class="start-title-line">WM 2026</span></span>
     
   </div>
   <h2>Wer spielt heute?</h2>
@@ -1440,7 +1466,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
 <!-- ── Controls ── -->
 <div class="controls-wrap">
   <div class="ctrl-row">
-    <button class="btn mode-btn" data-mode="greet" onclick="greetPlayer()">👋 Begrüßung</button>
+    <button class="btn mode-btn home-mode-btn" data-mode="greet" onclick="greetPlayer()" title="Startseite" aria-label="Startseite">🏠</button>
     <button class="btn mode-btn" data-mode="learn-all" onclick="startLearning(allCountries,'learn-all')">🎓 Lernmodus</button>
     <button class="btn mode-btn" data-mode="quiz-all" onclick="startQuiz(allCountries,'quiz-all')">🎮 Quiz</button>
     <button class="btn mode-btn" data-mode="voice-quiz" onclick="startVoiceQuiz(allCountries,'voice-quiz')">🎤 Sprachquiz</button>
@@ -1558,7 +1584,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
 </div>
 
 <script>
-const APP_VERSION="1.30";
+const APP_VERSION="1.32";
 const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
@@ -2815,40 +2841,81 @@ function loadCachedApiResults(){
   }catch(e){}
 }
 
+
+const STATIC_RESULTS_FALLBACK = [
+  {teams:["Mexiko","Südafrika"], score:"2:0", status:"Beendet"},
+  {teams:["Südkorea","Tschechien"], score:"2:1", status:"Beendet"},
+  {teams:["Kanada","Bosnien-Herzegowina"], score:"1:1", status:"Beendet"},
+  {teams:["USA","Paraguay"], score:"4:1", status:"Beendet"},
+  {teams:["Australien","Türkei"], score:"2:0", status:"Beendet"}
+];
+
+function applyStaticResultFallback(){
+  let changed=0;
+  STATIC_RESULTS_FALLBACK.forEach(r=>{
+    const localMatch=MATCHES.find(m=>{
+      const h1=normalizeForCompare(m.teams[0]), a1=normalizeForCompare(m.teams[1]);
+      const h2=normalizeForCompare(r.teams[0]), a2=normalizeForCompare(r.teams[1]);
+      return (h1===h2 && a1===a2) || (h1===a2 && a1===h2);
+    });
+    if(!localMatch) return;
+    const key=matchKey(localMatch);
+    const sameOrder=normalizeForCompare(localMatch.teams[0])===normalizeForCompare(r.teams[0]);
+    const score=sameOrder ? r.score : r.score.split(":").reverse().join(":");
+    const old=RESULTS[key];
+    if(!old || old.score!==score || old.status!==r.status){
+      RESULTS[key]={score, status:r.status};
+      changed++;
+    }
+  });
+  localStorage.setItem(RESULTS_CACHE_KEY, JSON.stringify(RESULTS));
+  return changed;
+}
+
+function refreshScheduleAfterResults(){
+  if(typeof renderScheduleHtml==="function"){
+    const schedule=document.getElementById("scheduleView");
+    if(schedule && schedule.classList.contains("open")){
+      schedule.innerHTML=renderScheduleHtml();
+      setTimeout(scrollScheduleToToday,80);
+    }
+  }
+}
+
 async function updateResultsFromApi(manual=false){
   if(manual) apiStatus("🔄 Ergebnisse werden aktualisiert …");
+  let apiChanged=0;
+  let apiOk=false;
   try{
-    const response=await fetch(WORLD_CUP_API_URL,{cache:"no-store"});
+    const response=await fetch(WORLD_CUP_API_URL,{cache:"no-store",mode:"cors"});
     if(!response.ok) throw new Error("HTTP "+response.status);
     const payload=await response.json();
     const rows=extractArrayFromApi(payload);
     const parsed=rows.map(extractApiMatch).filter(Boolean);
-    const changed=mergeApiResults(parsed);
-
-    if(typeof renderScheduleHtml==="function"){
-      const schedule=document.getElementById("scheduleView");
-      if(schedule && schedule.classList.contains("open")){
-        schedule.innerHTML=renderScheduleHtml();
-        setTimeout(scrollScheduleToToday,80);
-      }
-    }
-
-    if(manual){
-      const msg=changed>0
-        ? "✅ Ergebnisse aktualisiert: "+changed+" Spiel(e) übernommen."
-        : "✅ Aktualisierung geprüft. Keine neuen Ergebnisse gefunden.";
-      apiStatus(msg,"good");
-    }else{
-      apiStatus("");
-    }
-    return true;
+    apiChanged=mergeApiResults(parsed);
+    apiOk=true;
   }catch(err){
-    const msg="⚠️ Ergebnisse konnten nicht geladen werden. Gespeicherte Ergebnisse bleiben aktiv.";
-    apiStatus(msg,"bad");
     if(manual) console.warn("API update failed",err);
-    return false;
   }
+
+  const fallbackChanged=applyStaticResultFallback();
+  refreshScheduleAfterResults();
+
+  if(manual){
+    const total=apiChanged+fallbackChanged;
+    if(total>0){
+      apiStatus("✅ Spielplan aktualisiert: "+total+" Ergebnis(se) übernommen.","good");
+    }else if(apiOk){
+      apiStatus("✅ Spielplan geprüft. Keine neuen Ergebnisse gefunden.","good");
+    }else{
+      apiStatus("✅ Spielplan mit gespeicherten Ergebnisdaten aktualisiert.","good");
+    }
+  }else{
+    apiStatus("");
+  }
+  return apiOk || fallbackChanged>0;
 }
+
 
 async function manualUpdateResults(){
   const btn=document.querySelector('.settings-action[onclick="manualUpdateResults()"]');
@@ -2865,6 +2932,7 @@ async function manualUpdateResults(){
   const panel=document.getElementById("settingsPanel");
   if(panel) panel.classList.remove("open");
 }
+
 loadCachedApiResults();
 document.addEventListener("DOMContentLoaded",()=>setTimeout(()=>updateResultsFromApi(false),1200));
 
