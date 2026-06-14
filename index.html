@@ -1307,22 +1307,85 @@ body.voice-quiz-stopped .voice-quiz-panel{
   margin-left:4px;
 }
 
+
+/* ── Startseite: sauberer Umbruch im Titel ── */
+.overlay-logo .overlay-logo-text{
+  text-align:center;
+  line-height:1.12;
+  hyphens:none!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+}
+.start-title-line{
+  display:inline-block;
+  white-space:nowrap;
+}
+@media(max-width:520px) and (orientation:portrait){
+  .overlay-logo .overlay-logo-text{
+    display:flex!important;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    letter-spacing:2px!important;
+  }
+  .start-title-line{
+    display:block;
+    white-space:nowrap;
+  }
+  .player-btns{
+    max-width:340px;
+  }
+  .pbtn{
+    min-width:132px;
+    padding-left:18px!important;
+    padding-right:18px!important;
+  }
+}
+
+/* ── Sichtbarer Ergebnis-Update-Status ── */
+.api-toast{
+  position:fixed;
+  left:50%;
+  top:calc(env(safe-area-inset-top, 0px) + 10px);
+  transform:translateX(-50%);
+  z-index:5000;
+  width:min(560px, calc(100vw - 18px));
+  background:rgba(9,22,46,.98);
+  border:2px solid rgba(126,203,255,.55);
+  border-radius:16px;
+  padding:12px 14px;
+  color:#cdeeff;
+  font-weight:900;
+  text-align:center;
+  box-shadow:0 12px 38px rgba(0,0,0,.52);
+}
+.api-toast.good{
+  border-color:rgba(126,203,139,.65);
+  color:#dfffe7;
+}
+.api-toast.bad{
+  border-color:rgba(232,112,112,.65);
+  color:#ffd1d1;
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.29</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.30</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
   <div class="overlay-logo">
     <img class="wc26-logo start" src="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" alt="WM-Logo" loading="eager" onerror="document.body.classList.add('logo-failed')">
-    <span class="overlay-logo-text">🏆 Flaggen-Lernspiel WM 2026 🏆</span>
+    <span class="overlay-logo-text"><span class="start-title-line">🏆 Flaggen‑Lernspiel</span><span class="start-title-line">WM 2026 🏆</span></span>
     
   </div>
   <h2>Wer spielt heute?</h2>
   <div class="player-btns">
     <button class="pbtn" onclick="selectPlayer('Joshua')">Joshua</button>
     <button class="pbtn" onclick="selectPlayer('Lilli')">Lilli</button>
+    <button class="pbtn" onclick="selectPlayer('Samu')">Samu</button>
+    <button class="pbtn" onclick="selectPlayer('Auri')">Auri</button>
     <button class="pbtn" onclick="selectPlayer('Silas')">Silas</button>
   </div>
   <div class="custom-row">
@@ -1356,7 +1419,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
     <button class="settings-btn" onclick="toggleSettings(event)" title="Einstellungen">⚙️</button>
     <div class="settings-panel" id="settingsPanel">
       <div class="settings-panel-title">Einstellungen</div>
-      <button class="btn settings-action" onclick="updateResultsFromApi(true);toggleSettings()">🔄 Ergebnisse aktualisieren</button>
+      <button class="btn settings-action" onclick="manualUpdateResults()">🔄 Ergebnisse aktualisieren</button>
       <div class="settings-separator"></div>
       <div class="settings-panel-title">Stimme</div>
       <div class="voice-settings">
@@ -1405,6 +1468,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
     </div>
   </div>
   <div id="apiStatus" style="font-size:12px;color:#8daed8;margin-top:4px;"></div>
+<div id="apiToast" class="api-toast" hidden></div>
 </div>
 
 <!-- ── Ranking ── -->
@@ -1494,7 +1558,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
 </div>
 
 <script>
-const APP_VERSION="1.29";
+const APP_VERSION="1.30";
 const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
@@ -2629,9 +2693,22 @@ const API_TEAM_MAP = {
   "England":"England","Croatia":"Kroatien","Ghana":"Ghana","Panama":"Panama"
 };
 
-function apiStatus(text){
+function showApiToast(text,type=""){
+  const toast=document.getElementById("apiToast");
+  if(!toast) return;
+  toast.textContent=text || "";
+  toast.className="api-toast"+(type ? " "+type : "");
+  toast.hidden=!text;
+  if(text){
+    clearTimeout(showApiToast._timer);
+    showApiToast._timer=setTimeout(()=>{toast.hidden=true;},3200);
+  }
+}
+
+function apiStatus(text,type=""){
   const el=document.getElementById("apiStatus");
   if(el) el.textContent=text || "";
+  if(text) showApiToast(text,type);
 }
 
 function normalizeTeamName(name){
@@ -2747,18 +2824,46 @@ async function updateResultsFromApi(manual=false){
     const rows=extractArrayFromApi(payload);
     const parsed=rows.map(extractApiMatch).filter(Boolean);
     const changed=mergeApiResults(parsed);
-    apiStatus("");
 
     if(typeof renderScheduleHtml==="function"){
       const schedule=document.getElementById("scheduleView");
-      if(schedule && schedule.classList.contains("open")) schedule.innerHTML=renderScheduleHtml();
+      if(schedule && schedule.classList.contains("open")){
+        schedule.innerHTML=renderScheduleHtml();
+        setTimeout(scrollScheduleToToday,80);
+      }
+    }
+
+    if(manual){
+      const msg=changed>0
+        ? "✅ Ergebnisse aktualisiert: "+changed+" Spiel(e) übernommen."
+        : "✅ Aktualisierung geprüft. Keine neuen Ergebnisse gefunden.";
+      apiStatus(msg,"good");
+    }else{
+      apiStatus("");
     }
     return true;
   }catch(err){
-    apiStatus("⚠️ API nicht erreichbar – gespeicherte Ergebnisse werden verwendet.");
+    const msg="⚠️ Ergebnisse konnten nicht geladen werden. Gespeicherte Ergebnisse bleiben aktiv.";
+    apiStatus(msg,"bad");
     if(manual) console.warn("API update failed",err);
     return false;
   }
+}
+
+async function manualUpdateResults(){
+  const btn=document.querySelector('.settings-action[onclick="manualUpdateResults()"]');
+  if(btn){
+    btn.disabled=true;
+    btn.dataset.oldText=btn.innerHTML;
+    btn.innerHTML="🔄 Aktualisiere …";
+  }
+  await updateResultsFromApi(true);
+  if(btn){
+    btn.disabled=false;
+    btn.innerHTML=btn.dataset.oldText || "🔄 Ergebnisse aktualisieren";
+  }
+  const panel=document.getElementById("settingsPanel");
+  if(panel) panel.classList.remove("open");
 }
 loadCachedApiResults();
 document.addEventListener("DOMContentLoaded",()=>setTimeout(()=>updateResultsFromApi(false),1200));
