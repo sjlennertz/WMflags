@@ -1467,10 +1467,42 @@ body.voice-quiz-stopped .voice-quiz-panel{
   font-weight:900;
 }
 
+
+/* ── Layout-/Performance-Optimierungen ── */
+.flag-card,
+.schedule-day,
+.stats-player,
+.voice-quiz-card,
+.kit-modal-card{
+  contain:layout paint;
+}
+.flag-card{
+  content-visibility:auto;
+  contain-intrinsic-size:190px 210px;
+}
+.schedule-day{
+  content-visibility:auto;
+  contain-intrinsic-size:280px 420px;
+}
+#grid{
+  align-items:start;
+}
+@media(max-width:520px){
+  .grid{
+    grid-template-columns:repeat(auto-fill,minmax(118px,1fr))!important;
+    gap:8px!important;
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
+  .flag-card{
+    border-radius:12px!important;
+  }
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.33</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.35</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
@@ -1518,7 +1550,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
     <button class="settings-btn" onclick="toggleSettings(event)" title="Einstellungen">⚙️</button>
     <div class="settings-panel" id="settingsPanel">
       <div class="settings-panel-title">Einstellungen</div>
-      <button class="btn settings-action" onclick="manualUpdateResults()">🔄 Ergebnisse aktualisieren</button>
+      <button id="updateResultsBtn" class="btn settings-action" onclick="manualUpdateResults()" type="button">🔄 Ergebnisse aktualisieren</button>
       <div class="settings-separator"></div>
       <div class="settings-panel-title">Stimme</div>
       <div class="voice-settings">
@@ -1657,7 +1689,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
 </div>
 
 <script>
-const APP_VERSION="1.33";
+const APP_VERSION="1.35";
 const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
@@ -2921,14 +2953,41 @@ const STATIC_RESULTS_FALLBACK = [
   {teams:["Südkorea","Tschechien"], score:"2:1", status:"Beendet"},
   {teams:["Kanada","Bosnien-Herzegowina"], score:"1:1", status:"Beendet"},
   {teams:["USA","Paraguay"], score:"4:1", status:"Beendet"},
+
   {teams:["Katar","Schweiz"], score:"1:1", status:"Beendet"},
   {teams:["Brasilien","Marokko"], score:"1:1", status:"Beendet"},
   {teams:["Haiti","Schottland"], score:"0:1", status:"Beendet"},
-  {teams:["Australien","Türkei"], score:"2:0", status:"Beendet"}
+  {teams:["Australien","Türkei"], score:"2:0", status:"Beendet"},
+
+  {teams:["Deutschland","Curaçao"], score:"7:1", status:"Beendet"},
+  {teams:["Niederlande","Japan"], score:"2:2", status:"Beendet"},
+  {teams:["Elfenbeinküste","Ecuador"], score:"1:0", status:"Beendet"},
+  {teams:["Schweden","Tunesien"], score:"5:1", status:"Beendet"},
+
+  {teams:["Spanien","Kap Verde"], score:"0:0", status:"Beendet"},
+  {teams:["Belgien","Ägypten"], score:"1:1", status:"Beendet"},
+  {teams:["Saudi-Arabien","Uruguay"], score:"1:1", status:"Beendet"},
+  {teams:["Iran","Neuseeland"], score:"2:2", status:"Beendet"},
+
+  {teams:["Frankreich","Senegal"], score:"3:1", status:"Beendet"},
+  {teams:["Irak","Norwegen"], score:"1:4", status:"Beendet"},
+  {teams:["Argentinien","Algerien"], score:"3:0", status:"Beendet"},
+  {teams:["Österreich","Jordanien"], score:"3:1", status:"Beendet"},
+
+  {teams:["Portugal","DR Kongo"], score:"1:1", status:"Beendet"},
+  {teams:["England","Kroatien"], score:"4:2", status:"Beendet"},
+  {teams:["Ghana","Panama"], score:"1:0", status:"Beendet"},
+  {teams:["Usbekistan","Kolumbien"], score:"1:3", status:"Beendet"},
+
+  {teams:["Tschechien","Südafrika"], score:"1:1", status:"Beendet"},
+  {teams:["Schweiz","Bosnien-Herzegowina"], score:"4:1", status:"Beendet"},
+  {teams:["Kanada","Katar"], score:"6:0", status:"Beendet"},
+  {teams:["Mexiko","Südkorea"], score:"1:0", status:"Beendet"}
 ];
 
 function applyStaticResultFallback(){
   let changed=0;
+  let matched=0;
   STATIC_RESULTS_FALLBACK.forEach(r=>{
     const localMatch=MATCHES.find(m=>{
       const h1=normalizeForCompare(m.teams[0]), a1=normalizeForCompare(m.teams[1]);
@@ -2936,6 +2995,7 @@ function applyStaticResultFallback(){
       return (h1===h2 && a1===a2) || (h1===a2 && a1===h2);
     });
     if(!localMatch) return;
+    matched++;
     const key=matchKey(localMatch);
     const sameOrder=normalizeForCompare(localMatch.teams[0])===normalizeForCompare(r.teams[0]);
     const score=sameOrder ? r.score : r.score.split(":").reverse().join(":");
@@ -2946,7 +3006,7 @@ function applyStaticResultFallback(){
     }
   });
   localStorage.setItem(RESULTS_CACHE_KEY, JSON.stringify(RESULTS));
-  return changed;
+  return {changed, matched};
 }
 
 function refreshScheduleAfterResults(){
@@ -2959,57 +3019,66 @@ function refreshScheduleAfterResults(){
   }
 }
 
+function fetchWithTimeout(url, options={}, timeoutMs=3500){
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(), timeoutMs);
+  return fetch(url,{...options, signal:controller.signal}).finally(()=>clearTimeout(timer));
+}
+
 async function updateResultsFromApi(manual=false){
   if(manual) apiStatus("🔄 Ergebnisse werden aktualisiert …");
+
+  const fallback = applyStaticResultFallback();
+  refreshScheduleAfterResults();
+
   let apiChanged=0;
   let apiOk=false;
   try{
-    const response=await fetch(WORLD_CUP_API_URL,{cache:"no-store",mode:"cors"});
+    const response=await fetchWithTimeout(WORLD_CUP_API_URL,{cache:"no-store",mode:"cors"},3500);
     if(!response.ok) throw new Error("HTTP "+response.status);
     const payload=await response.json();
     const rows=extractArrayFromApi(payload);
     const parsed=rows.map(extractApiMatch).filter(Boolean);
     apiChanged=mergeApiResults(parsed);
     apiOk=true;
+    if(apiChanged>0) refreshScheduleAfterResults();
   }catch(err){
-    if(manual) console.warn("API update failed",err);
+    if(manual) console.warn("API update failed; static fallback used",err);
   }
 
-  const fallbackChanged=applyStaticResultFallback();
-  refreshScheduleAfterResults();
-
   if(manual){
-    const total=apiChanged+fallbackChanged;
-    if(total>0){
-      apiStatus("✅ Spielplan aktualisiert: "+total+" Ergebnis(se) übernommen.","good");
-    }else{
-      apiStatus("✅ Spielplan aktualisiert.","good");
-    }
+    const total=fallback.changed+apiChanged;
+    const known=fallback.matched;
+    if(total>0) apiStatus("✅ Spielplan aktualisiert: "+total+" Ergebnis(se) übernommen.","good");
+    else apiStatus("✅ Spielplan aktualisiert. "+known+" bekannte Ergebnisse sind eingetragen.","good");
   }else{
     apiStatus("");
   }
-  return apiOk || fallbackChanged>0;
+  return apiOk || fallback.matched>0;
 }
 
-
 async function manualUpdateResults(){
-  const btn=document.querySelector('.settings-action[onclick="manualUpdateResults()"]');
+  const btn=document.getElementById("updateResultsBtn") || document.querySelector('.settings-action[onclick="manualUpdateResults()"]');
   if(btn){
     btn.disabled=true;
     btn.dataset.oldText=btn.innerHTML;
     btn.innerHTML="🔄 Aktualisiere …";
   }
-  await updateResultsFromApi(true);
-  if(btn){
-    btn.disabled=false;
-    btn.innerHTML=btn.dataset.oldText || "🔄 Ergebnisse aktualisieren";
+  try{
+    await updateResultsFromApi(true);
+  }finally{
+    if(btn){
+      btn.disabled=false;
+      btn.innerHTML=btn.dataset.oldText || "🔄 Ergebnisse aktualisieren";
+    }
+    const panel=document.getElementById("settingsPanel");
+    if(panel) panel.classList.remove("open");
   }
-  const panel=document.getElementById("settingsPanel");
-  if(panel) panel.classList.remove("open");
 }
 
 loadCachedApiResults();
-document.addEventListener("DOMContentLoaded",()=>setTimeout(()=>updateResultsFromApi(false),1200));
+applyStaticResultFallback();
+document.addEventListener("DOMContentLoaded",()=>setTimeout(()=>updateResultsFromApi(false),900));
 
 
 const CONTINENTS = {
@@ -3260,7 +3329,7 @@ const questionMsgs=[
 ];
 const greetMsgs=["Hallo %s! Schön, dass du dabei bist – zeig mal, was du draufhast!","Hey %s! Bereit für die WM 2026? Los geht's, du schaffst das!","Hi %s! Heute lernen wir die Flaggen aller 48 WM-Teams – viel Spaß!","Willkommen, %s! Mach dich warm – die Flaggen warten auf dich!","Na %s, bist du bereit? Dann mal los!"];
 
-let mode="learn", active=allCountries, current=null, locked=false;
+let mode="learn", active=allCountries, displayedActive=allCountries, current=null, locked=false;
 let currentMistakes=0;
 let quizQueue=[], quizRoundTotal=0, quizQuestionRecorded=false;
 let voiceQueue=[], voiceRoundTotal=0, voiceRecognition=null, voiceListening=false, lastVoiceText="", voiceListenTimer=null, voiceQuestionToken=0;
@@ -4291,13 +4360,25 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){ closeFlagModal(); closeKitModal(); }
 });
 
+
+// Quiz-Raster wird absichtlich bei jedem Quizstart und Filterwechsel neu gemischt.
+function shuffleDisplayedFlags(){
+  displayedActive = (mode==="quiz")
+    ? shuffleQuizQueue(active)
+    : active.slice();
+}
+
 function render(){
   const g=document.getElementById("grid");
-  g.innerHTML="";
+  if(!g) return;
 
-  active.forEach(c=>{
+  const cards=(mode==="quiz") ? displayedActive : active;
+  const frag=document.createDocumentFragment();
+
+  cards.forEach(c=>{
     const d=document.createElement("div");
     d.className="flag-card"+(mode==="quiz" ? " quiz-card" : "")+(mode==="voiceQuiz" ? " voice-card" : "");
+    d.dataset.country=c[0];
 
     const wrap=document.createElement("div");
     wrap.className="flag-img-wrap";
@@ -4305,13 +4386,11 @@ function render(){
     const img=document.createElement("img");
     img.src=(typeof flagUrl==="function") ? flagUrl(c[1]) : "https://flagcdn.com/w320/"+c[1]+".png";
     img.loading="lazy";
+    img.decoding="async";
     img.alt="Flagge "+c[0];
     img.onerror=()=>{
-      if(typeof onFlagError==="function"){
-        onFlagError(img,c[0]);
-      }else{
-        img.style.opacity=0.2;
-      }
+      if(typeof onFlagError==="function") onFlagError(img,c[0]);
+      else img.style.opacity=0.2;
     };
     wrap.appendChild(img);
 
@@ -4354,10 +4433,11 @@ function render(){
     d.appendChild(wrap);
     d.appendChild(actions);
     d.appendChild(label);
-
     d.onclick=()=>click(c,d);
-    g.appendChild(d);
+    frag.appendChild(d);
   });
+
+  g.replaceChildren(frag);
 }
 function clearHL(){document.querySelectorAll(".flag-card").forEach(e=>e.classList.remove("correct","wrong"));}
 
@@ -4543,6 +4623,7 @@ function startSchedule(){
   const grid=document.getElementById("grid");
   if(grid) grid.style.display="none";
 
+  applyStaticResultFallback();
   const schedule=document.getElementById("scheduleView");
   schedule.classList.add("open");
   schedule.innerHTML=renderScheduleHtml();
@@ -4667,9 +4748,11 @@ function restartQuizRound(){
     voiceRoundTotal=voiceQueue.length;
     nextVoiceQ();
   }else{
+    displayedActive=shuffleQuizQueue(active);
     quizQueue=shuffleQuizQueue(active);
     quizRoundTotal=quizQueue.length;
     quizQuestionRecorded=false;
+    render();
     nextQ();
   }
 }
@@ -4797,6 +4880,7 @@ function startVoiceQuiz(list=allCountries, modeId="voice-quiz", resetFilter=true
   updateScore();
   mode="voiceQuiz";
   active=list && list.length ? list : allCountries;
+  displayedActive=active.slice();
   voiceQueue=shuffleQuizQueue(active);
   voiceRoundTotal=voiceQueue.length;
   locked=false;
@@ -5027,6 +5111,7 @@ function startLearning(list=allCountries, modeId="learn-all", resetFilter=true){
   leaveScheduleView();
   mode="learn";
   active=list && list.length ? list : allCountries;
+  displayedActive=active.slice();
   locked=false;
   document.getElementById("question").textContent="Tippe auf eine Flagge, um den Namen zu hören 🎧";
   document.getElementById("repeat-btn").style.display="none";
@@ -5050,6 +5135,7 @@ function startQuiz(list,modeId="quiz-all",resetFilter=true){
   updateScore();
   mode="quiz";
   active=list && list.length ? list : allCountries;
+  displayedActive=shuffleQuizQueue(active);
   quizQueue=shuffleQuizQueue(active);
   quizRoundTotal=quizQueue.length;
   quizQuestionRecorded=false;
