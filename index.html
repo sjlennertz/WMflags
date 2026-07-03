@@ -1692,10 +1692,16 @@ body.writing-active #grid{
   box-shadow:0 0 0 4px rgba(126,203,139,.18) inset;
 }
 
+
+.writing-stage.checking{
+  border-color:rgba(126,203,255,.80)!important;
+  box-shadow:0 0 0 4px rgba(126,203,255,.14) inset;
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.39</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.40</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
@@ -1917,7 +1923,7 @@ body.writing-active #grid{
 </div>
 
 <script>
-const APP_VERSION="1.39";
+const APP_VERSION="1.40";
 const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
@@ -3732,7 +3738,7 @@ let quizQueue=[], quizRoundTotal=0, quizQuestionRecorded=false;
 let voiceQueue=[], voiceRoundTotal=0, voiceRecognition=null, voiceListening=false, lastVoiceText="", voiceListenTimer=null, voiceQuestionToken=0;
 let trainingMode="learn";
 let player="", sCorrect=0, sTotal=0;
-let writingCountry=null, writingLetters=[], writingIndex=0, writingDrawing=false, writingLastPoint=null, writingInkLength=0, writingStrokes=[], writingCurrentStroke=[], writingAccepted=false, writingWordMode=false, writingTargetText="", writingAutoTimer=null, writingLastBadAt=0;
+let writingCountry=null, writingLetters=[], writingIndex=0, writingDrawing=false, writingLastPoint=null, writingInkLength=0, writingStrokes=[], writingCurrentStroke=[], writingAccepted=false, writingWordMode=false, writingTargetText="", writingAutoTimer=null, writingCheckTimer=null, writingLastBadAt=0;
 
 
 function updateAppVersionBadge(){
@@ -5598,9 +5604,10 @@ function clearWritingCanvas(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   writingInkLength=0; writingLastPoint=null; writingStrokes=[]; writingCurrentStroke=[]; writingAccepted=false;
   if(writingAutoTimer){ clearTimeout(writingAutoTimer); writingAutoTimer=null; }
+  if(writingCheckTimer){ clearTimeout(writingCheckTimer); writingCheckTimer=null; }
   setWritingNextEnabled(false);
   const stage=document.querySelector(".writing-stage");
-  if(stage) stage.classList.remove("good","bad");
+  if(stage) stage.classList.remove("good","bad","checking");
   const hint=document.getElementById("writingHint");
   if(hint){ hint.className="writing-hint"; hint.textContent=writingWordMode ? "Schreibe jetzt das ganze Wort." : "Male den großen Buchstaben nach."; }
 }
@@ -5624,7 +5631,7 @@ function renderWritingLetter(){
   writingTargetText=writingLetters[writingIndex]; writingWordMode=false;
   if(guide){ guide.textContent=writingTargetText; guide.classList.remove("word"); }
   if(instr) instr.textContent="Male den Buchstaben „"+writingTargetText+"“ nach.";
-  if(next) next.textContent="✅ Weiter automatisch";
+  if(next) next.textContent="⏳ Wird automatisch geprüft";
   setFeedback(""); resizeWritingCanvas(); clearWritingCanvas(); speakCurrentWritingTarget();
 }
 function startWholeWordWriting(){
@@ -5646,6 +5653,11 @@ function writingPointFromEvent(event){
 function startWritingStroke(event){
   if(mode!=="write" || !writingCountry || !writingTargetText) return;
   event.preventDefault(); const canvas=document.getElementById("writingCanvas"); if(!canvas) return;
+  if(writingCheckTimer){ clearTimeout(writingCheckTimer); writingCheckTimer=null; }
+  if(writingAutoTimer){ clearTimeout(writingAutoTimer); writingAutoTimer=null; }
+  writingAccepted=false;
+  const stage=document.querySelector(".writing-stage");
+  if(stage) stage.classList.remove("good","bad","checking");
   canvas.setPointerCapture?.(event.pointerId); writingDrawing=true;
   const pt=writingPointFromEvent(event); writingLastPoint=pt; writingCurrentStroke=[pt];
   const ctx=canvas.getContext("2d"); ctx.beginPath(); ctx.moveTo(pt.x,pt.y);
@@ -5655,23 +5667,13 @@ function moveWritingStroke(event){
   const canvas=document.getElementById("writingCanvas"); const ctx=canvas.getContext("2d"); const pt=writingPointFromEvent(event);
   if(writingLastPoint){ const dx=pt.x-writingLastPoint.x, dy=pt.y-writingLastPoint.y; writingInkLength+=Math.sqrt(dx*dx+dy*dy); }
   ctx.lineTo(pt.x,pt.y); ctx.stroke(); writingLastPoint=pt; writingCurrentStroke.push(pt);
-  const score=evaluateWritingTarget(false);
-  if(score.ok){
-    scheduleWritingAutoAdvance();
-  }else{
-    const stage=document.querySelector(".writing-stage");
-    if(stage) stage.classList.remove("good");
-  }
 }
 function endWritingStroke(event){
   if(!writingDrawing) return; event.preventDefault(); writingDrawing=false; writingLastPoint=null;
   if(writingCurrentStroke.length) writingStrokes.push(writingCurrentStroke);
   writingCurrentStroke=[];
-  const score=evaluateWritingTarget(true);
-  if(score.ok){
-    scheduleWritingAutoAdvance();
-  }else if(writingInkLength>45){
-    markWritingBad(score);
+  if(writingInkLength>45){
+    scheduleWritingCheckAfterStroke();
   }
 }
 
@@ -5722,11 +5724,30 @@ function boxOverlapRatio(a,b){
   return inter/smaller;
 }
 
+function scheduleWritingCheckAfterStroke(){
+  if(writingCheckTimer || writingAccepted || writingDrawing) return;
+  const stage=document.querySelector(".writing-stage");
+  if(stage){ stage.classList.remove("good","bad"); stage.classList.add("checking"); }
+  const hint=document.getElementById("writingHint");
+  if(hint){ hint.className="writing-hint"; hint.textContent="Ich prüfe deinen Buchstaben …"; }
+  writingCheckTimer=setTimeout(()=>{
+    writingCheckTimer=null;
+    if(mode!=="write" || !writingCountry || writingDrawing || writingAccepted) return;
+    const score=evaluateWritingTarget(true);
+    if(score.ok){
+      scheduleWritingAutoAdvance();
+    }else{
+      markWritingBad(score);
+    }
+  },2000);
+}
+
 function scheduleWritingAutoAdvance(){
   if(writingAutoTimer || writingAccepted) return;
   writingAccepted=true;
+  if(writingCheckTimer){ clearTimeout(writingCheckTimer); writingCheckTimer=null; }
   const stage=document.querySelector(".writing-stage");
-  if(stage){ stage.classList.remove("bad"); stage.classList.add("good"); }
+  if(stage){ stage.classList.remove("bad","checking"); stage.classList.add("good"); }
   const msg=pick(writingSuccessMsgs);
   const hint=document.getElementById("writingHint");
   if(hint){ hint.className="writing-hint good"; hint.textContent=msg; }
@@ -5734,13 +5755,13 @@ function scheduleWritingAutoAdvance(){
   writingAutoTimer=setTimeout(()=>{
     writingAutoTimer=null;
     if(mode==="write" && writingCountry) nextWritingLetter(true);
-  },950);
+  },850);
 }
 
 function markWritingBad(score){
   if(writingAccepted) return;
   const stage=document.querySelector(".writing-stage");
-  if(stage){ stage.classList.remove("good"); stage.classList.add("bad"); }
+  if(stage){ stage.classList.remove("good","checking"); stage.classList.add("bad"); }
   const hint=document.getElementById("writingHint");
   const msg=score && score.reason==="tooSmall"
     ? "Das war noch zu wenig. Male den Buchstaben größer nach."
