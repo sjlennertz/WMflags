@@ -1499,10 +1499,184 @@ body.voice-quiz-stopped .voice-quiz-panel{
   }
 }
 
+
+/* ── Schreibmodus: Buchstaben nachmalen ── */
+.controls-wrap > .ctrl-row:first-child{
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
+}
+.writing-panel{
+  display:none;
+  padding:12px 12px 4px;
+  max-width:760px;
+  margin:0 auto;
+}
+body.writing-active .writing-panel{
+  display:block;
+}
+body.writing-active #grid{
+  margin-top:8px;
+}
+.writing-card{
+  background:linear-gradient(180deg,rgba(14,33,64,.98),rgba(7,16,32,.98));
+  border:1px solid rgba(201,168,76,.34);
+  border-radius:18px;
+  padding:14px;
+  box-shadow:0 14px 34px rgba(0,0,0,.32);
+}
+.writing-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+}
+.writing-label{
+  color:#c9a84c;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.writing-country{
+  color:#fff;
+  font-size:24px;
+  font-weight:900;
+  line-height:1.05;
+}
+.writing-flag{
+  width:76px;
+  height:52px;
+  object-fit:cover;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.2);
+  background:#071020;
+}
+.writing-progress{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:5px;
+  margin:8px 0 10px;
+}
+.write-chip{
+  min-width:28px;
+  height:28px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:9px;
+  background:rgba(255,255,255,.08);
+  color:#aac4e8;
+  font-weight:900;
+  border:1px solid rgba(255,255,255,.10);
+}
+.write-chip.done{
+  background:rgba(126,203,139,.18);
+  border-color:rgba(126,203,139,.50);
+  color:#dfffe7;
+}
+.write-chip.current{
+  background:rgba(201,168,76,.22);
+  border-color:rgba(232,201,106,.65);
+  color:#ffe9a6;
+  transform:scale(1.08);
+}
+.writing-instruction{
+  text-align:center;
+  color:#cdeeff;
+  font-size:14px;
+  font-weight:800;
+  margin-bottom:8px;
+}
+.writing-stage{
+  position:relative;
+  height:min(42vh,330px);
+  min-height:250px;
+  border-radius:18px;
+  overflow:hidden;
+  background:#f7fbff;
+  border:3px solid rgba(201,168,76,.58);
+  touch-action:none;
+  user-select:none;
+}
+.writing-letter-guide{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:rgba(10,22,40,.15);
+  font-size:min(48vw,260px);
+  font-weight:900;
+  font-family:Arial, sans-serif;
+  line-height:1;
+  pointer-events:none;
+}
+.writing-canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  touch-action:none;
+  cursor:crosshair;
+}
+.writing-hint{
+  min-height:24px;
+  text-align:center;
+  color:#8daed8;
+  font-size:13px;
+  font-weight:800;
+  margin:8px 0 0;
+}
+.writing-hint.good{
+  color:#7ecb8b;
+}
+.writing-actions{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+.writing-actions .btn{
+  min-height:46px;
+  font-weight:900;
+}
+@media(max-width:520px){
+  .controls-wrap > .ctrl-row:first-child{
+    grid-template-columns:repeat(8,minmax(0,1fr))!important;
+    gap:2px!important;
+  }
+  .mode-icon{font-size:20px!important}
+  .mode-text{font-size:8.6px!important}
+  .writing-panel{
+    padding-left:7px;
+    padding-right:7px;
+  }
+  .writing-card{
+    border-radius:15px;
+    padding:10px;
+  }
+  .writing-country{
+    font-size:20px;
+  }
+  .writing-flag{
+    width:64px;
+    height:44px;
+  }
+  .writing-stage{
+    min-height:230px;
+    height:38vh;
+  }
+  .writing-actions .btn{
+    flex:1 1 145px;
+  }
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.35</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.36</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
@@ -1575,6 +1749,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
     <button class="btn mode-btn" data-mode="learn-all" onclick="startLearning(allCountries,'learn-all')"><span class="mode-icon">🎓</span><span class="mode-text">Lernen</span></button>
     <button class="btn mode-btn" data-mode="quiz-all" onclick="startQuiz(allCountries,'quiz-all')"><span class="mode-icon">🎮</span><span class="mode-text">Quiz</span></button>
     <button class="btn mode-btn" data-mode="voice-quiz" onclick="startVoiceQuiz(allCountries,'voice-quiz')"><span class="mode-icon">🎤</span><span class="mode-text">Sprache</span></button>
+    <button class="btn mode-btn" data-mode="write" onclick="startWritingMode(allCountries,'write')"><span class="mode-icon">✍️</span><span class="mode-text">Schreiben</span></button>
     <button class="btn mode-btn" data-mode="schedule" onclick="startSchedule()"><span class="mode-icon">📅</span><span class="mode-text">Plan</span></button>
     <button class="btn mode-btn" data-mode="ranking" onclick="toggleRanking()"><span class="mode-icon">🏅</span><span class="mode-text">Ranking</span></button>
     <button class="btn mode-btn" data-mode="stats" onclick="toggleStats()"><span class="mode-icon">📊</span><span class="mode-text">Statistik</span></button>
@@ -1641,6 +1816,40 @@ body.voice-quiz-stopped .voice-quiz-panel{
   </div>
 </div>
 
+
+<!-- ── Schreibmodus ── -->
+<div id="writingPanel" class="writing-panel">
+  <div class="writing-card">
+    <div class="writing-head">
+      <div>
+        <div class="writing-label">Schreibmodus</div>
+        <div id="writingCountry" class="writing-country">Land auswählen</div>
+      </div>
+      <img id="writingFlag" class="writing-flag" alt="">
+    </div>
+
+    <div id="writingProgress" class="writing-progress"></div>
+
+    <div class="writing-instruction" id="writingInstruction">
+      Male den Buchstaben mit dem Finger nach.
+    </div>
+
+    <div class="writing-stage">
+      <div id="writingLetterGuide" class="writing-letter-guide">A</div>
+      <canvas id="writingCanvas" class="writing-canvas"></canvas>
+    </div>
+
+    <div id="writingHint" class="writing-hint"></div>
+
+    <div class="writing-actions">
+      <button class="btn voice-speak-btn" type="button" onclick="repeatWritingCountry()">🔊 Land vorlesen</button>
+      <button class="btn repeat-question-btn" type="button" onclick="resetWritingLetter()">↩️ Buchstabe neu</button>
+      <button id="writingNextBtn" class="btn quiz-restart-btn" type="button" onclick="nextWritingLetter()">✅ Nächster Buchstabe</button>
+      <button class="btn cancel-question-btn" type="button" onclick="closeWritingPanel()">✖️ Schließen</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Quiz Neustart ── -->
 <div id="quizRestartBar" class="quiz-restart-bar">
   <button class="btn quiz-restart-btn" type="button" onclick="restartQuizRound()">Neu starten</button>
@@ -1689,7 +1898,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
 </div>
 
 <script>
-const APP_VERSION="1.35";
+const APP_VERSION="1.36";
 const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
@@ -3335,6 +3544,7 @@ let quizQueue=[], quizRoundTotal=0, quizQuestionRecorded=false;
 let voiceQueue=[], voiceRoundTotal=0, voiceRecognition=null, voiceListening=false, lastVoiceText="", voiceListenTimer=null, voiceQuestionToken=0;
 let trainingMode="learn";
 let player="", sCorrect=0, sTotal=0;
+let writingCountry=null, writingLetters=[], writingIndex=0, writingDrawing=false, writingLastPoint=null, writingInkLength=0;
 
 
 function updateAppVersionBadge(){
@@ -3720,6 +3930,8 @@ function applyTrainingFilter(type,value){
     startQuiz(list, "quiz-all", false);
   }else if(trainingMode==="voice"){
     startVoiceQuiz(list, "voice-quiz", false);
+  }else if(trainingMode==="write"){
+    startWritingMode(list, "write", false);
   }else{
     startLearning(list, "learn-all", false);
   }
@@ -4034,6 +4246,8 @@ function closePanels(){
   if(ranking){ ranking.classList.remove("open"); ranking.style.display=""; }
   const stats=document.getElementById("statsPanel");
   if(stats) stats.classList.remove("open");
+  const writing=document.getElementById("writingPanel");
+  if(writing) writing.classList.remove("open");
 }
 
 // ── UI helpers ───────────────────────────────────────────
@@ -4455,7 +4669,7 @@ document.addEventListener("click",event=>{
 
 
 function setBodyMode(modeName){
-  document.body.classList.remove("training-active","quiz-active","voice-quiz-active","voice-quiz-stopped","greeting-active","schedule-active","ranking-active","stats-active","feedback-active");
+  document.body.classList.remove("training-active","quiz-active","voice-quiz-active","voice-quiz-stopped","writing-active","greeting-active","schedule-active","ranking-active","stats-active","feedback-active");
   if(modeName) document.body.classList.add(modeName);
 }
 
@@ -5099,6 +5313,230 @@ function finishVoiceRound(){
   commitSession();
 }
 
+
+// ── Schreibmodus: Ländername Buchstabe für Buchstabe nachmalen ──
+function countryLettersForWriting(name){
+  return Array.from(String(name||"").toUpperCase())
+    .filter(ch=>/[A-ZÄÖÜÇÉÈÁÀÍÌÓÒÚÙÑ]/.test(ch));
+}
+
+function startWritingMode(list=allCountries, modeId="write", resetFilter=true){
+  hideQuizQuestionOverlay();
+  try{ if(voiceRecognition && voiceListening) voiceRecognition.stop(); }catch(e){}
+  stopSpeech();
+  closePanels();
+  const stats=document.getElementById("statsPanel"); if(stats) stats.classList.remove("open");
+  trainingMode="write";
+  setActiveMode(modeId);
+  setBodyMode("training-active");
+  document.body.classList.add("writing-active");
+  leaveScheduleView();
+  mode="write";
+  active=list && list.length ? list : allCountries;
+  displayedActive=active.slice();
+  writingCountry=null;
+  writingLetters=[];
+  writingIndex=0;
+  locked=false;
+  document.getElementById("question").textContent="✍️ Tippe auf eine Flagge und male den Ländernamen Buchstabe für Buchstabe nach.";
+  document.getElementById("repeat-btn").style.display="none";
+  setFeedback("");
+  closeWritingPanel(false);
+  if(resetFilter) setActiveFilter("all");
+  const grid=document.getElementById("grid"); if(grid) grid.style.display="grid";
+  render();
+}
+
+function startCountryWriting(country){
+  writingCountry=country;
+  writingLetters=countryLettersForWriting(country[0]);
+  writingIndex=0;
+  const panel=document.getElementById("writingPanel");
+  if(panel) panel.classList.add("open");
+  const name=document.getElementById("writingCountry");
+  if(name) name.textContent=country[0];
+  const flag=document.getElementById("writingFlag");
+  if(flag){
+    flag.src=flagUrl(country[1]);
+    flag.alt="Flagge "+country[0];
+  }
+  const q=document.getElementById("question");
+  if(q) q.textContent="✍️ Schreibe: "+country[0];
+  speak("Schreibe "+naturalText(country[0])+". Male jeden Buchstaben nach.",{force:true});
+  renderWritingLetter();
+  setTimeout(resizeWritingCanvas,60);
+}
+
+function renderWritingProgress(){
+  const el=document.getElementById("writingProgress");
+  if(!el) return;
+  el.innerHTML=writingLetters.map((ch,i)=>
+    `<span class="write-chip${i<writingIndex?' done':''}${i===writingIndex?' current':''}">${escapeHtml(ch)}</span>`
+  ).join("");
+}
+
+function resizeWritingCanvas(){
+  const canvas=document.getElementById("writingCanvas");
+  const stage=document.querySelector(".writing-stage");
+  if(!canvas || !stage) return;
+  const rect=stage.getBoundingClientRect();
+  const ratio=Math.max(1, window.devicePixelRatio || 1);
+  canvas.width=Math.round(rect.width*ratio);
+  canvas.height=Math.round(rect.height*ratio);
+  const ctx=canvas.getContext("2d");
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
+  ctx.strokeStyle="#123c73";
+  ctx.lineWidth=Math.max(14, Math.min(26, rect.width/18));
+}
+
+function clearWritingCanvas(){
+  const canvas=document.getElementById("writingCanvas");
+  if(!canvas) return;
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  writingInkLength=0;
+  writingLastPoint=null;
+  const hint=document.getElementById("writingHint");
+  if(hint){
+    hint.className="writing-hint";
+    hint.textContent="Male den großen Buchstaben nach. Danach tippe auf „Nächster Buchstabe“. ";
+  }
+}
+
+function renderWritingLetter(){
+  renderWritingProgress();
+  const guide=document.getElementById("writingLetterGuide");
+  const instr=document.getElementById("writingInstruction");
+  const next=document.getElementById("writingNextBtn");
+  if(writingIndex>=writingLetters.length){
+    if(guide) guide.textContent="★";
+    if(instr) instr.textContent="Super! Du hast den Ländernamen geschrieben.";
+    if(next) next.textContent="🏁 Fertig";
+    setFeedback("✅ Fertig geschrieben: "+(writingCountry ? writingCountry[0] : ""),false);
+    speak("Super. Du hast "+naturalText(writingCountry ? writingCountry[0] : "")+" geschrieben.",{force:true});
+    return;
+  }
+  const letter=writingLetters[writingIndex];
+  if(guide) guide.textContent=letter;
+  if(instr) instr.textContent="Male den Buchstaben „"+letter+"“ nach.";
+  if(next) next.textContent="✅ Nächster Buchstabe";
+  setFeedback("");
+  resizeWritingCanvas();
+  clearWritingCanvas();
+}
+
+function writingPointFromEvent(event){
+  const canvas=document.getElementById("writingCanvas");
+  const rect=canvas.getBoundingClientRect();
+  return {x:event.clientX-rect.left, y:event.clientY-rect.top};
+}
+
+function startWritingStroke(event){
+  if(mode!=="write" || !writingCountry || writingIndex>=writingLetters.length) return;
+  event.preventDefault();
+  const canvas=document.getElementById("writingCanvas");
+  if(!canvas) return;
+  canvas.setPointerCapture?.(event.pointerId);
+  writingDrawing=true;
+  const pt=writingPointFromEvent(event);
+  writingLastPoint=pt;
+  const ctx=canvas.getContext("2d");
+  ctx.beginPath();
+  ctx.moveTo(pt.x,pt.y);
+}
+
+function moveWritingStroke(event){
+  if(!writingDrawing) return;
+  event.preventDefault();
+  const canvas=document.getElementById("writingCanvas");
+  const ctx=canvas.getContext("2d");
+  const pt=writingPointFromEvent(event);
+  if(writingLastPoint){
+    const dx=pt.x-writingLastPoint.x;
+    const dy=pt.y-writingLastPoint.y;
+    writingInkLength+=Math.sqrt(dx*dx+dy*dy);
+  }
+  ctx.lineTo(pt.x,pt.y);
+  ctx.stroke();
+  writingLastPoint=pt;
+  if(writingInkLength>70){
+    const hint=document.getElementById("writingHint");
+    if(hint){
+      hint.className="writing-hint good";
+      hint.textContent="Gut nachgemalt! Jetzt kannst du zum nächsten Buchstaben.";
+    }
+  }
+}
+
+function endWritingStroke(event){
+  if(!writingDrawing) return;
+  event.preventDefault();
+  writingDrawing=false;
+  writingLastPoint=null;
+}
+
+function resetWritingLetter(){
+  if(mode!=="write" || !writingCountry) return;
+  clearWritingCanvas();
+  const letter=writingLetters[writingIndex] || "";
+  speak("Male "+letter+" noch einmal nach.",{force:true});
+}
+
+function nextWritingLetter(){
+  if(mode!=="write" || !writingCountry) return;
+  if(writingIndex>=writingLetters.length){
+    closeWritingPanel();
+    return;
+  }
+  if(writingInkLength<35){
+    const hint=document.getElementById("writingHint");
+    if(hint){
+      hint.className="writing-hint";
+      hint.textContent="Male den Buchstaben erst mit dem Finger nach.";
+    }
+    speak("Male den Buchstaben erst nach.",{force:true});
+    return;
+  }
+  writingIndex++;
+  renderWritingLetter();
+}
+
+function repeatWritingCountry(){
+  if(!writingCountry) return;
+  if(writingIndex<writingLetters.length){
+    speak("Schreibe "+naturalText(writingCountry[0])+". Jetzt der Buchstabe "+writingLetters[writingIndex]+".",{force:true});
+  }else{
+    speak("Fertig. "+naturalText(writingCountry[0])+" ist geschrieben.",{force:true});
+  }
+}
+
+function closeWritingPanel(resetMode=true){
+  const panel=document.getElementById("writingPanel");
+  if(panel) panel.classList.remove("open");
+  writingCountry=null;
+  writingLetters=[];
+  writingIndex=0;
+  if(resetMode && mode==="write"){
+    setFeedback("");
+    const q=document.getElementById("question");
+    if(q) q.textContent="✍️ Tippe auf eine Flagge und male den Ländernamen Buchstabe für Buchstabe nach.";
+  }
+}
+
+function initWritingCanvasEvents(){
+  const canvas=document.getElementById("writingCanvas");
+  if(!canvas) return;
+  canvas.addEventListener("pointerdown",startWritingStroke);
+  canvas.addEventListener("pointermove",moveWritingStroke);
+  canvas.addEventListener("pointerup",endWritingStroke);
+  canvas.addEventListener("pointercancel",endWritingStroke);
+  window.addEventListener("resize",()=>{ if(mode==="write" && writingCountry) renderWritingLetter(); });
+}
+document.addEventListener("DOMContentLoaded",initWritingCanvasEvents);
+
+
 // ── Game flow ────────────────────────────────────────────
 function startLearning(list=allCountries, modeId="learn-all", resetFilter=true){
   hideQuizQuestionOverlay();
@@ -5165,6 +5603,7 @@ function nextQ(){
 }
 
 function click(c,el){
+  if(mode==="write"){startCountryWriting(c);clearHL();el.classList.add("correct");return;}
   if(mode==="learn"){recordLearningFlag(c[0]);speakCountry(c[0]);clearHL();el.classList.add("correct");return;}
   if(mode==="voiceQuiz") return;
   if(locked || !current)return;
