@@ -1741,10 +1741,37 @@ body.writing-active #grid{
   padding-top:10px;
 }
 
+
+/* ── Schreibfeld-Zoom direkt im Schreibfeld ── */
+.writing-field-zoom-btn{
+  position:absolute;
+  top:8px;
+  right:8px;
+  z-index:8;
+  border:1px solid rgba(10,22,40,.18);
+  border-radius:999px;
+  background:rgba(255,255,255,.86);
+  color:#0a1628;
+  font-weight:900;
+  font-size:13px;
+  padding:8px 11px;
+  box-shadow:0 5px 16px rgba(0,0,0,.18);
+  cursor:pointer;
+}
+.writing-field-zoom-btn:hover{
+  background:#fff;
+}
+.writing-panel.fullscreen .writing-field-zoom-btn{
+  top:calc(env(safe-area-inset-top,0px) + 12px);
+  right:calc(env(safe-area-inset-right,0px) + 12px);
+  font-size:15px;
+  padding:10px 14px;
+}
+
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.42</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.43</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
@@ -1912,7 +1939,6 @@ body.writing-active #grid{
     <div class="writing-actions">
       <button class="btn voice-speak-btn" type="button" onclick="repeatWritingCountry()">🔊 Land vorlesen</button>
       <button class="btn repeat-question-btn" type="button" onclick="resetWritingLetter()">↩️ Buchstabe neu</button>
-      <button id="writingFullscreenBtn" class="btn repeat-question-btn" type="button" onclick="toggleWritingFullscreen()">🔎 Groß</button>
       <button id="writingNextBtn" class="btn quiz-restart-btn" type="button" onclick="nextWritingLetter()">✅ Nächster Buchstabe</button>
       <button class="btn cancel-question-btn" type="button" onclick="closeWritingPanel()">✖️ Schließen</button>
     </div>
@@ -1967,7 +1993,7 @@ body.writing-active #grid{
 </div>
 
 <script>
-const APP_VERSION="1.42";
+const APP_VERSION="1.43";
 const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
@@ -5889,7 +5915,7 @@ function scheduleWritingAutoAdvance(){
   if(stage){ stage.classList.remove("bad","checking"); stage.classList.add("good"); }
   const msg=pick(writingSuccessMsgs);
   const hint=document.getElementById("writingHint");
-  if(hint){ hint.className="writing-hint good"; hint.textContent=msg+" Gleich geht es weiter …"; }
+  if(hint){ hint.className="writing-hint good"; hint.textContent=msg; }
 
   writingAutoTimer=setTimeout(async ()=>{
     writingAutoTimer=null;
