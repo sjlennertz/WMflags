@@ -1510,7 +1510,7 @@ body.voice-quiz-stopped .voice-quiz-panel{
   max-width:760px;
   margin:0 auto;
 }
-body.writing-active .writing-panel{
+body.writing-active .writing-panel.open{
   display:block;
 }
 body.writing-active #grid{
@@ -1673,10 +1673,13 @@ body.writing-active #grid{
   }
 }
 
+
+#writingNextBtn:disabled{opacity:.45;filter:grayscale(1);cursor:not-allowed}
+.writing-letter-guide.word{font-size:min(15vw,74px);letter-spacing:.04em;white-space:normal;text-align:center;padding:0 10px}
 </style>
 </head>
 <body>
-<div class="app-version-badge" id="appVersionBadge">Version <strong>1.36</strong></div>
+<div class="app-version-badge" id="appVersionBadge">Version <strong>1.38</strong></div>
 
 <!-- ── Player overlay ── -->
 <div class="overlay" id="playerOverlay">
@@ -1835,7 +1838,7 @@ body.writing-active #grid{
     </div>
 
     <div class="writing-stage">
-      <div id="writingLetterGuide" class="writing-letter-guide">A</div>
+      <div id="writingLetterGuide" class="writing-letter-guide"></div>
       <canvas id="writingCanvas" class="writing-canvas"></canvas>
     </div>
 
@@ -1898,7 +1901,7 @@ body.writing-active #grid{
 </div>
 
 <script>
-const APP_VERSION="1.36";
+const APP_VERSION="1.38";
 const OFFICIAL_WC2026_LOGO_URL="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png"; // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const groupA=[["Mexiko","mx"],["Südafrika","za"],["Südkorea","kr"],["Tschechien","cz"]];
 const groupB=[["Kanada","ca"],["Bosnien-Herzegowina","ba"],["Katar","qa"],["Schweiz","ch"]];
@@ -2646,10 +2649,10 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "So. 28.06.2026",
-    "time": "—",
+    "time": "20:00",
     "teams": [
-      "2. Gruppe A",
-      "2. Gruppe B"
+      "Südafrika",
+      "Kanada"
     ],
     "venue": "Los Angeles Stadium"
   },
@@ -2657,10 +2660,10 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Mo. 29.06.2026",
-    "time": "—",
+    "time": "18:00",
     "teams": [
-      "1. Gruppe E",
-      "3. Gruppe A/B/C/D/F"
+      "Deutschland",
+      "Paraguay"
     ],
     "venue": "Boston Stadium"
   },
@@ -2668,10 +2671,10 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Mo. 29.06.2026",
-    "time": "—",
+    "time": "21:00",
     "teams": [
-      "1. Gruppe F",
-      "2. Gruppe C"
+      "Niederlande",
+      "Marokko"
     ],
     "venue": "Estadio Monterrey"
   },
@@ -2679,10 +2682,10 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Mo. 29.06.2026",
-    "time": "—",
+    "time": "23:00",
     "teams": [
-      "1. Gruppe C",
-      "2. Gruppe F"
+      "Brasilien",
+      "Japan"
     ],
     "venue": "Houston Stadium"
   },
@@ -2690,10 +2693,10 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Di. 30.06.2026",
-    "time": "—",
+    "time": "18:00",
     "teams": [
-      "1. Gruppe I",
-      "3. Gruppe C/D/F/G/H"
+      "Frankreich",
+      "Schweden"
     ],
     "venue": "New York New Jersey Stadium"
   },
@@ -2701,10 +2704,10 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Di. 30.06.2026",
-    "time": "—",
+    "time": "21:00",
     "teams": [
-      "2. Gruppe E",
-      "2. Gruppe I"
+      "Elfenbeinküste",
+      "Norwegen"
     ],
     "venue": "Dallas Stadium"
   },
@@ -2712,10 +2715,10 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Di. 30.06.2026",
-    "time": "—",
+    "time": "23:00",
     "teams": [
-      "1. Gruppe A",
-      "3. Gruppe C/E/F/H/I"
+      "Mexiko",
+      "Ecuador"
     ],
     "venue": "Mexico City Stadium"
   },
@@ -2723,10 +2726,10 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Mi. 01.07.2026",
-    "time": "—",
+    "time": "18:00",
     "teams": [
-      "1. Gruppe L",
-      "3. Gruppe E/H/I/J/K"
+      "England",
+      "DR Kongo"
     ],
     "venue": "San Francisco Bay Area Stadium"
   },
@@ -2734,10 +2737,10 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Mi. 01.07.2026",
-    "time": "—",
+    "time": "20:00",
     "teams": [
-      "1. Gruppe D",
-      "3. Gruppe B/E/F/I/J"
+      "USA",
+      "Bosnien-Herzegowina"
     ],
     "venue": "Seattle Stadium"
   },
@@ -2745,43 +2748,43 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Mi. 01.07.2026",
-    "time": "—",
+    "time": "23:00",
     "teams": [
-      "1. Gruppe G",
-      "3. Gruppe A/E/H/I/J"
+      "Belgien",
+      "Senegal"
+    ],
+    "venue": "Atlanta Stadium"
+  },
+  {
+    "stage": "R32",
+    "group": "R32",
+    "date": "Do. 02.07.2026",
+    "time": "21:00",
+    "teams": [
+      "Spanien",
+      "Österreich"
     ],
     "venue": "Los Angeles Stadium"
   },
   {
     "stage": "R32",
     "group": "R32",
-    "date": "Do. 02.07.2026",
-    "time": "—",
+    "date": "Fr. 03.07.2026",
+    "time": "01:00",
     "teams": [
-      "2. Gruppe K",
-      "2. Gruppe L"
+      "Portugal",
+      "Kroatien"
     ],
     "venue": "Toronto Stadium"
   },
   {
     "stage": "R32",
     "group": "R32",
-    "date": "Do. 02.07.2026",
-    "time": "—",
+    "date": "Fr. 03.07.2026",
+    "time": "05:00",
     "teams": [
-      "1. Gruppe H",
-      "2. Gruppe J"
-    ],
-    "venue": "Los Angeles Stadium"
-  },
-  {
-    "stage": "R32",
-    "group": "R32",
-    "date": "Do. 02.07.2026",
-    "time": "—",
-    "teams": [
-      "1. Gruppe B",
-      "3. Gruppe E/F/G/I/J"
+      "Schweiz",
+      "Algerien"
     ],
     "venue": "Vancouver Stadium"
   },
@@ -2789,34 +2792,34 @@ const KNOCKOUT_MATCHES = [
     "stage": "R32",
     "group": "R32",
     "date": "Fr. 03.07.2026",
-    "time": "—",
+    "time": "19:00",
     "teams": [
-      "2. Gruppe D",
-      "2. Gruppe G"
+      "Australien",
+      "Ägypten"
     ],
-    "venue": "Kansas City Stadium"
+    "venue": "Dallas Stadium"
   },
   {
     "stage": "R32",
     "group": "R32",
     "date": "Fr. 03.07.2026",
-    "time": "—",
+    "time": "23:00",
     "teams": [
-      "1. Gruppe J",
-      "2. Gruppe H"
+      "Argentinien",
+      "Kap Verde"
     ],
     "venue": "Miami Stadium"
   },
   {
     "stage": "R32",
     "group": "R32",
-    "date": "Fr. 03.07.2026",
-    "time": "—",
+    "date": "Sa. 04.07.2026",
+    "time": "02:30",
     "teams": [
-      "1. Gruppe K",
-      "3. Gruppe D/E/I/J/L"
+      "Kolumbien",
+      "Ghana"
     ],
-    "venue": "Dallas Stadium"
+    "venue": "Kansas City Stadium"
   },
   {
     "stage": "AF",
@@ -2996,10 +2999,7 @@ const KNOCKOUT_MATCHES = [
   }
 ];
 
-let RESULTS = {
-  "Mexiko|Südafrika": {score:"2:0", status:"Beendet"},
-  "Südkorea|Tschechien": {score:"2:1", status:"Beendet"}
-};
+let RESULTS = {"Mexiko|Südafrika":{"score":"2:0","status":"Beendet"},"Südkorea|Tschechien":{"score":"2:1","status":"Beendet"},"Tschechien|Südafrika":{"score":"1:1","status":"Beendet"},"Mexiko|Südkorea":{"score":"1:0","status":"Beendet"},"Tschechien|Mexiko":{"score":"0:3","status":"Beendet"},"Südafrika|Südkorea":{"score":"1:0","status":"Beendet"},"Kanada|Bosnien-Herzegowina":{"score":"1:1","status":"Beendet"},"Katar|Schweiz":{"score":"1:1","status":"Beendet"},"Schweiz|Bosnien-Herzegowina":{"score":"4:1","status":"Beendet"},"Kanada|Katar":{"score":"6:0","status":"Beendet"},"Schweiz|Kanada":{"score":"2:1","status":"Beendet"},"Bosnien-Herzegowina|Katar":{"score":"3:1","status":"Beendet"},"Brasilien|Marokko":{"score":"1:1","status":"Beendet"},"Schottland|Haiti":{"score":"1:0","status":"Beendet"},"Marokko|Schottland":{"score":"1:0","status":"Beendet"},"Brasilien|Haiti":{"score":"3:0","status":"Beendet"},"Schottland|Brasilien":{"score":"0:3","status":"Beendet"},"Marokko|Haiti":{"score":"4:2","status":"Beendet"},"USA|Paraguay":{"score":"4:1","status":"Beendet"},"Australien|Türkei":{"score":"2:0","status":"Beendet"},"USA|Australien":{"score":"2:0","status":"Beendet"},"Paraguay|Türkei":{"score":"1:0","status":"Beendet"},"Türkei|USA":{"score":"3:2","status":"Beendet"},"Paraguay|Australien":{"score":"0:0","status":"Beendet"},"Deutschland|Curaçao":{"score":"7:1","status":"Beendet"},"Elfenbeinküste|Ecuador":{"score":"1:0","status":"Beendet"},"Deutschland|Elfenbeinküste":{"score":"2:1","status":"Beendet"},"Ecuador|Curaçao":{"score":"0:0","status":"Beendet"},"Ecuador|Deutschland":{"score":"2:1","status":"Beendet"},"Curaçao|Elfenbeinküste":{"score":"0:2","status":"Beendet"},"Niederlande|Japan":{"score":"2:2","status":"Beendet"},"Schweden|Tunesien":{"score":"5:1","status":"Beendet"},"Niederlande|Schweden":{"score":"5:1","status":"Beendet"},"Tunesien|Japan":{"score":"0:4","status":"Beendet"},"Japan|Schweden":{"score":"1:1","status":"Beendet"},"Tunesien|Niederlande":{"score":"1:3","status":"Beendet"},"Belgien|Ägypten":{"score":"1:1","status":"Beendet"},"Iran|Neuseeland":{"score":"2:2","status":"Beendet"},"Belgien|Iran":{"score":"0:0","status":"Beendet"},"Ägypten|Neuseeland":{"score":"3:1","status":"Beendet"},"Ägypten|Iran":{"score":"1:1","status":"Beendet"},"Belgien|Neuseeland":{"score":"5:1","status":"Beendet"},"Spanien|Kap Verde":{"score":"0:0","status":"Beendet"},"Saudi-Arabien|Uruguay":{"score":"1:1","status":"Beendet"},"Spanien|Saudi-Arabien":{"score":"4:0","status":"Beendet"},"Uruguay|Kap Verde":{"score":"2:2","status":"Beendet"},"Kap Verde|Saudi-Arabien":{"score":"0:0","status":"Beendet"},"Uruguay|Spanien":{"score":"0:1","status":"Beendet"},"Frankreich|Senegal":{"score":"3:1","status":"Beendet"},"Norwegen|Irak":{"score":"4:1","status":"Beendet"},"Frankreich|Irak":{"score":"3:0","status":"Beendet"},"Norwegen|Senegal":{"score":"3:2","status":"Beendet"},"Norwegen|Frankreich":{"score":"1:4","status":"Beendet"},"Senegal|Irak":{"score":"5:0","status":"Beendet"},"Argentinien|Algerien":{"score":"3:0","status":"Beendet"},"Österreich|Jordanien":{"score":"3:1","status":"Beendet"},"Argentinien|Österreich":{"score":"1:0","status":"Beendet"},"Jordanien|Algerien":{"score":"1:2","status":"Beendet"},"Algerien|Österreich":{"score":"3:3","status":"Beendet"},"Jordanien|Argentinien":{"score":"3:3","status":"Beendet"},"Portugal|DR Kongo":{"score":"1:1","status":"Beendet"},"Kolumbien|Usbekistan":{"score":"3:1","status":"Beendet"},"Portugal|Usbekistan":{"score":"5:0","status":"Beendet"},"Kolumbien|DR Kongo":{"score":"1:0","status":"Beendet"},"Kolumbien|Portugal":{"score":"0:0","status":"Beendet"},"DR Kongo|Usbekistan":{"score":"3:1","status":"Beendet"},"England|Kroatien":{"score":"4:2","status":"Beendet"},"Ghana|Panama":{"score":"1:0","status":"Beendet"},"England|Ghana":{"score":"0:0","status":"Beendet"},"Kroatien|Panama":{"score":"1:0","status":"Beendet"},"Panama|England":{"score":"0:2","status":"Beendet"},"Kroatien|Ghana":{"score":"2:1","status":"Beendet"},"Südafrika|Kanada":{"score":"0:1","status":"Beendet"},"Deutschland|Paraguay":{"score":"1:1","status":"Beendet"},"Niederlande|Marokko":{"score":"1:1","status":"Beendet"},"Brasilien|Japan":{"score":"2:1","status":"Beendet"},"Frankreich|Schweden":{"score":"3:0","status":"Beendet"},"Elfenbeinküste|Norwegen":{"score":"1:2","status":"Beendet"},"Mexiko|Ecuador":{"score":"2:0","status":"Beendet"},"England|DR Kongo":{"score":"2:1","status":"Beendet"},"USA|Bosnien-Herzegowina":{"score":"2:0","status":"Beendet"},"Belgien|Senegal":{"score":"3:2","status":"Beendet"},"Spanien|Österreich":{"score":"3:0","status":"Beendet"},"Portugal|Kroatien":{"score":"2:1","status":"Beendet"}};
 
 function matchKey(m){
   return m.teams[0]+"|"+m.teams[1];
@@ -3158,55 +3158,104 @@ function loadCachedApiResults(){
 
 
 const STATIC_RESULTS_FALLBACK = [
-  {teams:["Mexiko","Südafrika"], score:"2:0", status:"Beendet"},
-  {teams:["Südkorea","Tschechien"], score:"2:1", status:"Beendet"},
-  {teams:["Kanada","Bosnien-Herzegowina"], score:"1:1", status:"Beendet"},
-  {teams:["USA","Paraguay"], score:"4:1", status:"Beendet"},
-
-  {teams:["Katar","Schweiz"], score:"1:1", status:"Beendet"},
-  {teams:["Brasilien","Marokko"], score:"1:1", status:"Beendet"},
-  {teams:["Haiti","Schottland"], score:"0:1", status:"Beendet"},
-  {teams:["Australien","Türkei"], score:"2:0", status:"Beendet"},
-
-  {teams:["Deutschland","Curaçao"], score:"7:1", status:"Beendet"},
-  {teams:["Niederlande","Japan"], score:"2:2", status:"Beendet"},
-  {teams:["Elfenbeinküste","Ecuador"], score:"1:0", status:"Beendet"},
-  {teams:["Schweden","Tunesien"], score:"5:1", status:"Beendet"},
-
-  {teams:["Spanien","Kap Verde"], score:"0:0", status:"Beendet"},
-  {teams:["Belgien","Ägypten"], score:"1:1", status:"Beendet"},
-  {teams:["Saudi-Arabien","Uruguay"], score:"1:1", status:"Beendet"},
-  {teams:["Iran","Neuseeland"], score:"2:2", status:"Beendet"},
-
-  {teams:["Frankreich","Senegal"], score:"3:1", status:"Beendet"},
-  {teams:["Irak","Norwegen"], score:"1:4", status:"Beendet"},
-  {teams:["Argentinien","Algerien"], score:"3:0", status:"Beendet"},
-  {teams:["Österreich","Jordanien"], score:"3:1", status:"Beendet"},
-
-  {teams:["Portugal","DR Kongo"], score:"1:1", status:"Beendet"},
-  {teams:["England","Kroatien"], score:"4:2", status:"Beendet"},
-  {teams:["Ghana","Panama"], score:"1:0", status:"Beendet"},
-  {teams:["Usbekistan","Kolumbien"], score:"1:3", status:"Beendet"},
-
-  {teams:["Tschechien","Südafrika"], score:"1:1", status:"Beendet"},
-  {teams:["Schweiz","Bosnien-Herzegowina"], score:"4:1", status:"Beendet"},
-  {teams:["Kanada","Katar"], score:"6:0", status:"Beendet"},
-  {teams:["Mexiko","Südkorea"], score:"1:0", status:"Beendet"}
+  {teams:["Mexiko", "Südafrika"], score:"2:0", status:"Beendet"},
+  {teams:["Südkorea", "Tschechien"], score:"2:1", status:"Beendet"},
+  {teams:["Tschechien", "Südafrika"], score:"1:1", status:"Beendet"},
+  {teams:["Mexiko", "Südkorea"], score:"1:0", status:"Beendet"},
+  {teams:["Tschechien", "Mexiko"], score:"0:3", status:"Beendet"},
+  {teams:["Südafrika", "Südkorea"], score:"1:0", status:"Beendet"},
+  {teams:["Kanada", "Bosnien-Herzegowina"], score:"1:1", status:"Beendet"},
+  {teams:["Katar", "Schweiz"], score:"1:1", status:"Beendet"},
+  {teams:["Schweiz", "Bosnien-Herzegowina"], score:"4:1", status:"Beendet"},
+  {teams:["Kanada", "Katar"], score:"6:0", status:"Beendet"},
+  {teams:["Schweiz", "Kanada"], score:"2:1", status:"Beendet"},
+  {teams:["Bosnien-Herzegowina", "Katar"], score:"3:1", status:"Beendet"},
+  {teams:["Brasilien", "Marokko"], score:"1:1", status:"Beendet"},
+  {teams:["Schottland", "Haiti"], score:"1:0", status:"Beendet"},
+  {teams:["Marokko", "Schottland"], score:"1:0", status:"Beendet"},
+  {teams:["Brasilien", "Haiti"], score:"3:0", status:"Beendet"},
+  {teams:["Schottland", "Brasilien"], score:"0:3", status:"Beendet"},
+  {teams:["Marokko", "Haiti"], score:"4:2", status:"Beendet"},
+  {teams:["USA", "Paraguay"], score:"4:1", status:"Beendet"},
+  {teams:["Australien", "Türkei"], score:"2:0", status:"Beendet"},
+  {teams:["USA", "Australien"], score:"2:0", status:"Beendet"},
+  {teams:["Paraguay", "Türkei"], score:"1:0", status:"Beendet"},
+  {teams:["Türkei", "USA"], score:"3:2", status:"Beendet"},
+  {teams:["Paraguay", "Australien"], score:"0:0", status:"Beendet"},
+  {teams:["Deutschland", "Curaçao"], score:"7:1", status:"Beendet"},
+  {teams:["Elfenbeinküste", "Ecuador"], score:"1:0", status:"Beendet"},
+  {teams:["Deutschland", "Elfenbeinküste"], score:"2:1", status:"Beendet"},
+  {teams:["Ecuador", "Curaçao"], score:"0:0", status:"Beendet"},
+  {teams:["Ecuador", "Deutschland"], score:"2:1", status:"Beendet"},
+  {teams:["Curaçao", "Elfenbeinküste"], score:"0:2", status:"Beendet"},
+  {teams:["Niederlande", "Japan"], score:"2:2", status:"Beendet"},
+  {teams:["Schweden", "Tunesien"], score:"5:1", status:"Beendet"},
+  {teams:["Niederlande", "Schweden"], score:"5:1", status:"Beendet"},
+  {teams:["Tunesien", "Japan"], score:"0:4", status:"Beendet"},
+  {teams:["Japan", "Schweden"], score:"1:1", status:"Beendet"},
+  {teams:["Tunesien", "Niederlande"], score:"1:3", status:"Beendet"},
+  {teams:["Belgien", "Ägypten"], score:"1:1", status:"Beendet"},
+  {teams:["Iran", "Neuseeland"], score:"2:2", status:"Beendet"},
+  {teams:["Belgien", "Iran"], score:"0:0", status:"Beendet"},
+  {teams:["Ägypten", "Neuseeland"], score:"3:1", status:"Beendet"},
+  {teams:["Ägypten", "Iran"], score:"1:1", status:"Beendet"},
+  {teams:["Belgien", "Neuseeland"], score:"5:1", status:"Beendet"},
+  {teams:["Spanien", "Kap Verde"], score:"0:0", status:"Beendet"},
+  {teams:["Saudi-Arabien", "Uruguay"], score:"1:1", status:"Beendet"},
+  {teams:["Spanien", "Saudi-Arabien"], score:"4:0", status:"Beendet"},
+  {teams:["Uruguay", "Kap Verde"], score:"2:2", status:"Beendet"},
+  {teams:["Kap Verde", "Saudi-Arabien"], score:"0:0", status:"Beendet"},
+  {teams:["Uruguay", "Spanien"], score:"0:1", status:"Beendet"},
+  {teams:["Frankreich", "Senegal"], score:"3:1", status:"Beendet"},
+  {teams:["Norwegen", "Irak"], score:"4:1", status:"Beendet"},
+  {teams:["Frankreich", "Irak"], score:"3:0", status:"Beendet"},
+  {teams:["Norwegen", "Senegal"], score:"3:2", status:"Beendet"},
+  {teams:["Norwegen", "Frankreich"], score:"1:4", status:"Beendet"},
+  {teams:["Senegal", "Irak"], score:"5:0", status:"Beendet"},
+  {teams:["Argentinien", "Algerien"], score:"3:0", status:"Beendet"},
+  {teams:["Österreich", "Jordanien"], score:"3:1", status:"Beendet"},
+  {teams:["Argentinien", "Österreich"], score:"1:0", status:"Beendet"},
+  {teams:["Jordanien", "Algerien"], score:"1:2", status:"Beendet"},
+  {teams:["Algerien", "Österreich"], score:"3:3", status:"Beendet"},
+  {teams:["Jordanien", "Argentinien"], score:"3:3", status:"Beendet"},
+  {teams:["Portugal", "DR Kongo"], score:"1:1", status:"Beendet"},
+  {teams:["Kolumbien", "Usbekistan"], score:"3:1", status:"Beendet"},
+  {teams:["Portugal", "Usbekistan"], score:"5:0", status:"Beendet"},
+  {teams:["Kolumbien", "DR Kongo"], score:"1:0", status:"Beendet"},
+  {teams:["Kolumbien", "Portugal"], score:"0:0", status:"Beendet"},
+  {teams:["DR Kongo", "Usbekistan"], score:"3:1", status:"Beendet"},
+  {teams:["England", "Kroatien"], score:"4:2", status:"Beendet"},
+  {teams:["Ghana", "Panama"], score:"1:0", status:"Beendet"},
+  {teams:["England", "Ghana"], score:"0:0", status:"Beendet"},
+  {teams:["Kroatien", "Panama"], score:"1:0", status:"Beendet"},
+  {teams:["Panama", "England"], score:"0:2", status:"Beendet"},
+  {teams:["Kroatien", "Ghana"], score:"2:1", status:"Beendet"},
+  {teams:["Südafrika", "Kanada"], score:"0:1", status:"Beendet"},
+  {teams:["Deutschland", "Paraguay"], score:"1:1", status:"Beendet"},
+  {teams:["Niederlande", "Marokko"], score:"1:1", status:"Beendet"},
+  {teams:["Brasilien", "Japan"], score:"2:1", status:"Beendet"},
+  {teams:["Frankreich", "Schweden"], score:"3:0", status:"Beendet"},
+  {teams:["Elfenbeinküste", "Norwegen"], score:"1:2", status:"Beendet"},
+  {teams:["Mexiko", "Ecuador"], score:"2:0", status:"Beendet"},
+  {teams:["England", "DR Kongo"], score:"2:1", status:"Beendet"},
+  {teams:["USA", "Bosnien-Herzegowina"], score:"2:0", status:"Beendet"},
+  {teams:["Belgien", "Senegal"], score:"3:2", status:"Beendet"},
+  {teams:["Spanien", "Österreich"], score:"3:0", status:"Beendet"},
+  {teams:["Portugal", "Kroatien"], score:"2:1", status:"Beendet"}
 ];
 
 function applyStaticResultFallback(){
   let changed=0;
   let matched=0;
   STATIC_RESULTS_FALLBACK.forEach(r=>{
-    const localMatch=MATCHES.find(m=>{
+    const localMatch=allScheduleMatches().find(m=>{
       const h1=normalizeForCompare(m.teams[0]), a1=normalizeForCompare(m.teams[1]);
       const h2=normalizeForCompare(r.teams[0]), a2=normalizeForCompare(r.teams[1]);
       return (h1===h2 && a1===a2) || (h1===a2 && a1===h2);
     });
-    if(!localMatch) return;
+    const key = localMatch ? matchKey(localMatch) : r.teams[0]+"|"+r.teams[1];
     matched++;
-    const key=matchKey(localMatch);
-    const sameOrder=normalizeForCompare(localMatch.teams[0])===normalizeForCompare(r.teams[0]);
+    const sameOrder = !localMatch || normalizeForCompare(localMatch.teams[0])===normalizeForCompare(r.teams[0]);
     const score=sameOrder ? r.score : r.score.split(":").reverse().join(":");
     const old=RESULTS[key];
     if(!old || old.score!==score || old.status!==r.status){
@@ -3236,34 +3285,16 @@ function fetchWithTimeout(url, options={}, timeoutMs=3500){
 
 async function updateResultsFromApi(manual=false){
   if(manual) apiStatus("🔄 Ergebnisse werden aktualisiert …");
-
-  const fallback = applyStaticResultFallback();
+  const fallback=applyStaticResultFallback();
   refreshScheduleAfterResults();
-
-  let apiChanged=0;
-  let apiOk=false;
-  try{
-    const response=await fetchWithTimeout(WORLD_CUP_API_URL,{cache:"no-store",mode:"cors"},3500);
-    if(!response.ok) throw new Error("HTTP "+response.status);
-    const payload=await response.json();
-    const rows=extractArrayFromApi(payload);
-    const parsed=rows.map(extractApiMatch).filter(Boolean);
-    apiChanged=mergeApiResults(parsed);
-    apiOk=true;
-    if(apiChanged>0) refreshScheduleAfterResults();
-  }catch(err){
-    if(manual) console.warn("API update failed; static fallback used",err);
-  }
-
+  // Die eingebauten Ergebnisse sind die verlässliche Basis. Die API wird bewusst nicht mehr benötigt,
+  // weil sie in GitHub Pages/Safari teils keine nutzbaren Daten liefert.
   if(manual){
-    const total=fallback.changed+apiChanged;
-    const known=fallback.matched;
-    if(total>0) apiStatus("✅ Spielplan aktualisiert: "+total+" Ergebnis(se) übernommen.","good");
-    else apiStatus("✅ Spielplan aktualisiert. "+known+" bekannte Ergebnisse sind eingetragen.","good");
+    apiStatus("✅ Spielplan aktualisiert. "+fallback.matched+" Ergebnisse sind eingetragen.","good");
   }else{
     apiStatus("");
   }
-  return apiOk || fallback.matched>0;
+  return true;
 }
 
 async function manualUpdateResults(){
@@ -3503,40 +3534,181 @@ const COUNTRY_INFO = {
 };
 
 const correctFirstTryMsgs=[
-"Klasse! Das war %s.",
-"Richtig erkannt! Das ist %s.",
-"Super gemacht! Das war die Flagge von %s.",
-"Perfekt! Du kennst %s schon richtig gut.",
-"Großartig! Das ist tatsächlich %s.",
-"Stark! Die Flagge gehört zu %s.",
-"Wow! Das war %s.",
-"Prima! %s hast du sofort erkannt."
+"Volltreffer! Das war %s.",
+"Stark gesehen! %s hast du sofort gefunden.",
+"Fantastisch! Diese Flagge gehört zu %s.",
+"Wow, blitzschnell! Das ist %s.",
+"Richtig gut! %s kennst du schon.",
+"Super Auge! Das war tatsächlich %s.",
+"Erster Versuch und direkt richtig: %s.",
+"Klasse gemacht! %s sitzt.",
+"Jaaa, genau! Das ist %s.",
+"Du bist richtig wach! Das war %s."
 ];
 const correctAfterMistakeMsgs=[
-"Jetzt stimmt es! Das ist %s.",
-"Genau, jetzt hast du %s gefunden.",
-"Richtig! Die Flagge gehört zu %s.",
-"Jawohl, das ist %s.",
-"Gut weitergesucht! Das ist %s.",
-"Geschafft! Das war %s."
+"Jetzt passt es! Das ist %s.",
+"Sehr gut drangeblieben! Jetzt hast du %s gefunden.",
+"Genau, das ist die Flagge von %s.",
+"Jawohl! Beim zweiten Blick klappt es: %s.",
+"Geschafft! Das war %s.",
+"Gut korrigiert! %s ist richtig.",
+"Prima, du hast nicht aufgegeben. Das ist %s.",
+"Jetzt stimmt es. Die Flagge gehört zu %s."
 ];
 const wrongMsgs=[
-"Das war noch nicht die richtige Flagge.",
-"Versuche es noch einmal.",
-"Schau noch einmal genau hin.",
-"Fast richtig. Probier es noch einmal.",
-"Versuche es erneut.",
-"Du schaffst das. Suche weiter."
+"Noch nicht ganz. Schau dir Farben und Formen genau an.",
+"Fast! Vergleiche die Flaggen noch einmal.",
+"Guter Versuch. Such weiter, du bist nah dran.",
+"Das war eine andere Flagge. Probier es noch einmal.",
+"Nicht schlimm. Jede Runde macht dich sicherer.",
+"Atme kurz durch und schau noch einmal genau hin.",
+"Du schaffst das. Achte auf die kleinen Unterschiede.",
+"Knapp daneben. Versuch es mit einem neuen Blick."
 ];
 const questionMsgs=[
-"Kannst du die Flagge von %s finden?",
-"Wo ist die Flagge von %s?",
-"Zeig mir die Flagge von %s.",
 "Welche Flagge gehört zu %s?",
-"Findest du %s?",
-"Tippe auf die Flagge von %s."
+"Kannst du %s finden?",
+"Zeig mir bitte die Flagge von %s.",
+"Wo versteckt sich %s?",
+"Tippe auf die Flagge von %s.",
+"Jetzt wird’s spannend: Wo ist %s?",
+"Schau genau hin: Welche Flagge ist %s?",
+"Findest du die richtige Flagge für %s?",
+"Deine nächste Mission: %s.",
+"Auf geht’s! Suche %s."
 ];
-const greetMsgs=["Hallo %s! Schön, dass du dabei bist – zeig mal, was du draufhast!","Hey %s! Bereit für die WM 2026? Los geht's, du schaffst das!","Hi %s! Heute lernen wir die Flaggen aller 48 WM-Teams – viel Spaß!","Willkommen, %s! Mach dich warm – die Flaggen warten auf dich!","Na %s, bist du bereit? Dann mal los!"];
+const greetMsgs=[
+"Hallo %s! Schön, dass du da bist. Heute wirst du Flaggen-Profi!",
+"Hey %s! Bereit für eine neue WM-Runde? Du schaffst das!",
+"Willkommen, %s! Such dir einen Modus aus und leg los.",
+"Na %s, los geht’s! Lernen, quizzen, sprechen oder schreiben?",
+"Hi %s! Jede richtige Antwort bringt dich ein Stück weiter.",
+"Schön, dich zu sehen, %s! Heute trainieren wir ganz spielerisch.",
+"Hallo %s! Mach dich bereit für Flaggen, Länder und starke Ideen.",
+"Hey %s! Du kannst jederzeit üben, neu starten und besser werden."
+];
+
+const learnIntroMsgs=[
+"Tippe auf eine Flagge. Ich lese dir das Land vor.",
+"Wähle eine Flagge aus und hör dir den Ländernamen an.",
+"Im Lernmodus kannst du in Ruhe entdecken. Tippe einfach los.",
+"Such dir eine Flagge aus. Ich sage dir, welches Land es ist.",
+"Hier darfst du ausprobieren. Tippe auf eine Flagge zum Lernen."
+];
+const learnTapMsgs=[
+"%s. Gut gemerkt!",
+"Das ist %s.",
+"%s. Schau dir die Flagge genau an.",
+"%s. Achte auf Farben, Formen und Symbole.",
+"Diese Flagge gehört zu %s.",
+"%s. Wieder ein Land mehr gelernt!",
+"Prima, das war %s."
+];
+const voiceQuestionMsgs=[
+"Welches Land ist das? Sprich die Antwort laut aus.",
+"Schau dir die Flagge an. Wie heißt das Land?",
+"Jetzt bist du dran: Sag den Ländernamen.",
+"Welche Flagge siehst du? Sprich den Namen.",
+"Erkennst du dieses Land? Sag es laut.",
+"Flagge ansehen, kurz überlegen, dann antworten."
+];
+const voiceCorrectMsgs=[
+"Richtig gehört und richtig erkannt! Das ist %s.",
+"Super gesprochen! %s ist richtig.",
+"Sehr gut! Deine Antwort war %s.",
+"Klasse! Das Land heißt %s.",
+"Jawohl, das war %s.",
+"Top! Sprache und Flagge passen: %s."
+];
+const voiceWrongMsgs=[
+"Nicht ganz. Das richtige Land war %s.",
+"Guter Versuch. Diese Flagge gehört zu %s.",
+"Das war noch nicht richtig. Es war %s.",
+"Knapp daneben. Gesucht war %s.",
+"Kein Problem. Die richtige Antwort lautet %s."
+];
+const voiceSkipMsgs=[
+"Weiter geht’s. Diese Flagge war %s.",
+"Übersprungen. Das richtige Land war %s.",
+"Alles klar, nächste Flagge. Das hier war %s.",
+"Wir springen weiter. Gesucht war %s."
+];
+const quizEndMsgs=[
+"Runde beendet. Du hast %c von %t beantworteten Fragen richtig. Stark gespielt!",
+"Geschafft! %c von %t richtig. Beim nächsten Mal wird’s noch besser.",
+"Das war deine Runde: %c von %t richtig. Gute Arbeit!",
+"Abpfiff! %c von %t richtig beantwortet. Du bleibst dran!",
+"Runde fertig. Ergebnis: %c von %t. Jede Runde macht dich sicherer."
+];
+const voiceEndMsgs=[
+"Sprachquiz beendet. Du hast %c von %t Antworten richtig. Sehr gut gesprochen!",
+"Fertig! %c von %t richtig im Sprachquiz. Starke Leistung!",
+"Runde geschafft: %c von %t richtig gesagt. Weiter so!",
+"Sprachrunde beendet. %c von %t richtig. Du wirst immer sicherer."
+];
+const writingIntroMsgs=[
+"Tippe auf eine Flagge. Dann schreiben wir den Ländernamen Schritt für Schritt.",
+"Wähle ein Land aus. Danach malst du jeden Buchstaben nach.",
+"Im Schreibmodus lernst du die Ländernamen mit dem Finger.",
+"Such dir eine Flagge aus und wir schreiben das Land gemeinsam.",
+"Erst Flagge antippen, dann Buchstaben nachmalen. Ganz in Ruhe."
+];
+const writingStartMsgs=[
+"Schreibe %s. Wir machen das Buchstabe für Buchstabe.",
+"Los geht’s mit %s. Male jeden Buchstaben sorgfältig nach.",
+"%s wird jetzt geschrieben. Du kannst dir Zeit lassen.",
+"Prima Wahl: %s. Jetzt trainieren wir die Buchstaben.",
+"Jetzt schreiben wir %s. Erst einzelne Buchstaben, dann das ganze Wort."
+];
+const writingLetterMsgs=[
+"Buchstabe %s. Male ihn langsam nach.",
+"Jetzt kommt %s. Folge der großen Vorlage.",
+"Male den Buchstaben %s nach.",
+"%s ist dran. Ruhig und sauber nachfahren.",
+"Schau genau hin: Das ist %s. Jetzt du!",
+"Der nächste Buchstabe ist %s."
+];
+const writingRetryMsgs=[
+"Noch nicht ähnlich genug. Versuch es langsam noch einmal.",
+"Fast. Fahr die Vorlage noch genauer nach.",
+"Das sieht noch etwas anders aus. Probier es erneut.",
+"Guter Versuch. Achte auf die Form des Buchstabens.",
+"Noch einmal bitte. Du schaffst das.",
+"Vergleiche deine Linie mit der Vorlage und male neu."
+];
+const writingSuccessMsgs=[
+"Sehr gut nachgemalt!",
+"Klasse, der Buchstabe passt.",
+"Prima! Weiter zum nächsten Buchstaben.",
+"Super Linie! Das sieht gut aus.",
+"Geschafft, dieser Buchstabe sitzt.",
+"Stark gemacht!"
+];
+const writingWordMsgs=[
+"Jetzt schreibe das ganze Wort: %s.",
+"Alle Buchstaben sind geschafft. Jetzt kommt das ganze Wort %s.",
+"Finale Aufgabe: Schreibe %s als ganzes Wort.",
+"Zum Abschluss: Male den ganzen Ländernamen %s nach."
+];
+const writingDoneMsgs=[
+"Super! Du hast %s fertig geschrieben.",
+"Geschafft! %s ist komplett geschrieben.",
+"Stark! Du hast den ganzen Ländernamen %s gemeistert.",
+"Sehr gut gemacht. %s ist fertig.",
+"Klasse Leistung! %s hast du geschrieben."
+];
+
+
+function pick(arr){
+  if(!Array.isArray(arr) || !arr.length) return "";
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+function fmtMsg(template, values={}){
+  return String(template||"")
+    .replaceAll("%s", values.s ?? "")
+    .replaceAll("%c", values.c ?? "")
+    .replaceAll("%t", values.t ?? "");
+}
 
 let mode="learn", active=allCountries, displayedActive=allCountries, current=null, locked=false;
 let currentMistakes=0;
@@ -3544,7 +3716,7 @@ let quizQueue=[], quizRoundTotal=0, quizQuestionRecorded=false;
 let voiceQueue=[], voiceRoundTotal=0, voiceRecognition=null, voiceListening=false, lastVoiceText="", voiceListenTimer=null, voiceQuestionToken=0;
 let trainingMode="learn";
 let player="", sCorrect=0, sTotal=0;
-let writingCountry=null, writingLetters=[], writingIndex=0, writingDrawing=false, writingLastPoint=null, writingInkLength=0;
+let writingCountry=null, writingLetters=[], writingIndex=0, writingDrawing=false, writingLastPoint=null, writingInkLength=0, writingStrokes=[], writingCurrentStroke=[], writingAccepted=false, writingWordMode=false, writingTargetText="";
 
 
 function updateAppVersionBadge(){
@@ -4838,6 +5010,7 @@ function startSchedule(){
   if(grid) grid.style.display="none";
 
   applyStaticResultFallback();
+  applyStaticResultFallback();
   const schedule=document.getElementById("scheduleView");
   schedule.classList.add("open");
   schedule.innerHTML=renderScheduleHtml();
@@ -4978,11 +5151,12 @@ function finishQuizRound(){
   document.body.classList.remove("feedback-active");
   const repeat=document.getElementById("repeat-btn");
   if(repeat) repeat.style.display="none";
-  const msg="🏁 Runde beendet! Du hast "+sCorrect+" von "+sTotal+" beantworteten Fragen richtig.";
+  const endText=fmtMsg(pick(quizEndMsgs),{c:sCorrect,t:sTotal});
+  const msg="🏁 "+endText;
   const q=document.getElementById("question");
   if(q) q.textContent=msg;
   setFeedback(msg,false);
-  speak("Runde beendet. Du hast "+sCorrect+" von "+sTotal+" beantworteten Fragen richtig.",{force:true});
+  speak(endText,{force:true});
   commitSession();
 }
 
@@ -5152,7 +5326,7 @@ function nextVoiceQ(){
   current=voiceQueue.shift();
   voiceQuestionToken++;
   locked=false;
-  const prompt="Welches Land ist das?";
+  const prompt=pick(voiceQuestionMsgs);
   const q=document.getElementById("question");
   if(q) q.textContent=prompt;
   const promptEl=document.getElementById("voiceQuizPrompt");
@@ -5238,13 +5412,15 @@ function gradeVoiceAnswer(isCorrect){
     sCorrect++;
     recordVoiceAnswer(current[0],"correct");
     updateScore();
-    setFeedback("✅ Richtig! Das ist "+current[0]+".",false);
-    speak("Richtig! Das ist "+current[0]+".",{force:true});
+    const msg=fmtMsg(pick(voiceCorrectMsgs),{s:current[0]});
+    setFeedback("✅ "+msg,false);
+    speak(msg,{force:true});
   }else{
     recordVoiceAnswer(current[0],"wrong");
     updateScore();
-    setFeedback("❌ Nicht ganz. Das war "+current[0]+".",true);
-    speak("Nicht ganz. Das war "+current[0]+".",{force:true});
+    const msg=fmtMsg(pick(voiceWrongMsgs),{s:current[0]});
+    setFeedback("❌ "+msg,true);
+    speak(msg,{force:true});
   }
   showVoiceManualActions(false);
   setTimeout(async ()=>{
@@ -5265,8 +5441,9 @@ function skipVoiceQuestion(){
   recordVoiceAnswer(skipped,"wrong");
   updateScore();
   showVoiceManualActions(false);
-  setFeedback("❌ Übersprungen. Das war "+skipped+".",true);
-  speak("Übersprungen. Das war "+skipped+".",{force:true});
+  const msg=fmtMsg(pick(voiceSkipMsgs),{s:skipped});
+  setFeedback("❌ "+msg,true);
+  speak(msg,{force:true});
   setTimeout(async ()=>{
     await waitUntilSpeechFinished();
     setFeedback("");
@@ -5278,7 +5455,7 @@ function skipVoiceQuestion(){
 
 function repeatVoiceQuestion(){
   if(mode==="voiceQuiz" && current){
-    speak("Welches Land ist das?",{force:true});
+    speak(pick(voiceQuestionMsgs),{force:true});
   }
 }
 
@@ -5303,13 +5480,14 @@ function finishVoiceRound(){
   current=null;
   showVoiceManualActions(false);
   setVoiceTranscript("");
-  const msg="🏁 Sprachquiz beendet! Du hast "+sCorrect+" von "+sTotal+" Antworten richtig.";
+  const endText=fmtMsg(pick(voiceEndMsgs),{c:sCorrect,t:sTotal});
+  const msg="🏁 "+endText;
   const q=document.getElementById("question");
   if(q) q.textContent=msg;
   const promptEl=document.getElementById("voiceQuizPrompt");
   if(promptEl) promptEl.textContent="Runde beendet";
   setFeedback(msg,false);
-  speak("Sprachquiz beendet. Du hast "+sCorrect+" von "+sTotal+" Antworten richtig.",{force:true});
+  speak(endText,{force:true});
   commitSession();
 }
 
@@ -5318,6 +5496,9 @@ function finishVoiceRound(){
 function countryLettersForWriting(name){
   return Array.from(String(name||"").toUpperCase())
     .filter(ch=>/[A-ZÄÖÜÇÉÈÁÀÍÌÓÒÚÙÑ]/.test(ch));
+}
+function normalizeWritingWord(name){
+  return Array.from(String(name||"").toUpperCase()).filter(ch=>/[A-ZÄÖÜÇÉÈÁÀÍÌÓÒÚÙÑ]/.test(ch)).join("");
 }
 
 function startWritingMode(list=allCountries, modeId="write", resetFilter=true){
@@ -5334,11 +5515,10 @@ function startWritingMode(list=allCountries, modeId="write", resetFilter=true){
   mode="write";
   active=list && list.length ? list : allCountries;
   displayedActive=active.slice();
-  writingCountry=null;
-  writingLetters=[];
-  writingIndex=0;
+  writingCountry=null; writingLetters=[]; writingIndex=0; writingWordMode=false; writingTargetText="";
   locked=false;
-  document.getElementById("question").textContent="✍️ Tippe auf eine Flagge und male den Ländernamen Buchstabe für Buchstabe nach.";
+  const guide=document.getElementById("writingLetterGuide"); if(guide){ guide.textContent=""; guide.classList.remove("word"); }
+  document.getElementById("question").textContent="✍️ "+pick(writingIntroMsgs);
   document.getElementById("repeat-btn").style.display="none";
   setFeedback("");
   closeWritingPanel(false);
@@ -5350,29 +5530,23 @@ function startWritingMode(list=allCountries, modeId="write", resetFilter=true){
 function startCountryWriting(country){
   writingCountry=country;
   writingLetters=countryLettersForWriting(country[0]);
-  writingIndex=0;
-  const panel=document.getElementById("writingPanel");
-  if(panel) panel.classList.add("open");
-  const name=document.getElementById("writingCountry");
-  if(name) name.textContent=country[0];
+  writingIndex=0; writingWordMode=false;
+  const panel=document.getElementById("writingPanel"); if(panel) panel.classList.add("open");
+  const name=document.getElementById("writingCountry"); if(name) name.textContent=country[0];
   const flag=document.getElementById("writingFlag");
-  if(flag){
-    flag.src=flagUrl(country[1]);
-    flag.alt="Flagge "+country[0];
-  }
-  const q=document.getElementById("question");
-  if(q) q.textContent="✍️ Schreibe: "+country[0];
-  speak("Schreibe "+naturalText(country[0])+". Male jeden Buchstaben nach.",{force:true});
+  if(flag){ flag.src=flagUrl(country[1]); flag.alt="Flagge "+country[0]; }
+  const q=document.getElementById("question"); if(q) q.textContent="✍️ Schreibe: "+country[0];
+  speak(fmtMsg(pick(writingStartMsgs),{s:naturalText(country[0])}),{force:true});
   renderWritingLetter();
   setTimeout(resizeWritingCanvas,60);
 }
 
 function renderWritingProgress(){
-  const el=document.getElementById("writingProgress");
-  if(!el) return;
-  el.innerHTML=writingLetters.map((ch,i)=>
-    `<span class="write-chip${i<writingIndex?' done':''}${i===writingIndex?' current':''}">${escapeHtml(ch)}</span>`
-  ).join("");
+  const el=document.getElementById("writingProgress"); if(!el) return;
+  const chips = writingWordMode
+    ? [`<span class="write-chip current">Wort</span>`]
+    : writingLetters.map((ch,i)=>`<span class="write-chip${i<writingIndex?' done':''}${i===writingIndex?' current':''}">${escapeHtml(ch)}</span>`);
+  el.innerHTML=chips.join("");
 }
 
 function resizeWritingCanvas(){
@@ -5383,151 +5557,171 @@ function resizeWritingCanvas(){
   const ratio=Math.max(1, window.devicePixelRatio || 1);
   canvas.width=Math.round(rect.width*ratio);
   canvas.height=Math.round(rect.height*ratio);
+  canvas.style.width=rect.width+"px";
+  canvas.style.height=rect.height+"px";
   const ctx=canvas.getContext("2d");
   ctx.setTransform(ratio,0,0,ratio,0,0);
-  ctx.lineCap="round";
-  ctx.lineJoin="round";
+  ctx.lineCap="round"; ctx.lineJoin="round";
   ctx.strokeStyle="#123c73";
-  ctx.lineWidth=Math.max(14, Math.min(26, rect.width/18));
+  ctx.lineWidth=Math.max(14, Math.min(26, rect.width/(writingWordMode?34:18)));
 }
-
 function clearWritingCanvas(){
-  const canvas=document.getElementById("writingCanvas");
-  if(!canvas) return;
+  const canvas=document.getElementById("writingCanvas"); if(!canvas) return;
   const ctx=canvas.getContext("2d");
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  writingInkLength=0;
-  writingLastPoint=null;
+  writingInkLength=0; writingLastPoint=null; writingStrokes=[]; writingCurrentStroke=[]; writingAccepted=false;
+  setWritingNextEnabled(false);
   const hint=document.getElementById("writingHint");
-  if(hint){
-    hint.className="writing-hint";
-    hint.textContent="Male den großen Buchstaben nach. Danach tippe auf „Nächster Buchstabe“. ";
-  }
+  if(hint){ hint.className="writing-hint"; hint.textContent=writingWordMode ? "Schreibe jetzt das ganze Wort." : "Male den großen Buchstaben nach."; }
+}
+function setWritingNextEnabled(enabled){
+  writingAccepted=!!enabled;
+  const btn=document.getElementById("writingNextBtn");
+  if(btn) btn.disabled=!enabled;
 }
 
+function speakCurrentWritingTarget(){
+  if(!writingCountry) return;
+  if(writingWordMode) speak(fmtMsg(pick(writingWordMsgs),{s:naturalText(writingCountry[0])}),{force:true});
+  else speak(fmtMsg(pick(writingLetterMsgs),{s:(writingLetters[writingIndex]||"")}),{force:true});
+}
 function renderWritingLetter(){
   renderWritingProgress();
   const guide=document.getElementById("writingLetterGuide");
   const instr=document.getElementById("writingInstruction");
   const next=document.getElementById("writingNextBtn");
-  if(writingIndex>=writingLetters.length){
-    if(guide) guide.textContent="★";
-    if(instr) instr.textContent="Super! Du hast den Ländernamen geschrieben.";
-    if(next) next.textContent="🏁 Fertig";
-    setFeedback("✅ Fertig geschrieben: "+(writingCountry ? writingCountry[0] : ""),false);
-    speak("Super. Du hast "+naturalText(writingCountry ? writingCountry[0] : "")+" geschrieben.",{force:true});
-    return;
-  }
-  const letter=writingLetters[writingIndex];
-  if(guide) guide.textContent=letter;
-  if(instr) instr.textContent="Male den Buchstaben „"+letter+"“ nach.";
+  if(writingIndex>=writingLetters.length){ startWholeWordWriting(); return; }
+  writingTargetText=writingLetters[writingIndex]; writingWordMode=false;
+  if(guide){ guide.textContent=writingTargetText; guide.classList.remove("word"); }
+  if(instr) instr.textContent="Male den Buchstaben „"+writingTargetText+"“ nach.";
   if(next) next.textContent="✅ Nächster Buchstabe";
-  setFeedback("");
-  resizeWritingCanvas();
-  clearWritingCanvas();
+  setFeedback(""); resizeWritingCanvas(); clearWritingCanvas(); speakCurrentWritingTarget();
+}
+function startWholeWordWriting(){
+  writingWordMode=true; writingTargetText=normalizeWritingWord(writingCountry ? writingCountry[0] : "");
+  renderWritingProgress();
+  const guide=document.getElementById("writingLetterGuide");
+  const instr=document.getElementById("writingInstruction");
+  const next=document.getElementById("writingNextBtn");
+  if(guide){ guide.textContent=writingTargetText; guide.classList.add("word"); }
+  if(instr) instr.textContent=fmtMsg(pick(writingWordMsgs),{s:(writingCountry?writingCountry[0]:"")});
+  if(next) next.textContent="🏁 Wort prüfen";
+  resizeWritingCanvas(); clearWritingCanvas(); speakCurrentWritingTarget();
 }
 
 function writingPointFromEvent(event){
-  const canvas=document.getElementById("writingCanvas");
-  const rect=canvas.getBoundingClientRect();
+  const canvas=document.getElementById("writingCanvas"); const rect=canvas.getBoundingClientRect();
   return {x:event.clientX-rect.left, y:event.clientY-rect.top};
 }
-
 function startWritingStroke(event){
-  if(mode!=="write" || !writingCountry || writingIndex>=writingLetters.length) return;
-  event.preventDefault();
-  const canvas=document.getElementById("writingCanvas");
-  if(!canvas) return;
-  canvas.setPointerCapture?.(event.pointerId);
-  writingDrawing=true;
-  const pt=writingPointFromEvent(event);
-  writingLastPoint=pt;
-  const ctx=canvas.getContext("2d");
-  ctx.beginPath();
-  ctx.moveTo(pt.x,pt.y);
+  if(mode!=="write" || !writingCountry || !writingTargetText) return;
+  event.preventDefault(); const canvas=document.getElementById("writingCanvas"); if(!canvas) return;
+  canvas.setPointerCapture?.(event.pointerId); writingDrawing=true;
+  const pt=writingPointFromEvent(event); writingLastPoint=pt; writingCurrentStroke=[pt];
+  const ctx=canvas.getContext("2d"); ctx.beginPath(); ctx.moveTo(pt.x,pt.y);
+}
+function moveWritingStroke(event){
+  if(!writingDrawing) return; event.preventDefault();
+  const canvas=document.getElementById("writingCanvas"); const ctx=canvas.getContext("2d"); const pt=writingPointFromEvent(event);
+  if(writingLastPoint){ const dx=pt.x-writingLastPoint.x, dy=pt.y-writingLastPoint.y; writingInkLength+=Math.sqrt(dx*dx+dy*dy); }
+  ctx.lineTo(pt.x,pt.y); ctx.stroke(); writingLastPoint=pt; writingCurrentStroke.push(pt);
+  const score=evaluateWritingTarget(false);
+  if(score.ok){
+    setWritingNextEnabled(true);
+    const hint=document.getElementById("writingHint");
+    if(hint){ hint.className="writing-hint good"; hint.textContent="Das sieht gut aus! Du kannst weiter."; }
+  }
+}
+function endWritingStroke(event){
+  if(!writingDrawing) return; event.preventDefault(); writingDrawing=false; writingLastPoint=null;
+  if(writingCurrentStroke.length) writingStrokes.push(writingCurrentStroke);
+  writingCurrentStroke=[];
+  const score=evaluateWritingTarget(true);
+  if(score.ok){
+    setWritingNextEnabled(true);
+    const hint=document.getElementById("writingHint"); if(hint){ hint.className="writing-hint good"; hint.textContent="Gut nachgemalt!"; }
+  }
 }
 
-function moveWritingStroke(event){
-  if(!writingDrawing) return;
-  event.preventDefault();
-  const canvas=document.getElementById("writingCanvas");
-  const ctx=canvas.getContext("2d");
-  const pt=writingPointFromEvent(event);
-  if(writingLastPoint){
-    const dx=pt.x-writingLastPoint.x;
-    const dy=pt.y-writingLastPoint.y;
-    writingInkLength+=Math.sqrt(dx*dx+dy*dy);
+function getCanvasMask(canvas){
+  const ctx=canvas.getContext("2d"); const w=canvas.width, h=canvas.height;
+  const data=ctx.getImageData(0,0,w,h).data; const mask=new Uint8Array(w*h); let count=0;
+  for(let i=3,p=0;i<data.length;i+=4,p++){ if(data[i]>20){ mask[p]=1; count++; } }
+  return {mask,w,h,count};
+}
+function renderTemplateMask(text, canvas){
+  const w=canvas.width, h=canvas.height; const off=document.createElement("canvas"); off.width=w; off.height=h;
+  const ctx=off.getContext("2d"); ctx.fillStyle="#000"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="900 "+Math.floor((writingWordMode?Math.min(w/(Math.max(3,text.length)*0.72),h*0.45):h*0.72))+"px Arial";
+  ctx.lineWidth=Math.max(18, Math.round(w/(writingWordMode?42:24))); ctx.strokeStyle="#000"; ctx.fillStyle="#000";
+  ctx.strokeText(text,w/2,h/2); ctx.fillText(text,w/2,h/2);
+  const data=ctx.getImageData(0,0,w,h).data; const mask=new Uint8Array(w*h); let count=0;
+  for(let i=3,p=0;i<data.length;i+=4,p++){ if(data[i]>20){ mask[p]=1; count++; } }
+  return {mask,w,h,count};
+}
+function dilatedHit(mask,w,h,x,y,r){
+  for(let dy=-r;dy<=r;dy++) for(let dx=-r;dx<=r;dx++){
+    const nx=x+dx, ny=y+dy; if(nx<0||ny<0||nx>=w||ny>=h) continue;
+    if(mask[ny*w+nx]) return true;
   }
-  ctx.lineTo(pt.x,pt.y);
-  ctx.stroke();
-  writingLastPoint=pt;
-  if(writingInkLength>70){
-    const hint=document.getElementById("writingHint");
-    if(hint){
-      hint.className="writing-hint good";
-      hint.textContent="Gut nachgemalt! Jetzt kannst du zum nächsten Buchstaben.";
+  return false;
+}
+function evaluateWritingTarget(finalCheck=false){
+  const canvas=document.getElementById("writingCanvas");
+  if(!canvas || !writingTargetText) return {ok:false};
+  const user=getCanvasMask(canvas); const tpl=renderTemplateMask(writingTargetText,canvas);
+  if(user.count<20 || writingInkLength < (writingWordMode?120:55)) return {ok:false};
+  const step=Math.max(1,Math.floor(canvas.width/260)); let inkHit=0, inkSample=0, tplHit=0, tplSample=0;
+  const tol=Math.max(10, Math.round(canvas.width/(writingWordMode?30:22)));
+  for(let y=0;y<canvas.height;y+=step){
+    for(let x=0;x<canvas.width;x+=step){
+      const idx=y*canvas.width+x;
+      if(user.mask[idx]){ inkSample++; if(dilatedHit(tpl.mask,canvas.width,canvas.height,x,y,tol)) inkHit++; }
+      if(tpl.mask[idx]){ tplSample++; if(dilatedHit(user.mask,canvas.width,canvas.height,x,y,tol)) tplHit++; }
     }
   }
-}
-
-function endWritingStroke(event){
-  if(!writingDrawing) return;
-  event.preventDefault();
-  writingDrawing=false;
-  writingLastPoint=null;
+  const inside=inkSample?inkHit/inkSample:0;
+  const coverage=tplSample?tplHit/tplSample:0;
+  const ok = writingWordMode ? (inside>0.52 && coverage>0.10) : (inside>0.58 && coverage>0.12);
+  return {ok,inside,coverage};
 }
 
 function resetWritingLetter(){
   if(mode!=="write" || !writingCountry) return;
-  clearWritingCanvas();
-  const letter=writingLetters[writingIndex] || "";
-  speak("Male "+letter+" noch einmal nach.",{force:true});
+  clearWritingCanvas(); speakCurrentWritingTarget();
 }
-
 function nextWritingLetter(){
   if(mode!=="write" || !writingCountry) return;
-  if(writingIndex>=writingLetters.length){
-    closeWritingPanel();
+  const score=evaluateWritingTarget(true);
+  if(!score.ok){
+    setWritingNextEnabled(false);
+    const hint=document.getElementById("writingHint");
+    const retryMsg=pick(writingRetryMsgs);
+    if(hint){ hint.className="writing-hint"; hint.textContent=retryMsg; }
+    speak(retryMsg,{force:true});
     return;
   }
-  if(writingInkLength<35){
-    const hint=document.getElementById("writingHint");
-    if(hint){
-      hint.className="writing-hint";
-      hint.textContent="Male den Buchstaben erst mit dem Finger nach.";
-    }
-    speak("Male den Buchstaben erst nach.",{force:true});
+  if(writingWordMode){
+    const doneMsg=fmtMsg(pick(writingDoneMsgs),{s:(writingCountry?writingCountry[0]:"")});
+    setFeedback("✅ "+doneMsg,false);
+    speak(doneMsg,{force:true});
+    closeWritingPanel(false);
     return;
   }
   writingIndex++;
   renderWritingLetter();
 }
-
-function repeatWritingCountry(){
-  if(!writingCountry) return;
-  if(writingIndex<writingLetters.length){
-    speak("Schreibe "+naturalText(writingCountry[0])+". Jetzt der Buchstabe "+writingLetters[writingIndex]+".",{force:true});
-  }else{
-    speak("Fertig. "+naturalText(writingCountry[0])+" ist geschrieben.",{force:true});
-  }
-}
-
+function repeatWritingCountry(){ speakCurrentWritingTarget(); }
 function closeWritingPanel(resetMode=true){
-  const panel=document.getElementById("writingPanel");
-  if(panel) panel.classList.remove("open");
-  writingCountry=null;
-  writingLetters=[];
-  writingIndex=0;
+  const panel=document.getElementById("writingPanel"); if(panel) panel.classList.remove("open");
+  writingCountry=null; writingLetters=[]; writingIndex=0; writingWordMode=false; writingTargetText="";
+  const guide=document.getElementById("writingLetterGuide"); if(guide){ guide.textContent=""; guide.classList.remove("word"); }
   if(resetMode && mode==="write"){
-    setFeedback("");
-    const q=document.getElementById("question");
+    setFeedback(""); const q=document.getElementById("question");
     if(q) q.textContent="✍️ Tippe auf eine Flagge und male den Ländernamen Buchstabe für Buchstabe nach.";
   }
 }
-
 function initWritingCanvasEvents(){
-  const canvas=document.getElementById("writingCanvas");
-  if(!canvas) return;
+  const canvas=document.getElementById("writingCanvas"); if(!canvas) return;
   canvas.addEventListener("pointerdown",startWritingStroke);
   canvas.addEventListener("pointermove",moveWritingStroke);
   canvas.addEventListener("pointerup",endWritingStroke);
@@ -5551,7 +5745,7 @@ function startLearning(list=allCountries, modeId="learn-all", resetFilter=true){
   active=list && list.length ? list : allCountries;
   displayedActive=active.slice();
   locked=false;
-  document.getElementById("question").textContent="Tippe auf eine Flagge, um den Namen zu hören 🎧";
+  document.getElementById("question").textContent=pick(learnIntroMsgs)+" 🎧";
   document.getElementById("repeat-btn").style.display="none";
   setFeedback("");
   if(resetFilter) setActiveFilter("all");
@@ -5596,7 +5790,7 @@ function nextQ(){
   current=quizQueue.shift();
   currentMistakes=0;
   quizQuestionRecorded=false;
-  const questionText="Welche Flagge gehört zu "+current[0]+" ?";
+  const questionText=fmtMsg(pick(questionMsgs),{s:current[0]});
   document.getElementById("question").textContent=questionText;
   showQuizQuestionOverlay(questionText);
   speak(questionText, {force:true});
@@ -5604,7 +5798,7 @@ function nextQ(){
 
 function click(c,el){
   if(mode==="write"){startCountryWriting(c);clearHL();el.classList.add("correct");return;}
-  if(mode==="learn"){recordLearningFlag(c[0]);speakCountry(c[0]);clearHL();el.classList.add("correct");return;}
+  if(mode==="learn"){recordLearningFlag(c[0]);speak(fmtMsg(pick(learnTapMsgs),{s:naturalText(c[0])}),{rate:0.9,pitch:0.98,force:true});clearHL();el.classList.add("correct");return;}
   if(mode==="voiceQuiz") return;
   if(locked || !current)return;
   markQuizQuestionInStats();
