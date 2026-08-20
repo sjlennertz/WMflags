@@ -82,6 +82,14 @@ body{font-family:'Arial',sans-serif;background:#0a1628;min-height:100vh;color:#f
 .flag-card:hover{transform:translateY(-2px);border-color:rgba(201,168,76,0.45)}
 .flag-card.correct{border-color:#4caf50!important;background:rgba(76,175,80,0.14)!important}
 .flag-card.wrong{border-color:#e53935!important;background:rgba(229,57,53,0.14)!important}
+.flag-card.correct::after,.flag-card.wrong::after{
+  position:absolute;left:6px;top:6px;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;
+  z-index:3;box-shadow:0 2px 6px rgba(0,0,0,.35);
+}
+.flag-card.correct::after{content:"✓";background:#4caf50;color:#08210c;}
+.flag-card.wrong::after{content:"✕";background:#e53935;color:#2a0605;}
+.confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999;}
 .flag-img-wrap{position:relative;width:120px;height:80px;display:flex;align-items:center;justify-content:center;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.09);background:#071020}
 .flag-fallback{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#0e2040;color:#8daed8}
 .flag-fallback.show{display:flex}
@@ -466,6 +474,39 @@ body.stats-active .q-label{display:none!important}
 .stats-section[hidden]{
   display:none!important;
 }
+.badge-summary{
+  text-align:center;
+  color:#c8daf5;
+  font-weight:700;
+  font-size:13px;
+  margin-bottom:10px;
+}
+.badge-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:10px;
+}
+.badge{
+  background:rgba(7,24,40,.55);
+  border:1px solid rgba(126,203,255,.12);
+  border-radius:12px;
+  padding:10px 8px;
+  text-align:center;
+  opacity:.45;
+  filter:grayscale(1);
+  transition:opacity .2s,filter .2s,transform .2s;
+}
+.badge.unlocked{
+  opacity:1;
+  filter:none;
+  border-color:rgba(201,168,76,.5);
+  background:rgba(201,168,76,.1);
+  box-shadow:0 6px 18px rgba(201,168,76,.15);
+}
+.badge:hover{transform:translateY(-2px)}
+.badge-icon{font-size:28px;line-height:1}
+.badge-label{font-size:11.5px;font-weight:800;color:#e8d5a3;margin-top:6px}
+.badge-sub{font-size:10.5px;color:#8daed8;margin-top:2px}
 .history-list{
   display:flex;
   flex-direction:column;
@@ -1320,6 +1361,184 @@ body.writing-active #grid{
   padding:10px 14px;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   ── MODERNISIERUNG ──
+   Ruhigere Flächen, weichere Karten/Schatten statt harter Kanten,
+   farbige Icon-Badges zur schnellen Orientierung, kompaktere und
+   klar gruppierte Filterzeilen, besser lesbare Ländernamen.
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --radius-lg:18px;
+  --radius-md:13px;
+  --radius-sm:10px;
+  --shadow-soft:0 3px 12px rgba(0,0,0,.28);
+  --shadow-lift:0 14px 30px rgba(0,0,0,.4);
+}
+
+body{
+  background:
+    radial-gradient(circle at 12% -5%, rgba(126,203,255,.08), transparent 55%),
+    radial-gradient(circle at 90% 10%, rgba(201,168,76,.07), transparent 50%),
+    #0a1628!important;
+}
+
+/* ── Header: weniger "laut", mehr Tiefe ── */
+.header{
+  border-bottom:none!important;
+  box-shadow:0 1px 0 rgba(201,168,76,.4), 0 10px 26px rgba(0,0,0,.35);
+}
+.header-sub{
+  font-weight:700!important;
+  opacity:.88;
+}
+.gold-line{
+  background:linear-gradient(90deg,transparent,#c9a84c,transparent)!important;
+  height:2px!important;
+  box-shadow:none!important;
+}
+
+/* ── Hauptnavigation: farbige Icon-Badges je Modus ── */
+.controls-wrap{
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+}
+.controls-wrap > .ctrl-row:first-child .mode-btn{
+  border-radius:var(--radius-md)!important;
+  box-shadow:var(--shadow-soft);
+  transition:transform .15s ease,box-shadow .15s ease,background .2s ease,border-color .2s ease;
+}
+.controls-wrap > .ctrl-row:first-child .mode-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-lift);
+}
+.controls-wrap > .ctrl-row:first-child .mode-btn.active-mode{
+  box-shadow:var(--shadow-lift);
+}
+.mode-icon{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  width:1.7em;
+  height:1.7em;
+  margin:0 auto 3px;
+  border-radius:10px;
+  background:rgba(255,255,255,.10);
+  transition:background .2s ease;
+}
+[data-mode="greet"] .mode-icon{background:rgba(148,163,184,.30)}
+[data-mode="learn-all"] .mode-icon{background:rgba(96,165,250,.30)}
+[data-mode="quiz-all"] .mode-icon{background:rgba(167,139,250,.30)}
+[data-mode="voice-quiz"] .mode-icon{background:rgba(45,212,191,.30)}
+[data-mode="write"] .mode-icon{background:rgba(251,146,60,.30)}
+[data-mode="ranking"] .mode-icon{background:rgba(232,201,106,.32)}
+[data-mode="stats"] .mode-icon{background:rgba(74,222,128,.30)}
+.mode-btn.active-mode .mode-icon{
+  background:rgba(10,22,40,.20)!important;
+}
+
+/* ── Filterzeilen: kompakter und als eine durchgehende Gruppe ── */
+#groupButtons,
+#roundLengthButtons{
+  padding-top:6px!important;
+  margin-top:2px;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+#searchRow{padding:4px 0 8px!important}
+.filter-label{
+  font-weight:800!important;
+  letter-spacing:.06em!important;
+  opacity:.75;
+}
+.filter-btn{
+  border-radius:999px!important;
+  font-weight:700!important;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+  transition:transform .12s ease,box-shadow .12s ease;
+}
+.filter-btn:hover{transform:translateY(-1px)}
+.filter-btn.active-mode{box-shadow:var(--shadow-soft)}
+
+.country-search-input{
+  border-radius:999px!important;
+  box-shadow:0 1px 4px rgba(0,0,0,.2) inset;
+  transition:border-color .2s ease,box-shadow .2s ease;
+}
+.country-search-input:focus{
+  outline:none;
+  border-color:rgba(201,168,76,.7)!important;
+  box-shadow:0 0 0 3px rgba(201,168,76,.18);
+}
+
+/* ── Flaggenkarten: weicher, mit Tiefe statt harter Kontur ── */
+.flag-card{
+  border:1px solid rgba(255,255,255,.06)!important;
+  border-radius:var(--radius-md)!important;
+  box-shadow:var(--shadow-soft);
+  background:linear-gradient(160deg,#102548,#0c1d3a)!important;
+}
+.flag-card:hover{
+  box-shadow:var(--shadow-lift);
+  border-color:rgba(201,168,76,.5)!important;
+}
+.flag-img-wrap{
+  border-radius:var(--radius-sm)!important;
+  box-shadow:0 1px 6px rgba(0,0,0,.3) inset;
+}
+.flag-name{
+  text-transform:none!important;
+  font-weight:700!important;
+  letter-spacing:.01em!important;
+  font-size:12px!important;
+  color:#dbe8fb!important;
+}
+.zoom-btn{
+  border-radius:999px!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+
+/* ── Modals: weichere Kanten, dezenter Blur hinter dem Dialog ── */
+.flag-modal{
+  backdrop-filter:blur(3px);
+}
+.flag-modal-card{
+  border-radius:var(--radius-lg)!important;
+  box-shadow:var(--shadow-lift);
+}
+.country-info-fact{
+  background:rgba(201,168,76,.08);
+  border-radius:var(--radius-sm);
+  padding:8px 10px;
+  margin-top:2px;
+}
+.quiz-question-overlay,
+.quiz-question-card{
+  border-radius:var(--radius-lg)!important;
+  box-shadow:var(--shadow-lift);
+}
+
+/* ── Buttons/Panels allgemein: konsistentere Rundung ── */
+.settings-panel{
+  border-radius:var(--radius-md)!important;
+  box-shadow:var(--shadow-lift)!important;
+}
+.settings-btn,
+.pbar-btn,
+.btn.settings-action{
+  border-radius:999px!important;
+}
+.player-bar{
+  border-radius:0!important;
+}
+.pbtn,
+.ok-btn{
+  border-radius:var(--radius-md)!important;
+}
+.stats-wrap,
+.ranking-wrap{
+  background:rgba(255,255,255,.02);
+  border-radius:var(--radius-lg);
+  padding-top:14px;
+}
+
 </style>
 </head>
 <body>
@@ -1789,6 +2008,60 @@ function countriesByNames(names){
 
 function continentTeams(name){
   return countriesByNames(CONTINENTS[name] || []);
+}
+
+const CONTINENT_ICONS = {
+  "Europa":"🏰","Asien":"🏯","Afrika":"🦁","Nordamerika":"🗽","Südamerika":"🌴","Ozeanien":"🏝️"
+};
+
+function countryMasteredFor(p,country){
+  const q=p.quiz && p.quiz[country];
+  const v=p.voice && p.voice[country];
+  return !!((q && q.correct>0) || (v && v.correct>0));
+}
+
+function continentMasteryInfo(p,name){
+  const list=CONTINENTS[name]||[];
+  const mastered=list.filter(c=>countryMasteredFor(p,c)).length;
+  return {name,mastered,total:list.length,complete:list.length>0 && mastered===list.length};
+}
+
+function computeAchievements(p){
+  const continents=Object.keys(CONTINENTS).map(name=>continentMasteryInfo(p,name));
+  const allComplete=continents.every(c=>c.complete);
+  const streakBest=(p.streak && p.streak.best) || 0;
+  const badges=[];
+  continents.forEach(c=>{
+    badges.push({
+      id:"cont-"+c.name,
+      icon:CONTINENT_ICONS[c.name]||"🌍",
+      label:c.name+" gemeistert",
+      sub:c.mastered+" / "+c.total+" Länder",
+      unlocked:c.complete
+    });
+  });
+  badges.push({
+    id:"world",
+    icon:"🌍",
+    label:"Weltmeister",
+    sub:"Alle Kontinente gemeistert",
+    unlocked:allComplete
+  });
+  [
+    {days:3,icon:"🔥"},
+    {days:7,icon:"🔥"},
+    {days:14,icon:"🔥"},
+    {days:30,icon:"🔥"}
+  ].forEach(s=>{
+    badges.push({
+      id:"streak-"+s.days,
+      icon:s.icon,
+      label:s.days+" Tage in Folge gespielt",
+      sub:streakBest>=s.days ? "Geschafft!" : (streakBest)+" / "+s.days+" Tage",
+      unlocked:streakBest>=s.days
+    });
+  });
+  return badges;
 }
 
 const COUNTRY_INFO = {
@@ -2836,15 +3109,6 @@ const learnIntroMsgs=[
 "Such dir eine Flagge aus. Ich sage dir, welches Land es ist.",
 "Hier darfst du ausprobieren. Tippe auf eine Flagge zum Lernen."
 ];
-const learnTapMsgs=[
-"%s. Gut gemerkt!",
-"Das ist %s.",
-"%s. Schau dir die Flagge genau an.",
-"%s. Achte auf Farben, Formen und Symbole.",
-"Diese Flagge gehört zu %s.",
-"%s. Wieder ein Land mehr gelernt!",
-"Prima, das war %s."
-];
 const voiceQuestionMsgs=[
 "Welches Land ist das? Sprich die Antwort laut aus.",
 "Schau dir die Flagge an. Wie heißt das Land?",
@@ -3047,7 +3311,24 @@ function ensureFlagStatsPlayer(d,name){
   if(!d.players[name].quiz) d.players[name].quiz={};
   if(!d.players[name].voice) d.players[name].voice={};
   if(!Array.isArray(d.players[name].history)) d.players[name].history=[];
+  if(!d.players[name].streak || typeof d.players[name].streak!=="object") d.players[name].streak={current:0,best:0,lastDate:""};
+  touchStreak(d.players[name].streak);
   return d.players[name];
+}
+
+function touchStreak(streak){
+  const todayStr=new Date().toISOString().slice(0,10);
+  if(streak.lastDate===todayStr) return;
+  if(streak.lastDate){
+    const diffDays=Math.round((Date.parse(todayStr)-Date.parse(streak.lastDate))/86400000);
+    if(diffDays===1) streak.current=(streak.current||0)+1;
+    else if(diffDays>1) streak.current=1;
+    else streak.current=streak.current||1;
+  } else {
+    streak.current=1;
+  }
+  streak.lastDate=todayStr;
+  if(streak.current>(streak.best||0)) streak.best=streak.current;
 }
 
 function addFlagHistory(playerStats,type,country,result){
@@ -3158,7 +3439,26 @@ function renderStats(){
   el.innerHTML=`
     <div class="stats-tabs">
       <button class="stats-tab-btn active" data-stats-tab="overview" onclick="showStatsTab('overview')">Übersicht</button>
+      <button class="stats-tab-btn" data-stats-tab="achievements" onclick="showStatsTab('achievements')">Erfolge</button>
       <button class="stats-tab-btn" data-stats-tab="history" onclick="showStatsTab('history')">Historie</button>
+    </div>
+    <div class="stats-section" id="statsAchievements" hidden>
+      ${entries.map(([name,p])=>{
+        const badges=computeAchievements(p);
+        const unlockedCount=badges.filter(b=>b.unlocked).length;
+        const badgeHtml=badges.map(b=>`
+          <div class="badge${b.unlocked ? " unlocked" : ""}" title="${escapeHtml(b.sub)}">
+            <div class="badge-icon">${b.icon}</div>
+            <div class="badge-label">${escapeHtml(b.label)}</div>
+            <div class="badge-sub">${escapeHtml(b.sub)}</div>
+          </div>
+        `).join("");
+        return `<div class="stats-player">
+          <h3>${escapeHtml(name)}</h3>
+          <div class="badge-summary">${unlockedCount} / ${badges.length} Abzeichen freigeschaltet</div>
+          <div class="badge-grid">${badgeHtml}</div>
+        </div>`;
+      }).join("")}
     </div>
     <div class="stats-section" id="statsOverview">
       ${entries.map(([name,p])=>{
@@ -3240,8 +3540,10 @@ function renderStats(){
 function showStatsTab(tab){
   const overview=document.getElementById("statsOverview");
   const history=document.getElementById("statsHistory");
+  const achievements=document.getElementById("statsAchievements");
   if(overview) overview.hidden = tab!=="overview";
   if(history) history.hidden = tab!=="history";
+  if(achievements) achievements.hidden = tab!=="achievements";
   document.querySelectorAll(".stats-tab-btn").forEach(btn=>{
     btn.classList.toggle("active",btn.dataset.statsTab===tab);
   });
@@ -3886,6 +4188,63 @@ function render(){
 }
 function clearHL(){document.querySelectorAll(".flag-card").forEach(e=>e.classList.remove("correct","wrong"));}
 
+function vibrate(pattern){
+  try{
+    if(navigator && typeof navigator.vibrate==="function") navigator.vibrate(pattern);
+  }catch(e){/* Vibration API nicht verfügbar – einfach ignorieren */}
+}
+
+function celebrateRoundEnd(correct,total){
+  if(!total) return;
+  if((correct/total)>=0.5) celebrate();
+}
+
+function celebrate(){
+  try{
+    const canvas=document.createElement("canvas");
+    canvas.className="confetti-canvas";
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+    document.body.appendChild(canvas);
+    const ctx=canvas.getContext("2d");
+    if(!ctx){canvas.remove();return;}
+    const colors=["#c9a84c","#4caf50","#4fc3f7","#e53935","#ff9800","#ab47bc","#ffffff"];
+    const count=Math.min(90,Math.max(40,Math.floor(canvas.width/12)));
+    const pieces=Array.from({length:count},()=>({
+      x:Math.random()*canvas.width,
+      y:-30-Math.random()*canvas.height*0.4,
+      w:5+Math.random()*6,
+      h:8+Math.random()*8,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      vx:(Math.random()-0.5)*2.4,
+      vy:2.4+Math.random()*3,
+      rot:Math.random()*Math.PI*2,
+      vr:(Math.random()-0.5)*0.35
+    }));
+    const start=performance.now();
+    const duration=1700;
+    function frame(now){
+      const elapsed=now-start;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      pieces.forEach(p=>{
+        p.x+=p.vx;p.y+=p.vy;p.vy+=0.03;p.rot+=p.vr;
+        ctx.save();
+        ctx.translate(p.x,p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle=p.color;
+        ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+        ctx.restore();
+      });
+      if(elapsed<duration){
+        requestAnimationFrame(frame);
+      }else{
+        canvas.remove();
+      }
+    }
+    requestAnimationFrame(frame);
+  }catch(e){/* Konfetti ist ein optionales Extra – Fehler einfach ignorieren */}
+}
+
 
 
 function toggleSettings(event){
@@ -4023,6 +4382,7 @@ function finishQuizRound(){
   if(q) q.textContent=msg;
   setFeedback(msg,false);
   speak(endText,{force:true});
+  celebrateRoundEnd(sCorrect,sTotal);
   commitSession();
 }
 
@@ -4403,12 +4763,14 @@ function gradeVoiceAnswer(isCorrect){
     sCorrect++;
     recordVoiceAnswer(current[0],"correct");
     updateScore();
+    vibrate(60);
     const msg=fmtMsg(pick(voiceCorrectMsgs),{s:current[0]});
     setFeedback("✅ "+msg,false);
     speak(msg,{force:true});
   }else{
     recordVoiceAnswer(current[0],"wrong");
     updateScore();
+    vibrate([50,60,50]);
     const msg=fmtMsg(pick(voiceWrongMsgs),{s:current[0]});
     setFeedback("❌ "+msg,true);
     speak(msg,{force:true});
@@ -4479,6 +4841,7 @@ function finishVoiceRound(){
   if(promptEl) promptEl.textContent="Runde beendet";
   setFeedback(msg,false);
   speak(endText,{force:true});
+  celebrateRoundEnd(sCorrect,sTotal);
   commitSession();
 }
 
@@ -4997,7 +5360,7 @@ function nextQ(){
 
 function click(c,el){
   if(mode==="write"){startCountryWriting(c);clearHL();el.classList.add("correct");return;}
-  if(mode==="learn"){recordLearningFlag(c[0]);speak(fmtMsg(pick(learnTapMsgs),{s:naturalText(c[0])}),{rate:0.9,pitch:0.98,force:true});clearHL();el.classList.add("correct");return;}
+  if(mode==="learn"){recordLearningFlag(c[0]);speak(naturalText(c[0]),{rate:0.9,pitch:0.98,force:true});clearHL();el.classList.add("correct");return;}
   if(mode==="voiceQuiz") return;
   if(locked || !current)return;
   markQuizQuestionInStats();
@@ -5007,6 +5370,7 @@ function click(c,el){
     locked=true;
     hideQuizQuestionOverlay();
     sCorrect++;updateScore();el.classList.add("correct");
+    vibrate(60);
     const pool=currentMistakes===0 ? correctFirstTryMsgs : correctAfterMistakeMsgs;
     const msg=pool[Math.floor(Math.random()*pool.length)].replace("%s",c[0]);
     const prefix=currentMistakes===0 ? "✅ Richtig! " : "✅ Jetzt richtig! ";
@@ -5025,6 +5389,7 @@ function click(c,el){
     recordQuizAnswer(current[0],false);
     currentMistakes++;
     updateScore();el.classList.add("wrong");
+    vibrate([50,60,50]);
     const msg=wrongMsgs[Math.floor(Math.random()*wrongMsgs.length)];
     const clickedCountry=c[0];
     const feedbackText="❌ Das war "+clickedCountry+". "+msg;
