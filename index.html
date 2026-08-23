@@ -1794,7 +1794,7 @@ body{
 
 <!-- ── Statistik ── -->
 <div class="stats-wrap" id="statsPanel">
-  <div class="stats-head">📊 Flaggen-Statistik</div>
+  <div class="stats-head" id="statsHead">📊 Flaggen-Statistik</div>
   <div id="statsList"></div>
 </div>
 
@@ -1811,7 +1811,7 @@ body{
     <div class="voice-quiz-actions">
       <button class="btn voice-speak-btn" type="button" onclick="startVoiceAnswer()">🎙️ Antwort sprechen</button>
       <button class="btn repeat-question-btn" type="button" onclick="repeatVoiceQuestion()">🔁 Frage nochmal vorlesen</button>
-      <button class="btn cancel-question-btn" type="button" onclick="skipVoiceQuestion()">➡️ Weiter<br><small>nächste Flagge</small></button>
+      <button class="btn cancel-question-btn" type="button" onclick="skipVoiceQuestion()">➡️ Weiter<br><small id="voiceSkipHint">nächste Flagge</small></button>
       <button class="btn cancel-question-btn" type="button" onclick="cancelVoiceQuestion()">✖️ Abbrechen</button>
     </div>
     <div id="voiceManualActions" class="voice-manual-actions">
@@ -1848,7 +1848,7 @@ body{
     <div id="writingHint" class="writing-hint"></div>
 
     <div class="writing-actions">
-      <button class="btn voice-speak-btn" type="button" onclick="repeatWritingCountry()">🔊 Land vorlesen</button>
+      <button id="writingRepeatBtn" class="btn voice-speak-btn" type="button" onclick="repeatWritingCountry()">🔊 Land vorlesen</button>
       <button class="btn repeat-question-btn" type="button" onclick="resetWritingLetter()">↩️ Buchstabe neu</button>
       <button id="writingNextBtn" class="btn quiz-restart-btn" type="button" onclick="nextWritingLetter()">✅ Nächster Buchstabe</button>
       <button class="btn cancel-question-btn" type="button" onclick="closeWritingPanel()">✖️ Schließen</button>
@@ -1864,7 +1864,7 @@ body{
 <!-- ── Startseite: Zufällige Flagge zum Entdecken ── -->
 <div id="homeFlagPanel" class="home-flag-panel">
   <div class="home-flag-card">
-    <button class="home-flag-nav-btn home-flag-prev" type="button" onclick="homeFlagStep(-1)" aria-label="Vorige Flagge">◀</button>
+    <button id="homeFlagPrevBtn" class="home-flag-nav-btn home-flag-prev" type="button" onclick="homeFlagStep(-1)" aria-label="Vorige Flagge">◀</button>
     <div class="home-flag-main" onclick="homeFlagSpeak()">
       <div class="home-flag-img-wrap">
         <img id="homeFlagImg" class="home-flag-img" alt="">
@@ -1872,7 +1872,7 @@ body{
       <div id="homeFlagName" class="home-flag-name">–</div>
       <div class="home-flag-hint">🔊 Antippen zum Anhören</div>
     </div>
-    <button class="home-flag-nav-btn home-flag-next" type="button" onclick="homeFlagStep(1)" aria-label="Nächste Flagge">▶</button>
+    <button id="homeFlagNextBtn" class="home-flag-nav-btn home-flag-next" type="button" onclick="homeFlagStep(1)" aria-label="Nächste Flagge">▶</button>
   </div>
   <div class="home-flag-actions">
     <button class="btn voice-speak-btn" type="button" onclick="homeFlagStartWriting()">✍️ Schreiben üben</button>
@@ -4455,6 +4455,11 @@ let trainingMode="learn";
 let roundLength="all";
 let searchFilterText="";
 let player="", sCorrect=0, sTotal=0;
+// sCorrect/sTotal zählen jeden Antwortversuch (auch mehrfache Fehlversuche bei derselben Frage) –
+// das passt für die Trefferquote/Bestenliste, ist aber für den Fortschrittsbalken ungeeignet.
+// quizAnswered/-Correct/-Wrong zählen stattdessen jede Frage im normalen Quiz nur EINMAL,
+// sobald sie (ggf. nach Fehlversuchen) endgültig richtig beantwortet wurde.
+let quizAnswered=0, quizAnsweredCorrect=0, quizAnsweredWrong=0;
 let writingCountry=null, writingLetters=[], writingIndex=0, writingDrawing=false, writingLastPoint=null, writingInkLength=0, writingStrokes=[], writingCurrentStroke=[], writingAccepted=false, writingWordMode=false, writingTargetText="", writingAutoTimer=null, writingCheckTimer=null, writingLastBadAt=0;
 let homeFlagHistory=[0], homeFlagPos=0;
 
@@ -4471,6 +4476,7 @@ let allClubs = (function(){
   return out;
 })();
 function clubCompetitionTeams(key){
+  if(key==="all") return allClubs;
   const comp=CLUB_COMPETITIONS[key];
   if(!comp) return [];
   return comp.clubs.map(([name])=>[name,name]);
@@ -4902,6 +4908,8 @@ function toggleStats(){
   p.classList.add("open");
   const q=document.getElementById("question");
   if(q) q.textContent="Statistik";
+  const head=document.getElementById("statsHead");
+  if(head) head.textContent=(GAME==="clubs"?"📊 Logo-Statistik":"📊 Flaggen-Statistik");
   renderStats();
 }
 
@@ -4914,7 +4922,7 @@ function clearFlagStats(){
 function clearFlagStatsForPlayer(){
   const name=currentPlayerName();
   if(!name || name==="Unbekannt"){ alert("Bitte zuerst einen Spieler auswählen."); return; }
-  if(!confirm('Wirklich die Flaggen-Statistik von "'+name+'" löschen?')) return;
+  if(!confirm('Wirklich die '+(GAME==="clubs"?"Logo":"Flaggen")+'-Statistik von "'+name+'" löschen?')) return;
   const d=loadFlagStats();
   if(d.players) delete d.players[name];
   saveFlagStats(d);
@@ -4933,6 +4941,7 @@ function buildGroupButtons(){
     }).join("");
     row.innerHTML = `
       <span class="filter-label">Wettbewerb</span>
+      <button class="btn mode-btn filter-btn${currentClubCompetition==="all"?" active-mode":""}" data-filter="competition-all" onclick="applyTrainingFilter('competition','all')">🏆 Alle Logos (${allClubs.length})</button>
       ${compButtons}
     `;
     return;
@@ -4993,7 +5002,7 @@ function startMistakeTraining(){
     startLearning(navDefaultList(),"learn-all",false);
     setActiveFilter("mistakes");
     const q=document.getElementById("question");
-    if(q) q.textContent="Noch keine Fehler gesammelt – super! Spiele erst eine Quiz- oder Sprachrunde, danach kannst du hier gezielt deine kniffligen Flaggen üben. 🎯";
+    if(q) q.textContent="Noch keine Fehler gesammelt – super! Spiele erst eine Quiz- oder Sprachrunde, danach kannst du hier gezielt deine kniffligen "+(GAME==="clubs"?"Logos":"Flaggen")+" üben. 🎯";
     return;
   }
   trainingMode="quiz";
@@ -5033,7 +5042,7 @@ function applyTrainingFilter(type,value){
 function selectPlayer(name){
   if(typeof buildGroupButtons==="function") buildGroupButtons();
   player=name;
-  sCorrect=0;sTotal=0;
+  sCorrect=0;sTotal=0;quizAnswered=0;quizAnsweredCorrect=0;quizAnsweredWrong=0;
   document.getElementById("playerOverlay").style.display="none";
   document.getElementById("pbarName").textContent=name;
   updateScore();
@@ -5045,7 +5054,7 @@ function selectCustomPlayer(){
 }
 function changePlayer(){
   commitSession();
-  sCorrect=0;sTotal=0;
+  sCorrect=0;sTotal=0;quizAnswered=0;quizAnsweredCorrect=0;quizAnsweredWrong=0;
   document.getElementById("playerOverlay").style.display="flex";
 }
 function updateScore(){
@@ -5060,17 +5069,28 @@ function updateQuizProgressBar(){
   const wrongEl=document.getElementById("quizProgressWrong");
   const labelEl=document.getElementById("quizProgressLabel");
   if(!correctEl || !wrongEl || !labelEl) return;
-  const roundTotal=(mode==="voiceQuiz") ? voiceRoundTotal : quizRoundTotal;
-  const wrongCount=Math.max(0,sTotal-sCorrect);
+  // Im normalen Quiz kann dieselbe Frage mehrfach falsch beantwortet werden, bevor sie
+  // richtig gelöst wird (sCorrect/sTotal zählen dort jeden Versuch). Für den Fortschrittsbalken
+  // soll aber jede FRAGE nur einmal zählen – daher eigene, versuchs-unabhängige Zähler.
+  // Im Sprachquiz gibt es keine Wiederholversuche pro Frage, dort bleiben sCorrect/sTotal exakt.
+  const isVoice=(mode==="voiceQuiz");
+  const roundTotal=isVoice ? voiceRoundTotal : quizRoundTotal;
+  const answered=isVoice ? sTotal : quizAnswered;
+  const correct=isVoice ? sCorrect : quizAnsweredCorrect;
+  const wrongCount=isVoice ? Math.max(0,sTotal-sCorrect) : quizAnsweredWrong;
   if(!roundTotal){
     correctEl.style.width="0%";
     wrongEl.style.width="0%";
     labelEl.textContent="";
     return;
   }
-  correctEl.style.width=(sCorrect/roundTotal*100)+"%";
+  correctEl.style.width=(correct/roundTotal*100)+"%";
   wrongEl.style.width=(wrongCount/roundTotal*100)+"%";
-  labelEl.textContent=`${sTotal} von ${roundTotal} beantwortet · ${sCorrect} richtig · ${wrongCount} falsch`;
+  // sTotal-sCorrect zählt JEDEN falschen Klick (auch mehrfache Fehlversuche bei derselben Frage) –
+  // das ist bewusst ein anderer (meist höherer) Wert als "wrongCount" oben, das im normalen Quiz
+  // nur die Anzahl der Fragen mit mindestens einem Fehlversuch zeigt.
+  const totalWrongAttempts=Math.max(0,sTotal-sCorrect);
+  labelEl.textContent=`${answered} von ${roundTotal} beantwortet · ${correct} richtig · ${wrongCount} falsch · ${totalWrongAttempts} falsche ${totalWrongAttempts===1?"Antwort":"Antworten"} insgesamt`;
 }
 
 // ── TTS: beste verfügbare iPad-/Safari-Stimme ──────────────────────
@@ -5343,7 +5363,10 @@ function speakCountry(countryName){
 }
 
 function testVoice(){
-  speak("Hallo! Ich bin bereit für das Flaggen-Quiz. Welche Flagge gehört zu Deutschland?",{force:true});
+  const msg=(GAME==="clubs")
+    ? "Hallo! Ich bin bereit für das Logo-Quiz. Welches Logo gehört zu FC Bayern München?"
+    : "Hallo! Ich bin bereit für das Flaggen-Quiz. Welche Flagge gehört zu Deutschland?";
+  speak(msg,{force:true});
 }
 
 if("speechSynthesis" in window){
@@ -5461,6 +5484,8 @@ function renderHomeFlag(announce){
   const nameEl=document.getElementById("homeFlagName");
   if(img){ img.src=homeMediaUrl(item[1]); img.alt=(GAME==="clubs"?"Logo von ":"Flagge von ")+item[0]; }
   if(nameEl) nameEl.textContent=item[0];
+  const prevBtn=document.getElementById("homeFlagPrevBtn"); if(prevBtn) prevBtn.setAttribute("aria-label",GAME==="clubs"?"Voriges Logo":"Vorige Flagge");
+  const nextBtn=document.getElementById("homeFlagNextBtn"); if(nextBtn) nextBtn.setAttribute("aria-label",GAME==="clubs"?"Nächstes Logo":"Nächste Flagge");
   if(announce) speak(naturalText(item[0]),{rate:0.9,pitch:0.98,force:true});
 }
 
@@ -5505,7 +5530,8 @@ function homeFlagStartVoice(){
 function repeatQuestion(){
   if(mode==="quiz"&&current){
     const overlayText=document.getElementById("quizQuestionText")?.textContent;
-    const q=overlayText || document.getElementById("question").textContent || ("Welche Flagge gehört zu "+current[0]+"?");
+    const fallbackQ=(GAME==="clubs") ? ("Welches Logo gehört zu "+current[0]+"?") : ("Welche Flagge gehört zu "+current[0]+"?");
+    const q=overlayText || document.getElementById("question").textContent || fallbackQ;
     speak(q,{force:true});
   }
 }
@@ -5572,7 +5598,7 @@ function openFlagModal(country,event){
   title.textContent=country[0];
   const infoBox=document.getElementById("flagCountryInfo");
   if(infoBox) infoBox.innerHTML=renderCountryInfo(country[0]);
-  img.alt="Große Flagge von "+country[0];
+  img.alt=(GAME==="clubs"?"Großes Logo von ":"Große Flagge von ")+country[0];
 
   // Für die Großansicht SVG verwenden: bleibt auf Retina-iPads gestochen scharf.
   img.onerror=()=>{
@@ -5632,13 +5658,15 @@ function render(){
     img.src=(typeof flagUrl==="function") ? flagUrl(c[1]) : "https://flagcdn.com/w320/"+c[1]+".png";
     img.loading="lazy";
     img.decoding="async";
-    img.alt="Flagge "+c[0];
+    img.alt=(GAME==="clubs"?"Logo ":"Flagge ")+c[0];
     img.onerror=()=>{ onFlagError(img,c[0],c[1]); };
     wrap.appendChild(img);
 
     const fallback=document.createElement("div");
     fallback.className="flag-fallback";
-    fallback.innerHTML=`<span class="flag-fallback-emoji">🏳️</span><span class="flag-fallback-code">${(c[1]||"").toUpperCase()}</span>`;
+    fallback.innerHTML=(GAME==="clubs")
+      ? `<span class="flag-fallback-emoji">⚽</span><span class="flag-fallback-code"></span>`
+      : `<span class="flag-fallback-emoji">🏳️</span><span class="flag-fallback-code">${(c[1]||"").toUpperCase()}</span>`;
     wrap.appendChild(fallback);
 
     const actions=document.createElement("div");
@@ -5647,7 +5675,7 @@ function render(){
     const zoom=document.createElement("button");
     zoom.className="zoom-btn";
     zoom.type="button";
-    zoom.title="Flagge groß anzeigen";
+    zoom.title=(GAME==="clubs"?"Logo groß anzeigen":"Flagge groß anzeigen");
     zoom.textContent="🔍";
     zoom.addEventListener("click",event=>{
       event.stopPropagation();
@@ -5845,6 +5873,9 @@ function restartQuizRound(){
   commitSession();
   sCorrect=0;
   sTotal=0;
+  quizAnswered=0;
+  quizAnsweredCorrect=0;
+  quizAnsweredWrong=0;
   updateScore();
   locked=false;
   current=null;
@@ -6109,6 +6140,9 @@ function startVoiceQuiz(list=allCountries, modeId="voice-quiz", resetFilter=true
   commitSession();
   sCorrect=0;
   sTotal=0;
+  quizAnswered=0;
+  quizAnsweredCorrect=0;
+  quizAnsweredWrong=0;
   updateScore();
   mode="voiceQuiz";
   active=list && list.length ? list : navDefaultList();
@@ -6180,7 +6214,8 @@ function nextVoiceQ(){
   if(promptEl) promptEl.textContent=prompt;
   const img=document.getElementById("voiceQuizFlag");
   if(img){
-    img.alt="Flagge gesucht";
+    img.alt=(GAME==="clubs"?"Logo gesucht":"Flagge gesucht");
+    const skipHint=document.getElementById("voiceSkipHint"); if(skipHint) skipHint.textContent=(GAME==="clubs"?"nächstes Logo":"nächste Flagge");
     img.onerror=()=>{ img.style.opacity=.25; };
     img.style.opacity=1;
     img.src=flagSvgUrl(current[1]);
@@ -6367,6 +6402,8 @@ function startWritingMode(list=allCountries, modeId="write", resetFilter=true){
   writingCountry=null; writingLetters=[]; writingIndex=0; writingWordMode=false; writingTargetText="";
   locked=false;
   const guide=document.getElementById("writingLetterGuide"); if(guide){ guide.textContent=""; guide.classList.remove("word"); }
+  const wName=document.getElementById("writingCountry"); if(wName) wName.textContent=(GAME==="clubs"?"Verein auswählen":"Land auswählen");
+  const wRepeat=document.getElementById("writingRepeatBtn"); if(wRepeat) wRepeat.textContent=(GAME==="clubs"?"🔊 Verein vorlesen":"🔊 Land vorlesen");
   const intro=pick(poolFor(writingIntroMsgs, CLUB_writingIntroMsgs)); document.getElementById("question").textContent="✍️ "+intro; speak(intro,{force:true});
   document.getElementById("repeat-btn").style.display="none";
   setFeedback("");
@@ -6388,7 +6425,7 @@ function startCountryWriting(country){
   const panel=document.getElementById("writingPanel"); if(panel) panel.classList.add("open");
   const name=document.getElementById("writingCountry"); if(name) name.textContent=country[0];
   const flag=document.getElementById("writingFlag");
-  if(flag){ flag.src=flagUrl(country[1]); flag.alt="Flagge "+country[0]; }
+  if(flag){ flag.src=flagUrl(country[1]); flag.alt=(GAME==="clubs"?"Logo ":"Flagge ")+country[0]; }
   const guide=document.getElementById("writingLetterGuide"); if(guide){ guide.textContent=""; guide.classList.remove("word"); }
   const instr=document.getElementById("writingInstruction"); if(instr) instr.textContent="Hör gut zu. Gleich kommt der erste Buchstabe.";
   const hint=document.getElementById("writingHint"); if(hint){ hint.className="writing-hint"; hint.textContent=""; }
@@ -6767,7 +6804,9 @@ function closeWritingPanel(resetMode=true){
   const guide=document.getElementById("writingLetterGuide"); if(guide){ guide.textContent=""; guide.classList.remove("word"); }
   if(resetMode && mode==="write"){
     setFeedback(""); const q=document.getElementById("question");
-    if(q) q.textContent="✍️ Tippe auf eine Flagge und male den Ländernamen Buchstabe für Buchstabe nach.";
+    if(q) q.textContent=(GAME==="clubs")
+      ? "✍️ Tippe auf ein Logo und male den Vereinsnamen Buchstabe für Buchstabe nach."
+      : "✍️ Tippe auf eine Flagge und male den Ländernamen Buchstabe für Buchstabe nach.";
   }
 }
 function initWritingCanvasEvents(){
@@ -6817,6 +6856,9 @@ function startQuiz(list,modeId="quiz-all",resetFilter=true){
   commitSession();
   sCorrect=0;
   sTotal=0;
+  quizAnswered=0;
+  quizAnsweredCorrect=0;
+  quizAnsweredWrong=0;
   updateScore();
   mode="quiz";
   active=list && list.length ? list : navDefaultList();
@@ -6863,7 +6905,10 @@ function click(c,el){
     recordQuizAnswer(current[0],true);
     locked=true;
     hideQuizQuestionOverlay();
-    sCorrect++;updateScore();el.classList.add("correct");
+    sCorrect++;
+    quizAnswered++;
+    if(currentMistakes===0) quizAnsweredCorrect++; else quizAnsweredWrong++;
+    updateScore();el.classList.add("correct");
     vibrate(60);
     const pool=currentMistakes===0 ? poolFor(correctFirstTryMsgs, CLUB_correctFirstTryMsgs) : poolFor(correctAfterMistakeMsgs, CLUB_correctAfterMistakeMsgs);
     const msg=pool[Math.floor(Math.random()*pool.length)].replace("%s",c[0]);
