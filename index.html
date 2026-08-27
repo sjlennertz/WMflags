@@ -1984,9 +1984,9 @@ body.math-active #mathPanel{display:block}
     <button class="btn mode-btn" data-mode="voice-quiz" onclick="startVoiceQuiz(navDefaultList(),'voice-quiz')"><span class="mode-icon">🎤</span><span class="mode-text">Sprache</span></button>
     <button class="btn mode-btn" data-mode="write" onclick="startWritingMode(navDefaultList(),'write')"><span class="mode-icon">✍️</span><span class="mode-text">Schreiben</span></button>
     <button class="btn mode-btn" data-mode="ranking" onclick="toggleRanking()"><span class="mode-icon">🏅</span><span class="mode-text">Ranking</span></button>
-    <button class="btn mode-btn" data-mode="stats" onclick="toggleStats()"><span class="mode-icon">📊</span><span class="mode-text">Statistik</span></button>
     <button class="btn mode-btn" data-mode="math-learn" onclick="startMathLearning()"><span class="mode-icon">🎓</span><span class="mode-text">Lernen</span></button>
     <button class="btn mode-btn" data-mode="math-test" onclick="showMathTestSetup()"><span class="mode-icon">📝</span><span class="mode-text">Test</span></button>
+    <button class="btn mode-btn" data-mode="stats" onclick="toggleStats()"><span class="mode-icon">📊</span><span class="mode-text">Statistik</span></button>
   </div>
   <div class="ctrl-row" id="groupButtons"></div>
   <div class="ctrl-row" id="roundLengthButtons">
@@ -2314,6 +2314,7 @@ body.math-active #mathPanel{display:block}
           <div class="math-draw-cellguides" id="mathDrawCellGuides"></div>
           <canvas id="mathAnswerCanvas" class="math-answer-canvas"></canvas>
         </div>
+        <div class="math-hint-options" id="mathHintOptions" style="display:none"></div>
         <div class="math-draw-actions">
           <button type="button" class="btn math-clear-btn" id="mathClearBtn" onclick="clearMathAnswerCanvas()" title="Antwort löschen" aria-label="Antwort löschen">🧹 Löschen</button>
         </div>
@@ -2322,7 +2323,6 @@ body.math-active #mathPanel{display:block}
           <button type="button" class="btn math-hint-btn" id="mathHintBtn" onclick="toggleMathHint()" title="Antwortmöglichkeiten anzeigen" aria-label="Antwortmöglichkeiten anzeigen">💡</button>
         </div>
       </div>
-      <div class="math-hint-options" id="mathHintOptions" style="display:none"></div>
     </div>
 
     <div class="math-result-screen" id="mathResultScreen" style="display:none">
@@ -2449,7 +2449,7 @@ body.math-active #mathPanel{display:block}
 <script>
 // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const APP_VERSION="4.0";
-const APP_VERSION_DATE="27. August 2026, 21:06 Uhr";
+const APP_VERSION_DATE="27. August 2026, 21:23 Uhr";
 const FLAG_DATA = {
 "gb-eng":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI1IDE1Ij4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjE1IiBmaWxsPSIjRkZGIi8+CjxnIGZpbGw9IiNDRTExMjQiPgo8cmVjdCB3aWR0aD0iMyIgaGVpZ2h0PSIxNSIgeD0iMTEiLz4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjMiIHk9IjYiLz4KPC9nPgo8L3N2Zz4K",
 "gb-sct":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUgMyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBkPSJNMCAwaDV2M0gweiIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNhKSI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzAwNUVCOCIvPjxwYXRoIGQ9Ik0wIDBsNSAzTTAgM0w1IDAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIwLjYiLz48L2c+PC9zdmc+",
@@ -5587,8 +5587,12 @@ function buildGroupButtons(){
   if(GAME==="math"){
     row.innerHTML = `
       <span class="filter-label">Klasse</span>
-      <button class="btn mode-btn filter-btn${currentMathGrade==="1"?" active-mode":""}" data-filter="grade-1" data-grade="1" onclick="setMathGrade('1')">1️⃣ 1. Klasse</button>
-      <button class="btn mode-btn filter-btn${currentMathGrade==="2"?" active-mode":""}" data-filter="grade-2" data-grade="2" onclick="setMathGrade('2')">2️⃣ 2. Klasse</button>
+      <button class="btn mode-btn filter-btn${currentMathGrade==="1"?" active-mode":""}" data-grade="1" onclick="setMathGrade('1')">1️⃣ 1. Klasse</button>
+      <button class="btn mode-btn filter-btn${currentMathGrade==="2"?" active-mode":""}" data-grade="2" onclick="setMathGrade('2')">2️⃣ 2. Klasse</button>
+      <span class="filter-label">Schwierigkeit</span>
+      <button class="btn mode-btn filter-btn${currentMathDifficulty==="einfach"?" active-mode":""}" data-difficulty="einfach" onclick="setMathDifficulty('einfach')">🟢 Einfach</button>
+      <button class="btn mode-btn filter-btn${currentMathDifficulty==="mittel"?" active-mode":""}" data-difficulty="mittel" onclick="setMathDifficulty('mittel')">🟡 Mittel</button>
+      <button class="btn mode-btn filter-btn${currentMathDifficulty==="schwer"?" active-mode":""}" data-difficulty="schwer" onclick="setMathDifficulty('schwer')">🔴 Schwer</button>
     `;
     return;
   }
@@ -7625,6 +7629,8 @@ updateAppVersionBadge();
 // festen Länder-/Vereinsliste, daher komplett eigene Zustände/Funktionen statt
 // Wiederverwendung der Flaggen-/Logo-Lern-/Quiz-Infrastruktur.
 let currentMathGrade = (localStorage.getItem("flaggenspiel_math_grade")==="2") ? "2" : "1";
+const MATH_DIFFICULTIES = ["einfach","mittel","schwer"];
+let currentMathDifficulty = MATH_DIFFICULTIES.includes(localStorage.getItem("flaggenspiel_math_difficulty")) ? localStorage.getItem("flaggenspiel_math_difficulty") : "mittel";
 let mathMode = null; // null (Start) | 'learn' | 'testSetup' | 'test' | 'testResult'
 let mathProblem = null;
 let mathMistakes = 0; // Fehlversuche bei der AKTUELLEN Aufgabe (nur Lernen-Modus)
@@ -7658,21 +7664,55 @@ function mathOpsForGrade(grade){
   return grade==="2" ? ["+","+","-","-","×"] : ["+","+","-","-"];
 }
 
-function generateMathProblem(grade){
+// Schwierigkeit variiert den Zahlenraum je Klassenstufe und – bei "Schwer" – erzwingt
+// zusätzlich Zehnerübergänge (Übertrag/Entbündeln), da der Zahlenraum selbst in der
+// 1. Klasse (max. 20) und der 2. Klasse (max. 100) durch den Lehrplan gedeckelt ist.
+// "Mittel" entspricht bewusst dem bisherigen Standardverhalten (Runde 11), damit sich
+// für Spieler, die die neue Auswahl nicht anfassen, nichts ändert.
+function mathAddendRange(grade,difficulty){
+  if(grade==="2") return difficulty==="einfach" ? 50 : 100;
+  return difficulty==="einfach" ? 10 : 20;
+}
+function genMathAddends(grade,difficulty){
+  const max=mathAddendRange(grade,difficulty);
+  const requireCarry=(difficulty==="schwer");
+  let a,b,tries=0;
+  do{
+    a=randInt(0,max); b=randInt(0,max-a);
+    tries++;
+  } while(requireCarry && (a%10)+(b%10)<10 && tries<30);
+  return [a,b];
+}
+function genMathSubtrahend(grade,difficulty){
+  const max=mathAddendRange(grade,difficulty);
+  const requireBorrow=(difficulty==="schwer");
+  let a,b,tries=0;
+  do{
+    a=randInt(0,max); b=randInt(0,a);
+    tries++;
+  } while(requireBorrow && (a%10)>=(b%10) && tries<30);
+  return [a,b];
+}
+function genMathFactors(difficulty){
+  if(difficulty==="einfach") return [randInt(1,5), randInt(1,5)];
+  if(difficulty==="schwer") return (Math.random()<0.7) ? [randInt(6,10), randInt(6,10)] : [randInt(1,10), randInt(1,10)];
+  return [randInt(1,10), randInt(1,10)];
+}
+
+function generateMathProblem(grade, difficulty){
+  const diff=MATH_DIFFICULTIES.includes(difficulty) ? difficulty : "mittel";
   const ops=mathOpsForGrade(grade);
   let a,b,op,answer,key,attempts=0;
   do{
     op=ops[Math.floor(Math.random()*ops.length)];
     if(op==="+"){
-      if(grade==="2"){ a=randInt(0,100); b=randInt(0,100-a); }
-      else { a=randInt(0,20); b=randInt(0,20-a); }
+      [a,b]=genMathAddends(grade,diff);
       answer=a+b;
     } else if(op==="-"){
-      if(grade==="2"){ a=randInt(0,100); b=randInt(0,a); }
-      else { a=randInt(0,20); b=randInt(0,a); }
+      [a,b]=genMathSubtrahend(grade,diff);
       answer=a-b;
     } else {
-      a=randInt(1,10); b=randInt(1,10);
+      [a,b]=genMathFactors(diff);
       answer=a*b;
     }
     key=a+op+b;
@@ -7828,22 +7868,26 @@ function countGridHoles(grid, gridSize){
   }
   return holes.sort((a,b)=>b.size-a.size);
 }
+// Rohe Ziffern-Strichdaten (100x100-Koordinatenraum), gemeinsam genutzt von der
+// Erkennung (Formvergleich, mehrere Varianten je Ziffer sinnvoll) UND vom
+// "Zahl ins Malfeld schreiben"-Feature (Hilfe-Button/Runde 14, eine Kanon-Variante
+// je Ziffer reicht dafür).
+const MATH_DIGIT_RAW_STROKES=[
+  ["0",[mathEllipseArc(50,50,30,42,90,450,32)]],
+  ["1",[mathLinePts(50,12,50,88,20)]],
+  ["1",[mathLinePts(35,28,50,12,8), mathLinePts(50,12,50,88,20)]],
+  ["2",[[].concat(mathLinePts(28,28,60,16,6), mathLinePts(60,16,76,36,6), mathLinePts(76,36,22,82,10), mathLinePts(22,82,78,82,6))]],
+  ["3",[[].concat(mathLinePts(26,22,62,18,6), mathLinePts(62,18,72,38,6), mathLinePts(72,38,45,50,6), mathLinePts(45,50,72,62,6), mathLinePts(72,62,62,82,6), mathLinePts(62,82,26,86,6))]],
+  ["4",[[].concat(mathLinePts(62,12,20,62,10), mathLinePts(20,62,80,62,10)), mathLinePts(62,12,62,88,14)]],
+  ["5",[mathLinePts(70,15,25,15,8), mathLinePts(25,15,22,52,10), [].concat(mathLinePts(22,52,55,50,4), mathLinePts(55,50,76,66,6), mathLinePts(76,66,64,85,6), mathLinePts(64,85,26,80,6))]],
+  ["6",[[].concat(mathLinePts(66,14,34,32,8), mathLinePts(34,32,20,60,8), mathLinePts(20,60,26,80,6)), mathEllipseArc(45,70,22,17,0,360,20)]],
+  ["7",[mathLinePts(22,16,78,16,8), mathLinePts(78,16,35,88,14)]],
+  ["7",[mathLinePts(22,16,78,16,8), mathLinePts(78,16,35,88,14), mathLinePts(32,54,58,54,6)]],
+  ["8",[mathEllipseArc(50,32,20,17,90,450,18), mathEllipseArc(50,69,23,19,90,450,18)]],
+  ["9",[mathEllipseArc(50,33,21,18,90,450,18), mathLinePts(70,35,52,88,12)]]
+];
 function buildMathDigitTemplates(){
-  const raw=[
-    ["0",[mathEllipseArc(50,50,30,42,90,450,32)]],
-    ["1",[mathLinePts(50,12,50,88,20)]],
-    ["1",[mathLinePts(35,28,50,12,8), mathLinePts(50,12,50,88,20)]],
-    ["2",[[].concat(mathLinePts(28,28,60,16,6), mathLinePts(60,16,76,36,6), mathLinePts(76,36,22,82,10), mathLinePts(22,82,78,82,6))]],
-    ["3",[[].concat(mathLinePts(26,22,62,18,6), mathLinePts(62,18,72,38,6), mathLinePts(72,38,45,50,6), mathLinePts(45,50,72,62,6), mathLinePts(72,62,62,82,6), mathLinePts(62,82,26,86,6))]],
-    ["4",[[].concat(mathLinePts(62,12,20,62,10), mathLinePts(20,62,80,62,10)), mathLinePts(62,12,62,88,14)]],
-    ["5",[mathLinePts(70,15,25,15,8), mathLinePts(25,15,22,52,10), [].concat(mathLinePts(22,52,55,50,4), mathLinePts(55,50,76,66,6), mathLinePts(76,66,64,85,6), mathLinePts(64,85,26,80,6))]],
-    ["6",[[].concat(mathLinePts(66,14,34,32,8), mathLinePts(34,32,20,60,8), mathLinePts(20,60,26,80,6)), mathEllipseArc(45,70,22,17,0,360,20)]],
-    ["7",[mathLinePts(22,16,78,16,8), mathLinePts(78,16,35,88,14)]],
-    ["7",[mathLinePts(22,16,78,16,8), mathLinePts(78,16,35,88,14), mathLinePts(32,54,58,54,6)]],
-    ["8",[mathEllipseArc(50,32,20,17,90,450,18), mathEllipseArc(50,69,23,19,90,450,18)]],
-    ["9",[mathEllipseArc(50,33,21,18,90,450,18), mathLinePts(70,35,52,88,12)]]
-  ];
-  return raw.map(([digit,strokes])=>{
+  return MATH_DIGIT_RAW_STROKES.map(([digit,strokes])=>{
     const grid=rasterizeStrokes(strokes, MATH_TEMPLATE_GRID);
     const onPixels=[]; for(let i=0;i<grid.length;i++) if(grid[i]) onPixels.push(i);
     const dist=distanceTransform(grid, MATH_TEMPLATE_GRID);
@@ -7852,15 +7896,26 @@ function buildMathDigitTemplates(){
   });
 }
 const MATH_DIGIT_TEMPLATES = buildMathDigitTemplates();
+function buildMathDigitDrawTemplates(){
+  const map={};
+  MATH_DIGIT_RAW_STROKES.forEach(([digit,strokes])=>{
+    if(!map[digit]) map[digit]=strokes; // erste (einfachste) Variante je Ziffer reicht zum Malen
+  });
+  return map;
+}
+const MATH_DIGIT_DRAW_TEMPLATES = buildMathDigitDrawTemplates();
 
-function classifyMathDigit(strokes){
+// Liefert nicht nur die beste Ziffer, sondern auch die zweitbeste samt Score-Abstand –
+// so kann der Aufrufer erkennen, ob zwei Ziffern (z.B. 6/8 oder 3/8) fast gleich gut
+// passen und die Erkennung deshalb unsicher ist (siehe recognizeMathCanvasAnswer/Runde 14).
+function classifyMathDigitDetailed(strokes){
   const grid=rasterizeStrokes(strokes, MATH_TEMPLATE_GRID);
   if(!grid) return null;
   const onPixels=[]; for(let i=0;i<grid.length;i++) if(grid[i]) onPixels.push(i);
   if(!onPixels.length) return null;
   const distInput=distanceTransform(grid, MATH_TEMPLATE_GRID);
   const inputHoles=countGridHoles(grid, MATH_TEMPLATE_GRID);
-  let best=null, bestScore=Infinity;
+  const bestPerDigit={};
   MATH_DIGIT_TEMPLATES.forEach(t=>{
     let sumA=0; onPixels.forEach(i=>{ sumA+=t.dist[i]; });
     const avgA=sumA/onPixels.length;
@@ -7879,9 +7934,19 @@ function classifyMathDigit(strokes){
     } else {
       score*=(1+holeDiff*0.55);
     }
-    if(score<bestScore){ bestScore=score; best=t.digit; }
+    // Mehrere Formvarianten je Ziffer (z.B. "1"/"7" mit/ohne Fähnchen/Querstrich) –
+    // nur den jeweils besten Score pro Ziffer behalten, sonst würde die Erkennung
+    // zwei Varianten derselben Ziffer fälschlich als "unsicher zwischen 1 und 1" werten.
+    if(bestPerDigit[t.digit]===undefined || score<bestPerDigit[t.digit]) bestPerDigit[t.digit]=score;
   });
-  return best===null ? null : parseInt(best,10);
+  const ranked=Object.keys(bestPerDigit).map(d=>({digit:parseInt(d,10),score:bestPerDigit[d]})).sort((a,b)=>a.score-b.score);
+  if(!ranked.length) return null;
+  return {
+    digit:ranked[0].digit,
+    score:ranked[0].score,
+    altDigit:ranked.length>1 ? ranked[1].digit : null,
+    altScore:ranked.length>1 ? ranked[1].score : null
+  };
 }
 
 function mathCellCountForAnswer(n){
@@ -7957,6 +8022,13 @@ function endMathAnswerStroke(event){
   if(mathAnswerCurrentStroke && mathAnswerCurrentStroke.length) mathAnswerStrokes.push(mathAnswerCurrentStroke);
   mathAnswerCurrentStroke=null;
 }
+// Ab welchem relativen Score-Abstand zwischen bester und zweitbester Ziffer die
+// Erkennung als "eindeutig genug" gilt (0.18 = die zweitbeste Ziffer muss einen
+// mindestens 18% schlechteren Score haben). Liegen zwei Ziffern näher beieinander,
+// fragt die App lieber nach, statt zu raten (Runde 14, auf Wunsch: Erkennung war
+// teilweise zu streng/hat sich geirrt, ohne dass das Kind eingreifen konnte).
+const MATH_AMBIGUITY_MARGIN = 0.18;
+
 function recognizeMathCanvasAnswer(){
   const stage=document.getElementById("mathDrawStage");
   if(!stage) return null;
@@ -7972,17 +8044,30 @@ function recognizeMathCanvasAnswer(){
       run.push(p);
     });
   });
-  const digits=[];
+  const digitsBest=[];
+  const digitsAlt=[]; // je Kästchen: alternative Ziffer, falls die Erkennung dort unsicher war, sonst null
   for(let i=0;i<mathAnswerDigitCount;i++){
     const strokes=cellStrokes[i].filter(s=>s.length>1);
     const totalPts=strokes.reduce((n,s)=>n+s.length,0);
     if(!strokes.length || totalPts<3) return null; // Kästchen leer gelassen
-    const digit=classifyMathDigit(strokes);
-    if(digit===null) return null;
-    digits.push(digit);
+    const result=classifyMathDigitDetailed(strokes);
+    if(result===null) return null;
+    digitsBest.push(result.digit);
+    const unsure = result.altDigit!==null && (result.altScore-result.score) < result.score*MATH_AMBIGUITY_MARGIN;
+    digitsAlt.push(unsure ? result.altDigit : null);
   }
-  const val=parseInt(digits.join(""),10);
-  return Number.isNaN(val) ? null : val;
+  const bestVal=parseInt(digitsBest.join(""),10);
+  if(Number.isNaN(bestVal)) return null;
+  const alternatives=[];
+  for(let i=0;i<digitsAlt.length;i++){
+    if(digitsAlt[i]===null) continue;
+    const altDigits=digitsBest.slice();
+    altDigits[i]=digitsAlt[i];
+    const altVal=parseInt(altDigits.join(""),10);
+    if(!Number.isNaN(altVal) && altVal!==bestVal && !alternatives.includes(altVal)) alternatives.push(altVal);
+  }
+  if(!alternatives.length) return {value:bestVal, ambiguous:false};
+  return {value:bestVal, ambiguous:true, alternatives:alternatives.slice(0,2)};
 }
 function initMathAnswerCanvasEvents(){
   const canvas=document.getElementById("mathAnswerCanvas"); if(!canvas) return;
@@ -8048,10 +8133,29 @@ function updateMathProgressBar(){
   labelEl.textContent=`${mathTestIndex} von ${mathTestLength} beantwortet · ${mathTestCorrect} richtig · ${mathTestWrong} falsch`;
 }
 
+// Klasse UND Schwierigkeit sind zwei unabhängige Filtergruppen, die gleichzeitig
+// aktiv sein müssen (z.B. "2. Klasse" UND "Schwer"). Das bestehende setActiveFilter()
+// ist für genau EINE Filtergruppe gebaut (löscht active-mode auf allen .filter-btn),
+// deshalb hier eine eigene Funktion, die beide Gruppen unabhängig voneinander togglet.
+function setActiveMathFilters(){
+  document.querySelectorAll("[data-grade]").forEach(btn=>{
+    btn.classList.toggle("active-mode", btn.dataset.grade===currentMathGrade);
+  });
+  document.querySelectorAll("[data-difficulty]").forEach(btn=>{
+    btn.classList.toggle("active-mode", btn.dataset.difficulty===currentMathDifficulty);
+  });
+}
 function setMathGrade(g){
   currentMathGrade=(g==="2") ? "2" : "1";
   localStorage.setItem("flaggenspiel_math_grade", currentMathGrade);
-  setActiveFilter("grade-"+currentMathGrade);
+  setActiveMathFilters();
+  if(mathMode==="learn"){ mathMistakes=0; presentMathProblem(); }
+  else if(mathMode==="test"){ showMathTestSetup(); }
+}
+function setMathDifficulty(level){
+  currentMathDifficulty=MATH_DIFFICULTIES.includes(level) ? level : "mittel";
+  localStorage.setItem("flaggenspiel_math_difficulty", currentMathDifficulty);
+  setActiveMathFilters();
   if(mathMode==="learn"){ mathMistakes=0; presentMathProblem(); }
   else if(mathMode==="test"){ showMathTestSetup(); }
 }
@@ -8065,7 +8169,7 @@ function presentMathProblem(){
   if(hintBtn) hintBtn.disabled=false;
   if(checkBtn) checkBtn.disabled=false;
   setOtterMood("neutral");
-  mathProblem=generateMathProblem(currentMathGrade);
+  mathProblem=generateMathProblem(currentMathGrade, currentMathDifficulty);
   setupMathAnswerCanvas(mathCellCountForAnswer(mathProblem.answer));
   const problemText=document.getElementById("mathProblemText");
   if(problemText) problemText.textContent=mathProblem.text;
@@ -8164,9 +8268,63 @@ function toggleMathHint(){
     return;
   }
   const options=generateMathDistractors(mathProblem);
-  hintOptions.innerHTML=options.map(v=>`<button type="button" class="btn math-hint-option" onclick="submitMathAnswer(${v})">${v}</button>`).join("");
+  // Seit Runde 14: Antippen einer Option schreibt die Zahl nur noch ins Malfeld,
+  // statt die Antwort sofort automatisch zu werten – das Kind drückt danach
+  // weiterhin selbst "Prüfen", genau wie bei einer selbst gemalten Antwort.
+  hintOptions.innerHTML=options.map(v=>`<button type="button" class="btn math-hint-option" onclick="fillMathAnswerFromHint(${v})">${v}</button>`).join("");
   hintOptions.style.display="flex";
   mathHintOpen=true;
+}
+
+// Malt die per Hilfe-Button gewählte Zahl in Schriftform in die Kästchen (mit denselben
+// Strichdaten, die auch die Erkennung als Referenz nutzt), statt die Antwort direkt zu
+// werten. Ersetzt dabei bewusst ein evtl. vorhandenes eigenes Gekritzel des Kindes.
+function fillMathAnswerFromHint(value){
+  if(!mathProblem || mathCanvasLocked) return;
+  const digitStr=String(Math.abs(value));
+  if(digitStr.length!==mathAnswerDigitCount) setupMathAnswerCanvas(digitStr.length);
+  else clearMathAnswerCanvas();
+  const canvas=document.getElementById("mathAnswerCanvas");
+  const stage=document.getElementById("mathDrawStage");
+  if(!canvas || !stage) return;
+  const rect=stage.getBoundingClientRect();
+  const cellWidth=rect.width/mathAnswerDigitCount;
+  const ctx=canvas.getContext("2d");
+  const padX=cellWidth*0.22;
+  const cellW=cellWidth-padX*2;
+  const drawH=rect.height*0.72;
+  const padY=(rect.height-drawH)/2;
+  for(let i=0;i<digitStr.length;i++){
+    const templ=MATH_DIGIT_DRAW_TEMPLATES[digitStr[i]];
+    if(!templ) continue;
+    const cellX0=i*cellWidth+padX;
+    templ.forEach(strokePts=>{
+      const canvasPts=strokePts.map(p=>({ x:cellX0+(p.x/100)*cellW, y:padY+(p.y/100)*drawH }));
+      ctx.beginPath();
+      canvasPts.forEach((p,idx)=>{ idx===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y); });
+      ctx.stroke();
+      mathAnswerStrokes.push(canvasPts);
+    });
+  }
+  const hintOptions=document.getElementById("mathHintOptions");
+  if(hintOptions){ hintOptions.style.display="none"; hintOptions.innerHTML=""; }
+  mathHintOpen=false;
+  mathBubbleText("So sieht's aus! Drück auf „Prüfen“, wenn du bereit bist. ✅");
+}
+
+// Zeigt bis zu drei Zahlen zum Antippen an, wenn die Ziffern-Erkennung sich nicht sicher
+// war (siehe recognizeMathCanvasAnswer/MATH_AMBIGUITY_MARGIN, Runde 14) – das Kind
+// bestätigt so selbst, welche Zahl gemeint war, statt dass die App einfach rät.
+function showMathAmbiguousPrompt(bestGuess, alternatives){
+  const hintOptions=document.getElementById("mathHintOptions");
+  if(!hintOptions) return;
+  const candidates=[bestGuess, ...alternatives];
+  hintOptions.innerHTML=candidates.map(v=>`<button type="button" class="btn math-hint-option" onclick="submitMathAnswer(${v})">${v}</button>`).join("");
+  hintOptions.style.display="flex";
+  mathHintOpen=false;
+  const msg=`Das war nicht ganz eindeutig – meintest du ${candidates.join(" oder ")}? Tipp die richtige Zahl an.`;
+  mathBubbleText(msg);
+  speak(msg,{force:true});
 }
 
 function submitMathAnswer(chosenValue){
@@ -8178,18 +8336,33 @@ function submitMathAnswer(chosenValue){
   if(typeof chosenValue==="number"){
     val=chosenValue;
   } else {
-    val=recognizeMathCanvasAnswer();
-    if(val===null){
+    const rec=recognizeMathCanvasAnswer();
+    if(rec===null){
       mathBubbleText("Male erst deine Zahl in die Kästchen, dann drücke „Prüfen“! ✏️");
       speak("Male erst deine Zahl in die Kästchen!",{force:true});
       return;
     }
+    if(rec.ambiguous){
+      showMathAmbiguousPrompt(rec.value, rec.alternatives);
+      return;
+    }
+    val=rec.value;
   }
   const isCorrect=(val===mathProblem.answer);
   const hintBtn=document.getElementById("mathHintBtn");
   const checkBtn=document.getElementById("mathCheckBtn");
   const hintOptions=document.getElementById("mathHintOptions");
   if(hintOptions){ hintOptions.style.display="none"; hintOptions.innerHTML=""; mathHintOpen=false; }
+
+  // Wartet (bis maxWait), bis die gesprochene Rückmeldung wirklich zu Ende ist, bevor
+  // die nächste Aufgabe angesagt wird – ein fester, zu kurzer Timeout hat die Ansage
+  // bei längeren Sätzen (v.a. bei falscher Antwort im Test) sonst abgeschnitten, weil
+  // die nächste speak()-Ansage die noch laufende einfach abbricht (Runde 14).
+  function advanceAfterSpeech(fn, maxWait, minDelay){
+    setTimeout(()=>{
+      waitUntilSpeechFinished(maxWait).then(()=>{ setTimeout(fn, minDelay); });
+    }, 250);
+  }
 
   if(isCorrect){
     setOtterMood("happy");
@@ -8204,9 +8377,9 @@ function submitMathAnswer(chosenValue){
       mathCanvasLocked=true;
       if(hintBtn) hintBtn.disabled=true;
       if(checkBtn) checkBtn.disabled=true;
-      setTimeout(advanceMathTest,900);
+      advanceAfterSpeech(advanceMathTest, 3000, 350);
     } else {
-      setTimeout(presentMathProblem,900);
+      advanceAfterSpeech(presentMathProblem, 3000, 350);
     }
   } else {
     setOtterMood("oops");
@@ -8221,17 +8394,17 @@ function submitMathAnswer(chosenValue){
       mathCanvasLocked=true;
       if(hintBtn) hintBtn.disabled=true;
       if(checkBtn) checkBtn.disabled=true;
-      setTimeout(advanceMathTest,1800);
+      advanceAfterSpeech(advanceMathTest, 4500, 400);
     } else {
       mathMistakes++;
       const msg=pick(mathWrongRetryMsgs);
       mathBubbleText(msg);
       speak(msg,{force:true});
       if(stage) stage.classList.add("wrong");
-      setTimeout(()=>{
+      advanceAfterSpeech(()=>{
         if(stage) stage.classList.remove("wrong");
         clearMathAnswerCanvas();
-      },700);
+      }, 4000, 250);
     }
   }
 }
