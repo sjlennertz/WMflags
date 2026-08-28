@@ -452,6 +452,25 @@ body.greeting-active .home-flag-panel{display:block}
 .eleven-key-input::placeholder{
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;
 }
+.eleven-secondary{
+  font-size:12px!important;
+  opacity:.8;
+  padding-top:6px!important;
+  padding-bottom:6px!important;
+}
+.eleven-manual-row{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:8px;
+  border-radius:8px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+}
+.eleven-manual-row .voice-status{
+  font-size:11px;
+  opacity:.85;
+}
 
 
 /* ── Greeting and settings cleanup ── */
@@ -1977,6 +1996,12 @@ body.math-active #mathPanel{display:block}
         <input type="password" id="elevenKeyInput" class="voice-select eleven-key-input" placeholder="ElevenLabs API-Schlüssel einfügen …" autocomplete="off" spellcheck="false">
         <select id="elevenVoiceSelect" class="voice-select" style="display:none"></select>
         <button class="btn settings-action" onclick="saveElevenKey()" type="button">💾 Schlüssel speichern &amp; testen</button>
+        <button class="btn settings-action eleven-secondary" onclick="toggleElevenManualVoice()" type="button">🔧 Stimm-ID manuell eingeben</button>
+        <div class="eleven-manual-row" id="elevenManualRow" style="display:none">
+          <div class="voice-status">Zu finden auf elevenlabs.io unter „Stimmen“/„Voice Library“ – dort bei der gewünschten Stimme die Stimm-ID (Voice ID) kopieren. Hilfreich, falls die Liste oben nicht lädt.</div>
+          <input type="text" id="elevenManualVoiceInput" class="voice-select eleven-key-input" placeholder="Stimm-ID einfügen …" autocomplete="off" spellcheck="false">
+          <button class="btn settings-action" onclick="useManualElevenVoice()" type="button">✅ Stimm-ID übernehmen</button>
+        </div>
         <button class="btn settings-action" id="elevenRemoveBtn" onclick="removeElevenKey()" type="button" style="display:none">🗑 Schlüssel entfernen</button>
       </div>
 
@@ -2467,7 +2492,7 @@ body.math-active #mathPanel{display:block}
 <script>
 // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const APP_VERSION="4.0";
-const APP_VERSION_DATE="28. August 2026, 20:35 Uhr";
+const APP_VERSION_DATE="28. August 2026, 20:53 Uhr";
 const FLAG_DATA = {
 "gb-eng":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI1IDE1Ij4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjE1IiBmaWxsPSIjRkZGIi8+CjxnIGZpbGw9IiNDRTExMjQiPgo8cmVjdCB3aWR0aD0iMyIgaGVpZ2h0PSIxNSIgeD0iMTEiLz4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjMiIHk9IjYiLz4KPC9nPgo8L3N2Zz4K",
 "gb-sct":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUgMyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBkPSJNMCAwaDV2M0gweiIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNhKSI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzAwNUVCOCIvPjxwYXRoIGQ9Ik0wIDBsNSAzTTAgM0w1IDAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIwLjYiLz48L2c+PC9zdmc+",
@@ -5814,13 +5839,46 @@ function updateElevenStatus(msg){
 
 function elevenErrorMessage(e){
   const status=e && e.status;
-  if(status===401 || status===403) return "❌ Der API-Schlüssel wurde von ElevenLabs abgelehnt (ungültig).";
-  if(status===429) return "⚠️ Monatliches Kontingent bei ElevenLabs aufgebraucht.";
-  return "⚠️ ElevenLabs ist gerade nicht erreichbar (Netzwerk- oder Serverfehler).";
+  let base;
+  if(status===401 || status===403) base="❌ Der API-Schlüssel wurde von ElevenLabs abgelehnt.";
+  else if(status===429) base="⚠️ Monatliches Kontingent bei ElevenLabs aufgebraucht.";
+  else base="⚠️ ElevenLabs ist gerade nicht erreichbar (Netzwerk- oder Serverfehler).";
+  if(e && e.detail) base += " Meldung: „" + e.detail + "“";
+  return base;
+}
+
+// Liest bei einem Fehler den genauen Grund aus der ElevenLabs-Antwort aus (statt nur den
+// HTTP-Status zu raten) – wichtig, weil z. B. ein auf "Nur Text-zu-Sprache" eingeschränkter
+// Schlüssel bei /v1/voices ebenfalls mit 401/403 antwortet, obwohl er für die eigentliche
+// Sprachausgabe gültig ist. Der Klartext-Grund hilft beim Unterscheiden.
+async function elevenApiError(res){
+  const err=new Error("eleven-http-"+res.status);
+  err.status=res.status;
+  try{
+    const text=await res.text();
+    try{
+      const data=JSON.parse(text);
+      err.detail=(data && data.detail && (data.detail.message || data.detail.status)) || text.slice(0,200);
+    }catch(_){
+      err.detail=text.slice(0,200);
+    }
+  }catch(_){}
+  return err;
 }
 
 function handleElevenSetupFailure(e){
-  updateElevenStatus(elevenErrorMessage(e)+" Es wird die Gerätestimme benutzt.");
+  const status=e && e.status;
+  let msg=elevenErrorMessage(e)+" Es wird die Gerätestimme benutzt.";
+  if(status===401 || status===403){
+    // Ein häufiger Grund: Der Schlüssel ist auf bestimmte Funktionen eingeschränkt
+    // (z. B. nur "Text-zu-Sprache") und darf deshalb die Stimmenliste nicht abrufen,
+    // funktioniert für die eigentliche Sprachausgabe aber trotzdem. Direkt auf den
+    // Workaround hinweisen und das Eingabefeld dafür automatisch aufklappen.
+    msg += " Falls der Schlüssel eigentlich stimmt: Manche Schlüssel dürfen nur „Text-zu-Sprache“ und keine Stimmenliste abrufen – dann unten die Stimm-ID manuell eintragen und direkt „Stimme testen“.";
+    const row=document.getElementById("elevenManualRow");
+    if(row) row.style.display="flex";
+  }
+  updateElevenStatus(msg);
   _elevenDisabled=true;
 }
 
@@ -5861,9 +5919,7 @@ async function elevenFetchAudioUrl(text){
   });
 
   if(!res.ok){
-    const err=new Error("eleven-http-"+res.status);
-    err.status=res.status;
-    throw err;
+    throw await elevenApiError(res);
   }
 
   const blob=await res.blob();
@@ -5914,9 +5970,7 @@ async function loadElevenVoices(){
   try{
     const res=await fetch("https://api.elevenlabs.io/v1/voices", { headers:{ "xi-api-key": ELEVEN_API_KEY } });
     if(!res.ok){
-      const err=new Error("eleven-voices-http-"+res.status);
-      err.status=res.status;
-      throw err;
+      throw await elevenApiError(res);
     }
     const data=await res.json();
     const voices=(data && data.voices) || [];
@@ -5940,10 +5994,36 @@ async function loadElevenVoices(){
   }
 }
 
+function useManualElevenVoice(){
+  const input=document.getElementById("elevenManualVoiceInput");
+  if(!input) return;
+  const id=input.value.trim();
+  if(!id) return;
+  if(!ELEVEN_API_KEY){
+    updateElevenStatus("⚠️ Bitte zuerst oben einen API-Schlüssel eingeben und speichern.");
+    return;
+  }
+  ELEVEN_VOICE_ID=id;
+  localStorage.setItem("flaggenspiel_elevenlabs_voice", ELEVEN_VOICE_ID);
+  _elevenDisabled=false;
+  _elevenFailCount=0;
+  const removeBtn=document.getElementById("elevenRemoveBtn");
+  if(removeBtn) removeBtn.style.display="block";
+  updateElevenStatus("🎙️ Manuelle Stimm-ID gespeichert. Am besten gleich oben auf „Stimme testen“ tippen.");
+}
+
+function toggleElevenManualVoice(){
+  const row=document.getElementById("elevenManualRow");
+  if(!row) return;
+  row.style.display=(row.style.display==="flex") ? "none" : "flex";
+}
+
 function saveElevenKey(){
   const input=document.getElementById("elevenKeyInput");
   if(!input) return;
-  const key=input.value.trim();
+  let key=input.value.trim();
+  key=key.replace(/^["']+|["']+$/g, "").trim(); // versehentlich mitkopierte Anführungszeichen entfernen
+  input.value=key;
   if(!key){
     ELEVEN_API_KEY="";
     ELEVEN_VOICE_ID="";
@@ -5968,6 +6048,8 @@ function removeElevenKey(){
   const input=document.getElementById("elevenKeyInput"); if(input) input.value="";
   const sel=document.getElementById("elevenVoiceSelect"); if(sel){ sel.style.display="none"; sel.innerHTML=""; }
   const removeBtn=document.getElementById("elevenRemoveBtn"); if(removeBtn) removeBtn.style.display="none";
+  const manualInput=document.getElementById("elevenManualVoiceInput"); if(manualInput) manualInput.value="";
+  const manualRow=document.getElementById("elevenManualRow"); if(manualRow) manualRow.style.display="none";
   _elevenDisabled=false;
   _elevenFailCount=0;
   updateElevenStatus("🎙️ Nicht eingerichtet – es wird die Gerätestimme oben verwendet.");
