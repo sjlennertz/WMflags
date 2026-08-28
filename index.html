@@ -445,6 +445,13 @@ body.greeting-active .home-flag-panel{display:block}
   width:100%;
   justify-content:center;
 }
+.eleven-key-input{
+  font-family:monospace;
+  font-size:13px;
+}
+.eleven-key-input::placeholder{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;
+}
 
 
 /* ── Greeting and settings cleanup ── */
@@ -1956,11 +1963,21 @@ body.math-active #mathPanel{display:block}
   <div class="settings-wrap">
     <button class="settings-btn" onclick="toggleSettings(event)" title="Einstellungen">⚙️</button>
     <div class="settings-panel" id="settingsPanel">
-      <div class="settings-panel-title">Stimme</div>
+      <div class="settings-panel-title">Stimme (Gerät)</div>
       <div class="voice-settings">
         <div class="voice-status" id="voiceStatus">🔊 Stimme wird vorbereitet …</div>
         <select id="voiceSelect" class="voice-select"></select>
         <button class="btn settings-action" onclick="testVoice()" type="button">🔊 Stimme testen</button>
+      </div>
+
+      <div class="settings-separator"></div>
+      <div class="settings-panel-title">Realistische Online-Stimme</div>
+      <div class="voice-settings">
+        <div class="voice-status" id="elevenStatus">🎙️ Nicht eingerichtet – es wird die Gerätestimme oben verwendet.</div>
+        <input type="password" id="elevenKeyInput" class="voice-select eleven-key-input" placeholder="ElevenLabs API-Schlüssel einfügen …" autocomplete="off" spellcheck="false">
+        <select id="elevenVoiceSelect" class="voice-select" style="display:none"></select>
+        <button class="btn settings-action" onclick="saveElevenKey()" type="button">💾 Schlüssel speichern &amp; testen</button>
+        <button class="btn settings-action" id="elevenRemoveBtn" onclick="removeElevenKey()" type="button" style="display:none">🗑 Schlüssel entfernen</button>
       </div>
 
       <div class="settings-separator"></div>
@@ -2450,7 +2467,7 @@ body.math-active #mathPanel{display:block}
 <script>
 // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const APP_VERSION="4.0";
-const APP_VERSION_DATE="28. August 2026, 18:50 Uhr";
+const APP_VERSION_DATE="28. August 2026, 20:35 Uhr";
 const FLAG_DATA = {
 "gb-eng":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI1IDE1Ij4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjE1IiBmaWxsPSIjRkZGIi8+CjxnIGZpbGw9IiNDRTExMjQiPgo8cmVjdCB3aWR0aD0iMyIgaGVpZ2h0PSIxNSIgeD0iMTEiLz4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjMiIHk9IjYiLz4KPC9nPgo8L3N2Zz4K",
 "gb-sct":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUgMyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBkPSJNMCAwaDV2M0gweiIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNhKSI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzAwNUVCOCIvPjxwYXRoIGQ9Ik0wIDBsNSAzTTAgM0w1IDAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIwLjYiLz48L2c+PC9zdmc+",
@@ -5763,6 +5780,210 @@ let _speakTimer = null;
 let _speakId = 0;
 let _lastText = "";
 let _lastTextAt = 0;
+let _speaking = false; // true, solange irgendein Sprachkanal (Online-Stimme ODER Gerätestimme) gerade Ton erzeugt
+
+// ── Realistische Online-Stimme (ElevenLabs, optional) ──────────────
+// Der API-Schlüssel wird NIE fest im Code eingebettet (diese Datei kann öffentlich landen,
+// z. B. auf GitHub Pages) – er wird ausschließlich lokal im Browser gespeichert (localStorage),
+// je Gerät individuell über die Einstellungen (⚙️) eingegeben. Ist kein Schlüssel hinterlegt
+// oder schlägt ein Aufruf fehl (falscher Schlüssel, Kontingent aufgebraucht, kein Netz), fällt
+// die App automatisch und ohne Unterbrechung auf die normale Gerätestimme zurück.
+let ELEVEN_API_KEY = localStorage.getItem("flaggenspiel_elevenlabs_key") || "";
+let ELEVEN_VOICE_ID = localStorage.getItem("flaggenspiel_elevenlabs_voice") || "";
+let _elevenAudio = null;
+let _elevenDisabled = false;
+let _elevenFailCount = 0;
+const _elevenCache = new Map(); // "voiceId|text" -> Object-URL, vermeidet doppelte Anfragen fürs gleiche Wort/den gleichen Satz
+
+function getElevenAudioEl(){
+  if(!_elevenAudio){
+    _elevenAudio = new Audio();
+    _elevenAudio.preload = "auto";
+  }
+  return _elevenAudio;
+}
+
+function elevenConfigured(){
+  return !!(ELEVEN_API_KEY && ELEVEN_VOICE_ID);
+}
+
+function updateElevenStatus(msg){
+  const el=document.getElementById("elevenStatus");
+  if(el) el.innerHTML=msg;
+}
+
+function elevenErrorMessage(e){
+  const status=e && e.status;
+  if(status===401 || status===403) return "❌ Der API-Schlüssel wurde von ElevenLabs abgelehnt (ungültig).";
+  if(status===429) return "⚠️ Monatliches Kontingent bei ElevenLabs aufgebraucht.";
+  return "⚠️ ElevenLabs ist gerade nicht erreichbar (Netzwerk- oder Serverfehler).";
+}
+
+function handleElevenSetupFailure(e){
+  updateElevenStatus(elevenErrorMessage(e)+" Es wird die Gerätestimme benutzt.");
+  _elevenDisabled=true;
+}
+
+function handleElevenRuntimeFailure(e){
+  _elevenFailCount++;
+  const status=e && e.status;
+  if(status===401 || status===403 || status===429 || _elevenFailCount>=3){
+    updateElevenStatus(elevenErrorMessage(e)+" Es wird jetzt die Gerätestimme benutzt (bis die Seite neu geladen bzw. der Schlüssel erneut gespeichert wird).");
+    _elevenDisabled=true;
+  } else {
+    updateElevenStatus("⚠️ Online-Stimme kurz nicht erreichbar – für diese Ansage wird die Gerätestimme benutzt.");
+  }
+}
+
+async function elevenFetchAudioUrl(text){
+  const key=ELEVEN_API_KEY;
+  const voiceId=ELEVEN_VOICE_ID;
+  if(!key || !voiceId){
+    const err=new Error("eleven-not-configured");
+    throw err;
+  }
+
+  const cacheKey=voiceId+"|"+text;
+  if(_elevenCache.has(cacheKey)) return _elevenCache.get(cacheKey);
+
+  const res=await fetch("https://api.elevenlabs.io/v1/text-to-speech/"+encodeURIComponent(voiceId), {
+    method:"POST",
+    headers:{
+      "xi-api-key": key,
+      "Content-Type": "application/json",
+      "Accept": "audio/mpeg"
+    },
+    body: JSON.stringify({
+      text: text,
+      model_id: "eleven_multilingual_v2",
+      voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+    })
+  });
+
+  if(!res.ok){
+    const err=new Error("eleven-http-"+res.status);
+    err.status=res.status;
+    throw err;
+  }
+
+  const blob=await res.blob();
+  const url=URL.createObjectURL(blob);
+  _elevenCache.set(cacheKey, url);
+  return url;
+}
+
+function elevenSpeak(text){
+  return elevenFetchAudioUrl(text).then(url=>new Promise((resolve,reject)=>{
+    const audio=getElevenAudioEl();
+    const cleanup=()=>{
+      audio.removeEventListener("pause", done);
+      audio.removeEventListener("ended", done);
+      audio.removeEventListener("error", fail);
+    };
+    const done=()=>{ cleanup(); resolve(); };
+    const fail=()=>{ cleanup(); reject(new Error("eleven-audio-playback-error")); };
+    audio.addEventListener("pause", done);
+    audio.addEventListener("ended", done);
+    audio.addEventListener("error", fail);
+    audio.src=url;
+    audio.play().catch(err=>{ cleanup(); reject(err); });
+  }));
+}
+
+function populateElevenVoiceSelect(voices){
+  const sel=document.getElementById("elevenVoiceSelect");
+  if(!sel) return;
+  sel.innerHTML="";
+  voices.forEach(v=>{
+    const o=document.createElement("option");
+    o.value=v.voice_id;
+    o.textContent=v.name || v.voice_id;
+    sel.appendChild(o);
+  });
+  sel.style.display="block";
+  sel.value=ELEVEN_VOICE_ID;
+  sel.onchange=()=>{
+    ELEVEN_VOICE_ID=sel.value;
+    localStorage.setItem("flaggenspiel_elevenlabs_voice", ELEVEN_VOICE_ID);
+    testVoice();
+  };
+}
+
+async function loadElevenVoices(){
+  if(!ELEVEN_API_KEY) return;
+  try{
+    const res=await fetch("https://api.elevenlabs.io/v1/voices", { headers:{ "xi-api-key": ELEVEN_API_KEY } });
+    if(!res.ok){
+      const err=new Error("eleven-voices-http-"+res.status);
+      err.status=res.status;
+      throw err;
+    }
+    const data=await res.json();
+    const voices=(data && data.voices) || [];
+    if(!voices.length){
+      updateElevenStatus("⚠️ Der Schlüssel wurde angenommen, aber ElevenLabs meldet keine verfügbaren Stimmen.");
+      return;
+    }
+    if(!ELEVEN_VOICE_ID || !voices.some(v=>v.voice_id===ELEVEN_VOICE_ID)){
+      ELEVEN_VOICE_ID=voices[0].voice_id;
+      localStorage.setItem("flaggenspiel_elevenlabs_voice", ELEVEN_VOICE_ID);
+    }
+    populateElevenVoiceSelect(voices);
+    const removeBtn=document.getElementById("elevenRemoveBtn");
+    if(removeBtn) removeBtn.style.display="block";
+    _elevenDisabled=false;
+    _elevenFailCount=0;
+    const activeVoice=voices.find(v=>v.voice_id===ELEVEN_VOICE_ID);
+    updateElevenStatus("🎙️ Aktiv: <strong>"+((activeVoice && activeVoice.name) || "Online-Stimme")+"</strong> (ElevenLabs)");
+  }catch(e){
+    handleElevenSetupFailure(e);
+  }
+}
+
+function saveElevenKey(){
+  const input=document.getElementById("elevenKeyInput");
+  if(!input) return;
+  const key=input.value.trim();
+  if(!key){
+    ELEVEN_API_KEY="";
+    ELEVEN_VOICE_ID="";
+    localStorage.removeItem("flaggenspiel_elevenlabs_key");
+    localStorage.removeItem("flaggenspiel_elevenlabs_voice");
+    updateElevenStatus("🎙️ Nicht eingerichtet – es wird die Gerätestimme oben verwendet.");
+    return;
+  }
+  ELEVEN_API_KEY=key;
+  localStorage.setItem("flaggenspiel_elevenlabs_key", key);
+  _elevenDisabled=false;
+  _elevenFailCount=0;
+  updateElevenStatus("🎙️ Prüfe Schlüssel …");
+  loadElevenVoices();
+}
+
+function removeElevenKey(){
+  ELEVEN_API_KEY="";
+  ELEVEN_VOICE_ID="";
+  localStorage.removeItem("flaggenspiel_elevenlabs_key");
+  localStorage.removeItem("flaggenspiel_elevenlabs_voice");
+  const input=document.getElementById("elevenKeyInput"); if(input) input.value="";
+  const sel=document.getElementById("elevenVoiceSelect"); if(sel){ sel.style.display="none"; sel.innerHTML=""; }
+  const removeBtn=document.getElementById("elevenRemoveBtn"); if(removeBtn) removeBtn.style.display="none";
+  _elevenDisabled=false;
+  _elevenFailCount=0;
+  updateElevenStatus("🎙️ Nicht eingerichtet – es wird die Gerätestimme oben verwendet.");
+}
+
+function initElevenSettings(){
+  const input=document.getElementById("elevenKeyInput");
+  if(input && ELEVEN_API_KEY) input.value=ELEVEN_API_KEY;
+  if(ELEVEN_API_KEY){
+    updateElevenStatus("🎙️ Prüfe gespeicherten Schlüssel …");
+    loadElevenVoices();
+  } else {
+    updateElevenStatus("🎙️ Nicht eingerichtet – es wird die Gerätestimme oben verwendet.");
+  }
+}
+document.addEventListener("DOMContentLoaded", initElevenSettings);
 
 const speechNameFix = {
   "USA":"Vereinigte Staaten",
@@ -5937,12 +6158,17 @@ function unlockAudio(){
   chooseBestVoice();
 }
 
+function speechIsBusy(){
+  if(_speaking) return true;
+  if("speechSynthesis" in window && (speechSynthesis.speaking || speechSynthesis.pending)) return true;
+  return false;
+}
+
 function waitForSpeechIdle(maxWait=450){
   return new Promise(resolve=>{
     const start=Date.now();
     const tick=()=>{
-      if(!("speechSynthesis" in window)) return resolve();
-      if(!speechSynthesis.speaking && !speechSynthesis.pending) return resolve();
+      if(!speechIsBusy()) return resolve();
       if(Date.now()-start>maxWait) return resolve();
       setTimeout(tick,40);
     };
@@ -5954,8 +6180,7 @@ function waitUntilSpeechFinished(maxWait=5000){
   return new Promise(resolve=>{
     const start=Date.now();
     const tick=()=>{
-      if(!("speechSynthesis" in window)) return resolve();
-      if(!speechSynthesis.speaking && !speechSynthesis.pending) return resolve();
+      if(!speechIsBusy()) return resolve();
       if(Date.now()-start>maxWait) return resolve();
       setTimeout(tick,100);
     };
@@ -5972,10 +6197,65 @@ function stopSpeech(){
   if("speechSynthesis" in window){
     try{ speechSynthesis.cancel(); }catch(e){}
   }
+  if(_elevenAudio){
+    try{ _elevenAudio.pause(); _elevenAudio.currentTime=0; }catch(e){}
+  }
+  _speaking=false;
+}
+
+function speakBrowserOnceWithCallback(clean, opts, cb){
+  if(!("speechSynthesis" in window)){ _speaking=false; if(cb) cb(); return; }
+
+  const u=new SpeechSynthesisUtterance(clean);
+  u.lang="de-DE";
+
+  const voice=chooseBestVoice();
+
+  // Wichtig: Nur eine deutsche Stimme fest setzen.
+  // Wenn Safari Premium nicht meldet, darf keine falsche Stimme erzwungen werden.
+  if(voice && (voice.lang || "").toLowerCase().startsWith("de")){
+    u.voice=voice;
+  }
+
+  u.rate=opts.rate;
+  u.pitch=opts.pitch;
+  u.volume=1.0;
+
+  _speaking=true;
+  const finish=()=>{ _speaking=false; if(cb) cb(); };
+  u.onend=finish;
+  u.onerror=finish;
+
+  try{ speechSynthesis.speak(u); }catch(e){ finish(); }
+}
+
+// Einmaliges "Fire-and-forget"-Abspielen über die Gerätestimme (Rückfallebene),
+// mit denselben Standardwerten für Sprechtempo/Tonhöhe wie bisher bei speak().
+function speakBrowserOnce(clean, opts){
+  speakBrowserOnceWithCallback(clean, { rate: opts.rate || 0.90, pitch: opts.pitch || 0.96 });
+}
+
+// Versucht zuerst die realistische Online-Stimme (falls eingerichtet), fällt bei
+// jedem Fehler (kein Schlüssel, ungültig, Kontingent aufgebraucht, kein Netz, …)
+// automatisch und ohne Unterbrechung auf die Gerätestimme zurück.
+async function runSpeechAttempt(clean, opts, myId){
+  if(elevenConfigured() && !_elevenDisabled){
+    _speaking=true;
+    try{
+      await elevenSpeak(clean);
+      if(myId===_speakId) _speaking=false;
+      return;
+    }catch(e){
+      if(myId===_speakId) _speaking=false;
+      handleElevenRuntimeFailure(e);
+    }
+  }
+  if(myId!==_speakId) return;
+  speakBrowserOnce(clean, opts);
 }
 
 async function speak(text, opts={}){
-  if(!("speechSynthesis" in window)) return;
+  if(!("speechSynthesis" in window) && !elevenConfigured()) return;
 
   const clean=naturalText(text);
   if(!clean) return;
@@ -5997,27 +6277,7 @@ async function speak(text, opts={}){
 
   _speakTimer=setTimeout(()=>{
     if(myId!==_speakId) return;
-
-    const u=new SpeechSynthesisUtterance(clean);
-    u.lang="de-DE";
-
-    const voice=chooseBestVoice();
-
-    // Wichtig: Nur eine deutsche Stimme fest setzen.
-    // Wenn Safari Premium nicht meldet, darf keine falsche Stimme erzwungen werden.
-    if(voice && (voice.lang || "").toLowerCase().startsWith("de")){
-      u.voice=voice;
-    }
-
-    // Etwas natürlicher auf iPad: nicht zu langsam, leicht tiefer.
-    u.rate=opts.rate || 0.90;
-    u.pitch=opts.pitch || 0.96;
-    u.volume=1.0;
-
-    u.onend=()=>{};
-    u.onerror=()=>{};
-
-    try{ speechSynthesis.speak(u); }catch(e){}
+    runSpeechAttempt(clean, opts, myId);
   }, opts.delay || 130);
 }
 
@@ -7306,7 +7566,7 @@ async function speakAndWait(text, opts={}, extraPause=350){
 
 function speakWritingAndWait(text, opts={}, extraPause=450){
   return new Promise(resolve=>{
-    if(!("speechSynthesis" in window)){
+    if(!("speechSynthesis" in window) && !elevenConfigured()){
       setTimeout(resolve, extraPause);
       return;
     }
@@ -7317,31 +7577,38 @@ function speakWritingAndWait(text, opts={}, extraPause=450){
     }
     unlockAudio();
     stopSpeech();
-
-    const u=new SpeechSynthesisUtterance(clean);
-    u.lang="de-DE";
-    const voice=chooseBestVoice();
-    if(voice && (voice.lang || "").toLowerCase().startsWith("de")){
-      u.voice=voice;
-    }
-    u.rate=opts.rate || 0.88;
-    u.pitch=opts.pitch || 0.98;
-    u.volume=1.0;
+    const myId=_speakId;
 
     let finished=false;
     const done=()=>{
       if(finished) return;
       finished=true;
+      if(myId===_speakId) _speaking=false;
       setTimeout(resolve, extraPause);
     };
-    u.onend=done;
-    u.onerror=done;
 
-    try{
-      speechSynthesis.speak(u);
-      setTimeout(done, opts.maxWait || Math.max(2600, clean.length*105));
-    }catch(e){
-      done();
+    const maxWait=opts.maxWait || Math.max(2600, clean.length*105);
+    const safetyTimer=setTimeout(done, maxWait);
+
+    const browserFallback=()=>{
+      speakBrowserOnceWithCallback(clean, { rate: opts.rate || 0.88, pitch: opts.pitch || 0.98 }, ()=>{
+        clearTimeout(safetyTimer);
+        done();
+      });
+    };
+
+    if(elevenConfigured() && !_elevenDisabled){
+      _speaking=true;
+      elevenSpeak(clean).then(()=>{
+        clearTimeout(safetyTimer);
+        done();
+      }).catch(e=>{
+        handleElevenRuntimeFailure(e);
+        if(myId!==_speakId){ clearTimeout(safetyTimer); done(); return; }
+        browserFallback();
+      });
+    } else {
+      browserFallback();
     }
   });
 }
