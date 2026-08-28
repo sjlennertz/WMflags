@@ -3,7 +3,7 @@
 <head>
 <!-- GitHub Pages single-file version -->
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 <title>Spielend lernen!</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -249,6 +249,7 @@ body.voice-quiz-active .quiz-progress-wrap{display:block}
 html,body{
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,Arial,sans-serif!important;
   letter-spacing:0.01em;
+  touch-action:manipulation;
 }
 h1,h2,h3,.title,.flag-modal-title{
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif!important;
@@ -1725,7 +1726,7 @@ body:not(.game-math) .settings-mathonly{display:none!important}
 #mathPanel{display:none}
 body.math-active #mathPanel{display:block}
 
-.math-panel{width:min(680px, calc(100vw - 18px));margin:14px auto 24px}
+.math-panel{width:min(760px, calc(100vw - 18px));margin:14px auto 24px}
 .math-card{
   background:rgba(9,22,46,.995);
   border:2px solid rgba(232,201,106,.72);
@@ -1834,8 +1835,8 @@ body.math-active #mathPanel{display:block}
 .math-draw-stage{
   position:relative;
   width:100%;
-  max-width:380px;
-  height:150px;
+  max-width:640px;
+  height:clamp(200px, 44vh, 360px);
   margin:0 auto;
   border-radius:var(--radius-md);
   border:2px solid rgba(201,168,76,.5);
@@ -1902,7 +1903,7 @@ body.math-active #mathPanel{display:block}
   .math-otter-row{gap:10px}
   .math-otter-wrap{width:86px;height:86px}
   .math-speech-bubble{font-size:13.5px;padding:8px 12px}
-  .math-draw-stage{height:120px;max-width:300px}
+  .math-draw-stage{height:clamp(180px, 36vh, 280px);max-width:100%}
 }
 
 </style>
@@ -2449,7 +2450,7 @@ body.math-active #mathPanel{display:block}
 <script>
 // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const APP_VERSION="4.0";
-const APP_VERSION_DATE="27. August 2026, 21:23 Uhr";
+const APP_VERSION_DATE="28. August 2026, 18:50 Uhr";
 const FLAG_DATA = {
 "gb-eng":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI1IDE1Ij4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjE1IiBmaWxsPSIjRkZGIi8+CjxnIGZpbGw9IiNDRTExMjQiPgo8cmVjdCB3aWR0aD0iMyIgaGVpZ2h0PSIxNSIgeD0iMTEiLz4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjMiIHk9IjYiLz4KPC9nPgo8L3N2Zz4K",
 "gb-sct":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUgMyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBkPSJNMCAwaDV2M0gweiIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNhKSI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzAwNUVCOCIvPjxwYXRoIGQ9Ik0wIDBsNSAzTTAgM0w1IDAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIwLjYiLz48L2c+PC9zdmc+",
@@ -7624,6 +7625,29 @@ function updateAppVersionBadge(){
 }
 updateAppVersionBadge();
 
+// ── Zoom verhindern (Pinch, Doppel-Tap, Strg+Mausrad, Strg+Tastatur) ──
+(function preventZoom(){
+  document.addEventListener("gesturestart", e=>e.preventDefault());
+  document.addEventListener("gesturechange", e=>e.preventDefault());
+  document.addEventListener("gestureend", e=>e.preventDefault());
+  document.addEventListener("touchmove", e=>{
+    if(e.touches && e.touches.length>1) e.preventDefault();
+  }, {passive:false});
+  let lastTouchEnd=0, lastTouchTarget=null;
+  document.addEventListener("touchend", e=>{
+    const now=Date.now();
+    if(now-lastTouchEnd<=350 && e.target===lastTouchTarget) e.preventDefault();
+    lastTouchEnd=now;
+    lastTouchTarget=e.target;
+  }, {passive:false});
+  document.addEventListener("wheel", e=>{
+    if(e.ctrlKey) e.preventDefault();
+  }, {passive:false});
+  document.addEventListener("keydown", e=>{
+    if((e.ctrlKey||e.metaKey) && ["+","-","=","0"].includes(e.key)) e.preventDefault();
+  });
+})();
+
 // ── Rechnen-Modus (Otti der Otter) ──────────────────────────
 // Eigenständiges drittes Spiel: prozedural erzeugte Rechenaufgaben statt einer
 // festen Länder-/Vereinsliste, daher komplett eigene Zustände/Funktionen statt
@@ -7956,7 +7980,7 @@ function setupMathAnswerCanvas(digitCount){
   mathAnswerDigitCount=Math.max(1,digitCount||1);
   mathCanvasLocked=false;
   const stage=document.getElementById("mathDrawStage");
-  if(stage) stage.style.maxWidth=(mathAnswerDigitCount<=1 ? 190 : Math.min(420, mathAnswerDigitCount*140))+"px";
+  if(stage) stage.style.maxWidth="min(94vw, "+(mathAnswerDigitCount<=1 ? 340 : Math.min(640, mathAnswerDigitCount*220))+"px)";
   const guides=document.getElementById("mathDrawCellGuides");
   if(guides){
     guides.style.gridTemplateColumns=`repeat(${mathAnswerDigitCount},1fr)`;
@@ -7985,7 +8009,7 @@ function resizeMathAnswerCanvas(){
   ctx.setTransform(ratio,0,0,ratio,0,0);
   ctx.lineCap="round"; ctx.lineJoin="round";
   ctx.strokeStyle="#123c73";
-  ctx.lineWidth=Math.max(10, Math.min(20, rect.height/6));
+  ctx.lineWidth=Math.max(10, Math.min(28, rect.height/7));
 }
 function clearMathAnswerCanvas(){
   const canvas=document.getElementById("mathAnswerCanvas"); if(!canvas) return;
