@@ -1940,13 +1940,23 @@ body.math-active #mathPanel{display:block}
   height:100%;
   cursor:crosshair;
 }
-.math-draw-actions{display:flex;justify-content:center}
-.math-clear-btn{font-size:14px;padding:8px 14px;background:rgba(255,255,255,.08)!important}
-.math-check-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.math-check-btn{font-size:16px;padding:12px 18px}
-.math-hint-btn{
-  font-size:22px;
-  padding:8px 12px;
+.math-actions-row{display:flex;gap:10px;justify-content:center;align-items:stretch;flex-wrap:wrap}
+.math-actions-row .btn{
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:50px;
+  padding:10px 18px;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.15;
+}
+.math-actions-row .math-clear-btn{background:rgba(255,255,255,.08)!important}
+.math-actions-row .math-check-btn{font-size:17px;padding:10px 24px}
+.math-actions-row .math-hint-btn{
+  font-size:24px;
+  padding:10px 16px;
   background:rgba(255,213,79,.14)!important;
   border-color:rgba(255,213,79,.5)!important;
 }
@@ -1980,6 +1990,10 @@ body.math-active #mathPanel{display:block}
   .math-otter-wrap{width:86px;height:86px}
   .math-speech-bubble{font-size:13.5px;padding:8px 12px}
   .math-draw-stage{height:clamp(180px, 36vh, 280px);max-width:100%}
+  .math-actions-row{gap:8px}
+  .math-actions-row .btn{min-height:46px;padding:9px 14px;font-size:14px}
+  .math-actions-row .math-check-btn{font-size:15px;padding:9px 20px}
+  .math-actions-row .math-hint-btn{font-size:20px;padding:9px 14px}
 }
 
 </style>
@@ -2409,10 +2423,8 @@ body.math-active #mathPanel{display:block}
           <canvas id="mathAnswerCanvas" class="math-answer-canvas"></canvas>
         </div>
         <div class="math-hint-options" id="mathHintOptions" style="display:none"></div>
-        <div class="math-draw-actions">
+        <div class="math-actions-row">
           <button type="button" class="btn math-clear-btn" id="mathClearBtn" onclick="clearMathAnswerCanvas()" title="Antwort löschen" aria-label="Antwort löschen">🧹 Löschen</button>
-        </div>
-        <div class="math-check-row">
           <button type="button" class="btn quiz-restart-btn math-check-btn" id="mathCheckBtn" onclick="submitMathAnswer()">✅ Prüfen</button>
           <button type="button" class="btn math-hint-btn" id="mathHintBtn" onclick="toggleMathHint()" title="Antwortmöglichkeiten anzeigen" aria-label="Antwortmöglichkeiten anzeigen">💡</button>
         </div>
@@ -2543,7 +2555,7 @@ body.math-active #mathPanel{display:block}
 <script>
 // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const APP_VERSION="4.0";
-const APP_VERSION_DATE="28. August 2026, 21:31 Uhr";
+const APP_VERSION_DATE="28. August 2026, 22:06 Uhr";
 const FLAG_DATA = {
 "gb-eng":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI1IDE1Ij4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjE1IiBmaWxsPSIjRkZGIi8+CjxnIGZpbGw9IiNDRTExMjQiPgo8cmVjdCB3aWR0aD0iMyIgaGVpZ2h0PSIxNSIgeD0iMTEiLz4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjMiIHk9IjYiLz4KPC9nPgo8L3N2Zz4K",
 "gb-sct":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUgMyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBkPSJNMCAwaDV2M0gweiIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNhKSI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzAwNUVCOCIvPjxwYXRoIGQ9Ik0wIDBsNSAzTTAgM0w1IDAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIwLjYiLz48L2c+PC9zdmc+",
@@ -8160,18 +8172,25 @@ function generateMathProblem(grade, difficulty){
 // bleibt die Darstellung auch im Zahlenraum bis 100 übersichtlich (Hunderterfeld-Prinzip).
 // removedCount markiert bei Minus-Aufgaben die letzten removedCount Symbole als
 // "weggenommen" (durchgestrichen/ausgeblichen), klassisches Wegnahme-Modell.
+// Runde 17, Nachtrag: Eine volle Zehnerreihe, die KOMPLETT weggenommen wird, bekommt
+// keinen Rahmen mehr – ein bereits vollständig durchgestrichenes Bündel ist kein
+// "aktives" Zehnerbündel mehr und der Rahmen wirkte dort nur verwirrend (z. B. bei
+// "15 − 14", wo die einzige volle Reihe bis auf ein Symbol durchgestrichen ist).
 function mathVisualIconsHTML(n, icon, removedCount){
   removedCount = removedCount || 0;
+  const removedFrom = n - removedCount;
   let out="", idx=0;
   while(idx<n){
     const rowCount=Math.min(10, n-idx);
     let rowHtml="";
     for(let i=0;i<rowCount;i++){
       const globalIndex=idx+i;
-      const removed=removedCount>0 && globalIndex>=(n-removedCount);
+      const removed=removedCount>0 && globalIndex>=removedFrom;
       rowHtml += `<span class="mvi-icon${removed ? " mvi-removed" : ""}">${icon}</span>`;
     }
-    out += `<div class="mvi-row${rowCount===10 ? " mvi-row-ten" : ""}">${rowHtml}</div>`;
+    const fullyRemoved=removedCount>0 && idx>=removedFrom;
+    const showTenBox=(rowCount===10) && !fullyRemoved;
+    out += `<div class="mvi-row${showTenBox ? " mvi-row-ten" : ""}">${rowHtml}</div>`;
     idx += rowCount;
   }
   return out;
