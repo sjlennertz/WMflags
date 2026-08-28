@@ -1850,6 +1850,56 @@ body.math-active #mathPanel{display:block}
   margin-bottom:18px;
   letter-spacing:.02em;
 }
+.math-visual-aid{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin:0 0 16px;
+}
+.mvi-group{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  align-items:flex-start;
+}
+.mvi-row{
+  display:flex;
+  gap:3px;
+}
+.mvi-row-ten{
+  padding:3px;
+  border:1px dashed rgba(232,201,106,.45);
+  border-radius:6px;
+}
+.mvi-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:26px;
+  height:26px;
+  font-size:19px;
+  line-height:1;
+  position:relative;
+}
+.mvi-icon.mvi-removed{opacity:.28;filter:grayscale(.6)}
+.mvi-icon.mvi-removed::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:linear-gradient(to top right, transparent 46%, #ff6b6b 48%, #ff6b6b 52%, transparent 54%);
+  pointer-events:none;
+}
+.mvi-sign{
+  font-size:clamp(20px,5vw,28px);
+  font-weight:900;
+  color:#e8d5a3;
+  align-self:center;
+}
+@media(max-width:520px){
+  .mvi-icon{width:20px;height:20px;font-size:15px}
+}
 .math-answer-row{
   display:flex;
   flex-direction:column;
@@ -2352,6 +2402,7 @@ body.math-active #mathPanel{display:block}
 
     <div class="math-problem-area" id="mathProblemArea" style="display:none">
       <div class="math-problem-text" id="mathProblemText">? + ? = ?</div>
+      <div class="math-visual-aid" id="mathVisualAid" style="display:none" aria-hidden="true"></div>
       <div class="math-answer-row">
         <div class="math-draw-stage" id="mathDrawStage" aria-label="Antwort mit dem Finger oder Stylus malen">
           <div class="math-draw-cellguides" id="mathDrawCellGuides"></div>
@@ -2492,7 +2543,7 @@ body.math-active #mathPanel{display:block}
 <script>
 // Versionsregel: kleine Änderungen +0.01, große Änderungen volle Zahl.
 const APP_VERSION="4.0";
-const APP_VERSION_DATE="28. August 2026, 20:53 Uhr";
+const APP_VERSION_DATE="28. August 2026, 21:31 Uhr";
 const FLAG_DATA = {
 "gb-eng":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDI1IDE1Ij4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjE1IiBmaWxsPSIjRkZGIi8+CjxnIGZpbGw9IiNDRTExMjQiPgo8cmVjdCB3aWR0aD0iMyIgaGVpZ2h0PSIxNSIgeD0iMTEiLz4KPHJlY3Qgd2lkdGg9IjI1IiBoZWlnaHQ9IjMiIHk9IjYiLz4KPC9nPgo8L3N2Zz4K",
 "gb-sct":"data:image/svg+xml;base64,PHN2ZyBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUgMyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBkPSJNMCAwaDV2M0gweiIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNhKSI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzAwNUVCOCIvPjxwYXRoIGQ9Ik0wIDBsNSAzTTAgM0w1IDAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIwLjYiLz48L2c+PC9zdmc+",
@@ -8020,6 +8071,10 @@ let mathAnswerDigitCount = 1;    // Anzahl Kästchen für die aktuelle Aufgabe
 let mathCanvasLocked = false;    // während Feedback angezeigt wird, kein Malen erlaubt
 const MATH_TEMPLATE_GRID = 20;   // Rastergröße für die Ziffern-Erkennung
 
+// Symbole für die visuelle Zähl-Unterstützung bei Plus-/Minus-Aufgaben (Runde 17):
+// pro Aufgabe wird zufällig eines gewählt, keine Bild-Downloads nötig, da Emoji.
+const MATH_VISUAL_ICONS = ["🍌","🚗","🐯","🍎","⚽","🐶","🐱","🌟","🎈","🍓","🦋","🚀","🐸","🍕","🧸"];
+
 const mathGreetMsgs=["Hallo %s! Ich bin Otti der Otter. Lust auf ein paar Rechenaufgaben?","Hi %s! Wähle oben „Lernen“ zum Üben oder „Test“ für eine Prüfung.","Schön, dass du da bist, %s! Bereit zum Rechnen?","Willkommen zurück, %s! Auf geht's mit dem Rechnen."];
 const mathGreetFallbackMsgs=["Hallo! Ich bin Otti der Otter und helfe dir beim Rechnen.","Willkommen beim Rechnen-Lernspiel! Wähle oben „Lernen“ oder „Test“."];
 const mathTestSetupMsgs=["Bereit für einen Test? Wähl unten aus, wie lang er sein soll!","Otti wartet auf deine Wahl – wie viele Aufgaben schaffst du?"];
@@ -8094,7 +8149,52 @@ function generateMathProblem(grade, difficulty){
   mathLastProblemKey=key;
   const opWord=(op==="+") ? "plus" : (op==="-" ? "minus" : "mal");
   const opSymbol=(op==="+") ? "+" : (op==="-" ? "−" : "×");
-  return {a,b,op,answer,text:`${a} ${opSymbol} ${b} = ?`,speakText:`Wie viel ist ${a} ${opWord} ${b}?`};
+  // Visuelle Zähl-Unterstützung (Runde 17) gibt es bewusst nur bei Plus/Minus, nicht
+  // beim kleinen Einmaleins (dort keine sinnvolle 1:1-Objektdarstellung im Zahlenraum bis 100).
+  const icon=(op==="×") ? null : pick(MATH_VISUAL_ICONS);
+  return {a,b,op,answer,icon,text:`${a} ${opSymbol} ${b} = ?`,speakText:`Wie viel ist ${a} ${opWord} ${b}?`};
+}
+
+// Baut das HTML für n Symbol-Icons, gruppiert in Zehner-Reihen (die vollen 10er-Reihen
+// bekommen einen gestrichelten Rahmen als "Zehnerbündel", der Rest bleibt lose) – so
+// bleibt die Darstellung auch im Zahlenraum bis 100 übersichtlich (Hunderterfeld-Prinzip).
+// removedCount markiert bei Minus-Aufgaben die letzten removedCount Symbole als
+// "weggenommen" (durchgestrichen/ausgeblichen), klassisches Wegnahme-Modell.
+function mathVisualIconsHTML(n, icon, removedCount){
+  removedCount = removedCount || 0;
+  let out="", idx=0;
+  while(idx<n){
+    const rowCount=Math.min(10, n-idx);
+    let rowHtml="";
+    for(let i=0;i<rowCount;i++){
+      const globalIndex=idx+i;
+      const removed=removedCount>0 && globalIndex>=(n-removedCount);
+      rowHtml += `<span class="mvi-icon${removed ? " mvi-removed" : ""}">${icon}</span>`;
+    }
+    out += `<div class="mvi-row${rowCount===10 ? " mvi-row-ten" : ""}">${rowHtml}</div>`;
+    idx += rowCount;
+  }
+  return out;
+}
+
+function renderMathVisualAid(problem){
+  const container=document.getElementById("mathVisualAid");
+  if(!container) return;
+  if(!problem || !problem.icon || (problem.a===0 && problem.b===0)){
+    container.style.display="none";
+    container.innerHTML="";
+    return;
+  }
+  let html;
+  if(problem.op==="+"){
+    html = `<div class="mvi-group">${mathVisualIconsHTML(problem.a, problem.icon)}</div>`
+         + `<div class="mvi-sign" aria-hidden="true">+</div>`
+         + `<div class="mvi-group">${mathVisualIconsHTML(problem.b, problem.icon)}</div>`;
+  } else {
+    html = `<div class="mvi-group">${mathVisualIconsHTML(problem.a, problem.icon, problem.b)}</div>`;
+  }
+  container.innerHTML=html;
+  container.style.display="flex";
 }
 
 function generateMathDistractors(problem){
@@ -8546,6 +8646,7 @@ function presentMathProblem(){
   setupMathAnswerCanvas(mathCellCountForAnswer(mathProblem.answer));
   const problemText=document.getElementById("mathProblemText");
   if(problemText) problemText.textContent=mathProblem.text;
+  renderMathVisualAid(mathProblem);
   mathBubbleText(pick(mathEncourageMsgs));
   speak(mathProblem.speakText,{force:true});
   updateMathProgressBar();
