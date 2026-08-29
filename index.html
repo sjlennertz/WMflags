@@ -250,6 +250,12 @@ html,body{
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,Arial,sans-serif!important;
   letter-spacing:0.01em;
   touch-action:manipulation;
+  /* Sicherheitsnetz: die Seite selbst soll NIE horizontal scrollbar sein, nur
+     die dafür vorgesehenen Filterzeilen (#groupButtons/#roundLengthButtons,
+     jeweils mit eigenem overflow-x:auto). Falls irgendein Element versehentlich
+     über den Rand hinausragt, wird das hier abgeschnitten statt die ganze
+     Seite scrollbar zu machen. */
+  overflow-x:hidden;
 }
 h1,h2,h3,.title,.flag-modal-title{
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif!important;
@@ -1224,6 +1230,13 @@ body.voice-quiz-stopped .voice-quiz-panel{
   }
   .controls-wrap > .ctrl-row:first-child{
     gap:3px!important;
+    /* Bleed-Trick (siehe "Modusleiste"-Regel oben) muss zur hier reduzierten
+       5px-Innenabstand passen, sonst ragt die Zeile links/rechts über den
+       Bildschirmrand hinaus und macht die GANZE Seite horizontal scrollbar
+       (war vorher fest auf die 8px-Basiswerte kalibriert). */
+    width:calc(100% + 10px)!important;
+    margin-left:-5px!important;
+    margin-right:-5px!important;
   }
   .controls-wrap > .ctrl-row:first-child .mode-btn{
     min-height:56px!important;
@@ -1959,6 +1972,12 @@ body.math-active #mathPanel{display:block}
   background:rgba(255,213,79,.14)!important;
   border-color:rgba(255,213,79,.5)!important;
 }
+.math-actions-row .math-visual-toggle-btn{
+  font-size:22px;
+  padding:10px 14px;
+  background:rgba(126,203,255,.14)!important;
+  border-color:rgba(126,203,255,.45)!important;
+}
 .math-hint-options{
   display:flex;
   gap:10px;
@@ -1993,6 +2012,7 @@ body.math-active #mathPanel{display:block}
   .math-actions-row .btn{min-height:46px;padding:9px 14px;font-size:14px}
   .math-actions-row .math-check-btn{font-size:15px;padding:9px 20px}
   .math-actions-row .math-hint-btn{font-size:20px;padding:9px 14px}
+  .math-actions-row .math-visual-toggle-btn{font-size:18px;padding:9px 12px}
 }
 
 </style>
@@ -2426,6 +2446,7 @@ body.math-active #mathPanel{display:block}
           <button type="button" class="btn math-clear-btn" id="mathClearBtn" onclick="clearMathAnswerCanvas()" title="Antwort löschen" aria-label="Antwort löschen">🧹 Löschen</button>
           <button type="button" class="btn quiz-restart-btn math-check-btn" id="mathCheckBtn" onclick="submitMathAnswer()">✅ Prüfen</button>
           <button type="button" class="btn math-hint-btn" id="mathHintBtn" onclick="toggleMathHint()" title="Antwortmöglichkeiten anzeigen" aria-label="Antwortmöglichkeiten anzeigen">💡</button>
+          <button type="button" class="btn math-visual-toggle-btn" id="mathVisualAidToggleBtn" onclick="toggleMathVisualAidSetting()" title="Zähl-Symbole ein-/ausblenden" aria-label="Zähl-Symbole ein-/ausblenden">🙈</button>
         </div>
       </div>
     </div>
@@ -6273,7 +6294,23 @@ const speechNameFix = {
   "Südkorea":"Süd Korea",
   "Neuseeland":"Neu Seeland",
   "Kap Verde":"Kap Verde",
-  "Usbekistan":"Usbekistan"
+  "Usbekistan":"Usbekistan",
+  // Weitere Länder, deren geschriebener Name eine deutsche Sprachausgabe leicht
+  // falsch aussprechen lässt (Bindestrich-Zusammensetzungen, Sonderzeichen,
+  // "St."-Abkürzung, sowie – analog zu Südkorea/Neuseeland oben – weitere
+  // Nord-/Süd-Zusammensetzungen, die als ein zusammengeschriebenes Wort
+  // ebenfalls oft falsch betont werden).
+  "Timor-Leste":"Osttimor",
+  "Guinea-Bissau":"Guinea Bissau",
+  "Papua-Neuguinea":"Papua Neuguinea",
+  "São Tomé und Príncipe":"Sao Tome und Principe",
+  "St. Kitts und Nevis":"Sankt Kitts und Nevis",
+  "St. Lucia":"Sankt Lucia",
+  "St. Vincent und die Grenadinen":"Sankt Vincent und die Grenadinen",
+  "Nordkorea":"Nord Korea",
+  "Nordmazedonien":"Nord Mazedonien",
+  "Südafrika":"Süd Afrika",
+  "Südsudan":"Süd Sudan"
 };
 
 function naturalText(text){
@@ -8200,6 +8237,9 @@ updateAppVersionBadge();
 let currentMathGrade = (localStorage.getItem("flaggenspiel_math_grade")==="2") ? "2" : "1";
 const MATH_DIFFICULTIES = ["einfach","mittel","schwer"];
 let currentMathDifficulty = MATH_DIFFICULTIES.includes(localStorage.getItem("flaggenspiel_math_difficulty")) ? localStorage.getItem("flaggenspiel_math_difficulty") : "mittel";
+// Zähl-Symbole (Runde 17) sind standardmäßig AUS; über den Umschalter direkt
+// neben dem 💡-Hinweis-Button können sie bei Bedarf eingeblendet werden.
+let mathVisualAidEnabled = localStorage.getItem("flaggenspiel_math_visual_aid") === "on";
 let mathMode = null; // null (Start) | 'learn' | 'testSetup' | 'test' | 'testResult'
 let mathProblem = null;
 let mathMistakes = 0; // Fehlversuche bei der AKTUELLEN Aufgabe (nur Lernen-Modus)
@@ -8220,15 +8260,18 @@ const MATH_TEMPLATE_GRID = 20;   // Rastergröße für die Ziffern-Erkennung
 // pro Aufgabe wird zufällig eines gewählt, keine Bild-Downloads nötig, da Emoji.
 const MATH_VISUAL_ICONS = ["🍌","🚗","🐯","🍎","⚽","🐶","🐱","🌟","🎈","🍓","🦋","🚀","🐸","🍕","🧸"];
 
-const mathGreetMsgs=["Hallo %s! Ich bin Otti der Otter. Lust auf ein paar Rechenaufgaben?","Hi %s! Wähle oben „Lernen“ zum Üben oder „Test“ für eine Prüfung.","Schön, dass du da bist, %s! Bereit zum Rechnen?","Willkommen zurück, %s! Auf geht's mit dem Rechnen."];
-const mathGreetFallbackMsgs=["Hallo! Ich bin Otti der Otter und helfe dir beim Rechnen.","Willkommen beim Rechnen-Lernspiel! Wähle oben „Lernen“ oder „Test“."];
-const mathTestSetupMsgs=["Bereit für einen Test? Wähl unten aus, wie lang er sein soll!","Otti wartet auf deine Wahl – wie viele Aufgaben schaffst du?"];
-const mathQuestionTemplates=["Wie viel ist %a %o %b?","Kannst du ausrechnen: %a %o %b?","Rechne mal: %a %o %b.","Was ergibt %a %o %b?","Otti fragt: Wie viel ist %a %o %b?","Deine Aufgabe: %a %o %b.","Weißt du, wie viel %a %o %b ist?","Schaffst du das: %a %o %b?"];
-const mathEncourageMsgs=["Kannst du das lösen?","Rechne los!","Schaffst du diese Aufgabe?","Hier ist deine nächste Aufgabe.","Du schaffst das! 💪","Konzentrier dich, dann klappt's!","Neue Aufgabe für dich!","Otti ist gespannt, ob du das schaffst.","Bereit? Dann los!","Zeig, was du kannst!","Kopf einschalten, los geht's!","Diese Aufgabe wartet auf dich."];
-const mathCorrectFirstTryMsgs=["Super gemacht! ✅","Klasse, das stimmt!","Genau richtig! 🎉","Toll gerechnet!","Richtig! Weiter so!","Perfekt gerechnet! ✅","Bravo, genau richtig!","Wow, das saß! 🎉","Stark gerechnet!","Volltreffer! Weiter so!","Klasse Kopfrechnen!","Otti ist stolz auf dich! ✅"];
-const mathCorrectAfterMistakeMsgs=["Jetzt hast du es! ✅","Richtig! Gut gemacht.","Klasse, das stimmt jetzt!","Genau, so ist es richtig!","Geschafft, jetzt passt es!","Sehr gut, dranbleiben hat sich gelohnt!","Jetzt stimmt die Rechnung!","Prima, beim zweiten Versuch richtig!"];
-const mathWrongRetryMsgs=["Fast! Versuch es nochmal.","Das war noch nicht ganz richtig – probier's nochmal!","Nicht ganz, schau nochmal genau hin.","Kleiner Fehler – noch ein Versuch!","Nicht schlimm, rechne noch einmal in Ruhe.","Fast geschafft, probier's noch einmal!","Schau dir die Zahlen nochmal genau an.","Kein Problem, du bekommst es gleich hin!"];
-const mathWrongTestMsgs=["Das war leider nicht richtig. Die richtige Antwort ist %a.","Fast! Richtig wäre %a gewesen.","Nicht ganz – die Lösung ist %a.","Diesmal nicht richtig, die Antwort ist %a.","Kein Problem, richtig gewesen wäre %a.","Knapp daneben – die Lösung lautet %a."];
+const mathGreetMsgs=["Hallo %s! Ich bin Otti der Otter. Lust auf ein paar Rechenaufgaben?","Hi %s! Wähle oben „Lernen“ zum Üben oder „Test“ für eine Prüfung.","Schön, dass du da bist, %s! Bereit zum Rechnen?","Willkommen zurück, %s! Auf geht's mit dem Rechnen.","Hallo %s! Otti freut sich schon auf ein paar Aufgaben mit dir.","Na %s, hast du heute Lust zu rechnen?","Hey %s! Otti hat schon ein paar Aufgaben für dich vorbereitet.","Willkommen, %s! Lernen oder Test – wofür entscheidest du dich?","Schön, dich zu sehen, %s! Otti ist bereit, wenn du es bist.","Hallo %s! Lass uns gemeinsam ein bisschen rechnen."];
+const mathGreetFallbackMsgs=["Hallo! Ich bin Otti der Otter und helfe dir beim Rechnen.","Willkommen beim Rechnen-Lernspiel! Wähle oben „Lernen“ oder „Test“.","Hallo! Otti freut sich auf ein paar Rechenaufgaben mit dir.","Schön, dass du da bist! Otti wartet schon auf dich.","Hallo und willkommen! Lernen oder Test – du hast die Wahl.","Hi! Otti hilft dir gerne beim Rechnen."];
+const mathTestSetupMsgs=["Bereit für einen Test? Wähl unten aus, wie lang er sein soll!","Otti wartet auf deine Wahl – wie viele Aufgaben schaffst du?","Wie viele Aufgaben traust du dir zu? Wähl unten aus!","Otti ist gespannt: Wie lang soll dein Test werden?","Such dir eine Testlänge aus, dann geht's los!","Bereit? Wähl unten, wie viele Aufgaben du rechnen möchtest."];
+const mathQuestionTemplates=["Wie viel ist %a %o %b?","Kannst du ausrechnen: %a %o %b?","Rechne mal: %a %o %b.","Was ergibt %a %o %b?","Otti fragt: Wie viel ist %a %o %b?","Deine Aufgabe: %a %o %b.","Weißt du, wie viel %a %o %b ist?","Schaffst du das: %a %o %b?","Kopfrechnen: %a %o %b.","Wie lautet das Ergebnis von %a %o %b?","Otti ist gespannt: %a %o %b, wie viel ist das?","Deine nächste Rechnung: %a %o %b.","Kannst du mir sagen, wie viel %a %o %b ist?","Los geht's: %a %o %b."];
+// Verschiedene Formulierungen, um bei richtiger Antwort das Ergebnis mit vorzulesen
+// (z. B. "5 plus 3 ist 8"), damit die Kinder die Rechnung nochmal laut hören.
+const mathResultAnnounceTemplates=["%a %o %b ist %r.","Das ergibt %r.","%a %o %b macht %r.","Die Lösung ist %r.","Richtig ist %r.","%a %o %b ergibt %r.","Genau, %r ist richtig.","%a %o %b, das macht %r.","Die Antwort lautet %r.","%a %o %b, richtig ist %r.","Otti bestätigt: %r ist richtig.","Die richtige Lösung: %r."];
+const mathEncourageMsgs=["Kannst du das lösen?","Rechne los!","Schaffst du diese Aufgabe?","Hier ist deine nächste Aufgabe.","Du schaffst das! 💪","Konzentrier dich, dann klappt's!","Neue Aufgabe für dich!","Otti ist gespannt, ob du das schaffst.","Bereit? Dann los!","Zeig, was du kannst!","Kopf einschalten, los geht's!","Diese Aufgabe wartet auf dich.","Otti glaubt an dich!","Nächste Runde Kopfrechnen!","Trau dich, es zu versuchen!","Los, zeig Otti, was du drauf hast!","Eine neue Herausforderung für dich!","Nimm dir Zeit und rechne in Ruhe."];
+const mathCorrectFirstTryMsgs=["Super gemacht! ✅","Klasse, das stimmt!","Genau richtig! 🎉","Toll gerechnet!","Richtig! Weiter so!","Perfekt gerechnet! ✅","Bravo, genau richtig!","Wow, das saß! 🎉","Stark gerechnet!","Volltreffer! Weiter so!","Klasse Kopfrechnen!","Otti ist stolz auf dich! ✅","Mega gerechnet! 🎉","Das nenn ich Kopfrechnen!","Wow, direkt richtig!","Klasse, ohne Zögern richtig!","Sehr sauber gerechnet!","Otti klatscht Beifall! ✅","Super, das ging fix!","Richtig gut gerechnet!"];
+const mathCorrectAfterMistakeMsgs=["Jetzt hast du es! ✅","Richtig! Gut gemacht.","Klasse, das stimmt jetzt!","Genau, so ist es richtig!","Geschafft, jetzt passt es!","Sehr gut, dranbleiben hat sich gelohnt!","Jetzt stimmt die Rechnung!","Prima, beim zweiten Versuch richtig!","Nicht aufgegeben, gut gemacht!","Da ist es ja! Jetzt stimmt's!","Zweiter Versuch, erste Sahne!","Klasse Ausdauer, jetzt passt es!"];
+const mathWrongRetryMsgs=["Fast! Versuch es nochmal.","Das war noch nicht ganz richtig – probier's nochmal!","Nicht ganz, schau nochmal genau hin.","Kleiner Fehler – noch ein Versuch!","Nicht schlimm, rechne noch einmal in Ruhe.","Fast geschafft, probier's noch einmal!","Schau dir die Zahlen nochmal genau an.","Kein Problem, du bekommst es gleich hin!","Noch nicht ganz richtig, aber du bist nah dran!","Denk nochmal in Ruhe nach.","Kleiner Ausrutscher – noch ein Versuch!","Nicht aufgeben, du schaffst das!","Rechne noch einmal ganz genau nach.","Fast! Zähl nochmal in Ruhe durch."];
+const mathWrongTestMsgs=["Das war leider nicht richtig. Die richtige Antwort ist %a.","Fast! Richtig wäre %a gewesen.","Nicht ganz – die Lösung ist %a.","Diesmal nicht richtig, die Antwort ist %a.","Kein Problem, richtig gewesen wäre %a.","Knapp daneben – die Lösung lautet %a.","Das war leider falsch. Merk dir: %a.","Nicht ganz getroffen – richtig ist %a.","Schade, diesmal nicht. Die Lösung ist %a.","Kein Problem, beim nächsten Mal klappt's. Richtig wäre %a gewesen."];
 
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
@@ -8299,7 +8342,7 @@ function generateMathProblem(grade, difficulty){
   // beim kleinen Einmaleins (dort keine sinnvolle 1:1-Objektdarstellung im Zahlenraum bis 100).
   const icon=(op==="×") ? null : pick(MATH_VISUAL_ICONS);
   const speakText=pick(mathQuestionTemplates).replace("%a",a).replace("%o",opWord).replace("%b",b);
-  return {a,b,op,answer,icon,text:`${a} ${opSymbol} ${b} = ?`,speakText};
+  return {a,b,op,opWord,answer,icon,text:`${a} ${opSymbol} ${b} = ?`,speakText};
 }
 
 // Baut das HTML für n Symbol-Icons, gruppiert in Zehner-Reihen (die vollen 10er-Reihen
@@ -8331,10 +8374,27 @@ function mathVisualIconsHTML(n, icon, removedCount){
   return out;
 }
 
+function updateMathVisualAidToggleLabel(){
+  const btn=document.getElementById("mathVisualAidToggleBtn");
+  if(!btn) return;
+  // Icon zeigt den aktuellen Zustand: 👁 = Symbole sind sichtbar (antippen blendet sie aus),
+  // 🙈 = Symbole sind ausgeblendet (antippen blendet sie ein).
+  btn.textContent = mathVisualAidEnabled ? "👁" : "🙈";
+  const label = mathVisualAidEnabled ? "Zähl-Symbole ausblenden" : "Zähl-Symbole einblenden";
+  btn.title = label;
+  btn.setAttribute("aria-label", label);
+}
+function toggleMathVisualAidSetting(){
+  mathVisualAidEnabled = !mathVisualAidEnabled;
+  localStorage.setItem("flaggenspiel_math_visual_aid", mathVisualAidEnabled ? "on" : "off");
+  updateMathVisualAidToggleLabel();
+  // Bereits angezeigte Aufgabe sofort aktualisieren, falls gerade eine läuft.
+  if(mathProblem) renderMathVisualAid(mathProblem);
+}
 function renderMathVisualAid(problem){
   const container=document.getElementById("mathVisualAid");
   if(!container) return;
-  if(!problem || !problem.icon || (problem.a===0 && problem.b===0)){
+  if(!mathVisualAidEnabled || !problem || !problem.icon || (problem.a===0 && problem.b===0)){
     container.style.display="none";
     container.innerHTML="";
     return;
@@ -8707,6 +8767,7 @@ function initMathAnswerCanvasEvents(){
   });
 }
 document.addEventListener("DOMContentLoaded",initMathAnswerCanvasEvents);
+document.addEventListener("DOMContentLoaded",()=>{ if(typeof updateMathVisualAidToggleLabel==="function") updateMathVisualAidToggleLabel(); });
 
 function mathBubbleText(text){
   const bubble=document.getElementById("mathSpeechBubble");
@@ -8996,7 +9057,13 @@ function submitMathAnswer(chosenValue){
     setOtterMood("happy");
     vibrate(60);
     if(stage) stage.classList.add("correct");
-    const msg=pick(mathMistakes===0 ? mathCorrectFirstTryMsgs : mathCorrectAfterMistakeMsgs);
+    const praise=pick(mathMistakes===0 ? mathCorrectFirstTryMsgs : mathCorrectAfterMistakeMsgs);
+    const resultText=pick(mathResultAnnounceTemplates)
+      .replace("%a",String(mathProblem.a))
+      .replace("%o",mathProblem.opWord)
+      .replace("%b",String(mathProblem.b))
+      .replace("%r",String(mathProblem.answer));
+    const msg=praise+" "+resultText;
     mathBubbleText(msg);
     speak(msg,{force:true});
     if(mathMode==="test"){
@@ -9005,9 +9072,9 @@ function submitMathAnswer(chosenValue){
       mathCanvasLocked=true;
       if(hintBtn) hintBtn.disabled=true;
       if(checkBtn) checkBtn.disabled=true;
-      advanceAfterSpeech(advanceMathTest, 3000, 350);
+      advanceAfterSpeech(advanceMathTest, 4000, 350);
     } else {
-      advanceAfterSpeech(presentMathProblem, 3000, 350);
+      advanceAfterSpeech(presentMathProblem, 4000, 350);
     }
   } else {
     setOtterMood("oops");
