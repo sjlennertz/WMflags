@@ -169,7 +169,7 @@ body.voice-quiz-active .quiz-progress-wrap{display:block}
 .flag-card.correct::after{content:"✓";background:#4caf50;color:#08210c;}
 .flag-card.wrong::after{content:"✕";background:#e53935;color:#2a0605;}
 .confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999;}
-.flag-img-wrap{position:relative;width:120px;height:80px;display:flex;align-items:center;justify-content:center;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.09);background:transparent}
+.flag-img-wrap{position:relative;width:120px;height:80px;display:flex;align-items:center;justify-content:center;border-radius:4px;overflow:hidden;border:none;background:transparent}
 .flag-fallback{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#0e2040;color:#8daed8}
 .flag-fallback.show{display:flex}
 .flag-fallback-emoji{font-size:22px;opacity:.7}
@@ -192,7 +192,7 @@ body.voice-quiz-active .quiz-progress-wrap{display:block}
 .flag-modal.open{display:flex}
 .flag-modal-card{width:min(92vw,720px);background:#0e2040;border:2px solid rgba(201,168,76,0.5);border-radius:8px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,0.45);text-align:center}
 .flag-modal-title{font-size:24px;font-weight:900;color:#e8d5a3;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px}
-.flag-modal-img-wrap{background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:14px;display:flex;justify-content:center;align-items:center;min-height:240px}
+.flag-modal-img-wrap{background:transparent;border:none;border-radius:8px;padding:14px;display:flex;justify-content:center;align-items:center;min-height:240px}
 .flag-modal-img{width:min(80vw,560px);max-height:360px;object-fit:contain}
 .flag-modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
 .flag-modal-close{padding:10px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0a1628;font-weight:800;cursor:pointer}
@@ -399,7 +399,7 @@ body.greeting-active .home-flag-panel{display:block}
   margin:0 auto 14px;
   display:flex;align-items:center;justify-content:center;
   background:transparent;
-  border:1px solid rgba(255,255,255,0.1);
+  border:none;
   border-radius:var(--radius-sm, 6px);
   overflow:hidden;
 }
@@ -1017,8 +1017,8 @@ body.voice-quiz-active #feedback.quiz-feedback{
   margin-bottom:10px;
 }
 .voice-flag-wrap{
-  background:#071020;
-  border:1px solid rgba(255,255,255,.13);
+  background:transparent;
+  border:none;
   border-radius:8px;
   padding:14px;
   display:flex;
@@ -1310,7 +1310,7 @@ body.writing-active #grid{
   height:52px;
   object-fit:contain;
   border-radius:8px;
-  border:1px solid rgba(255,255,255,.2);
+  border:none;
   background:transparent;
 }
 .writing-progress{
@@ -1657,7 +1657,6 @@ body{
 }
 .flag-img-wrap{
   border-radius:var(--radius-sm)!important;
-  box-shadow:0 1px 6px rgba(0,0,0,.3) inset;
 }
 .flag-name{
   text-transform:none!important;
@@ -4839,7 +4838,21 @@ const correctFirstTryMsgs=[
 "Erster Versuch und direkt richtig: %s.",
 "Klasse gemacht! %s sitzt.",
 "Jaaa, genau! Das ist %s.",
-"Du bist richtig wach! Das war %s."
+"Du bist richtig wach! Das war %s.",
+"Perfekt erkannt! Das ist %s.",
+"Bravo! %s auf Anhieb richtig.",
+"Absolut richtig! %s hast du direkt gewusst.",
+"Klasse Blick! Das war %s.",
+"Genau richtig, und das sofort: %s.",
+"Wow, so schnell! Das ist %s.",
+"Ein echter Flaggen-Profi! Das war %s.",
+"Sehr sicher erkannt! Das ist %s.",
+"Hui, wie gut du das kannst! Das ist %s.",
+"Ohne Zögern richtig: %s.",
+"Das saß! %s war die richtige Antwort.",
+"Mega gemacht! Das ist %s.",
+"So schnell und so richtig: %s.",
+"Ein Blick genügt dir schon: %s."
 ];
 const correctAfterMistakeMsgs=[
 "Jetzt passt es! Das ist %s.",
@@ -4849,7 +4862,15 @@ const correctAfterMistakeMsgs=[
 "Geschafft! Das war %s.",
 "Gut korrigiert! %s ist richtig.",
 "Prima, du hast nicht aufgegeben. Das ist %s.",
-"Jetzt stimmt es. Die Flagge gehört zu %s."
+"Jetzt stimmt es. Die Flagge gehört zu %s.",
+"Dranbleiben lohnt sich! Das ist %s.",
+"Am Ende hast du's geschafft: %s.",
+"Nicht aufgegeben, gut gemacht! Das war %s.",
+"Zweiter Versuch, erste Sahne: %s.",
+"So geht's! Jetzt hast du %s erkannt.",
+"Klasse Ausdauer! Das ist %s.",
+"Beharrlichkeit zahlt sich aus: %s.",
+"Da ist sie ja! Das ist %s."
 ];
 const wrongMsgs=[
 "Noch nicht ganz. Schau dir Farben und Formen genau an.",
@@ -4859,7 +4880,15 @@ const wrongMsgs=[
 "Nicht schlimm. Jede Runde macht dich sicherer.",
 "Atme kurz durch und schau noch einmal genau hin.",
 "Du schaffst das. Achte auf die kleinen Unterschiede.",
-"Knapp daneben. Versuch es mit einem neuen Blick."
+"Knapp daneben. Versuch es mit einem neuen Blick.",
+"Das war leider nicht richtig. Schau dir die Flagge noch einmal an.",
+"Diesmal nicht ganz. Vergleiche noch einmal genau.",
+"Kein Problem, weiter geht's mit einem neuen Blick.",
+"Noch nicht die richtige. Versuch's gleich noch einmal.",
+"Fast erwischt! Schau genau auf die Farben.",
+"Das war eine Verwechslung. Beim nächsten Mal klappt's.",
+"Kleiner Ausrutscher. Bleib konzentriert!",
+"Nicht die gesuchte Flagge. Du findest sie bestimmt bald."
 ];
 const questionMsgs=[
 "Welche Flagge gehört zu %s?",
@@ -4871,7 +4900,21 @@ const questionMsgs=[
 "Schau genau hin: Welche Flagge ist %s?",
 "Findest du die richtige Flagge für %s?",
 "Deine nächste Mission: %s.",
-"Auf geht’s! Suche %s."
+"Auf geht’s! Suche %s.",
+"Welche ist die Flagge von %s?",
+"Kennst du die Flagge von %s?",
+"Zeit für eine neue Flagge: Wo ist %s?",
+"Kannst du %s unter den Flaggen entdecken?",
+"Suchbild: Finde die Flagge von %s.",
+"Los geht’s! Wo steckt %s?",
+"Kleine Herausforderung: Zeig mir %s.",
+"Welches Bild passt zu %s?",
+"Bist du bereit? Finde %s.",
+"Nächste Runde: Wo ist die Flagge von %s?",
+"Kannst du %s auf Anhieb entdecken?",
+"Mal sehen, ob du %s findest.",
+"Dein nächstes Ziel: die Flagge von %s.",
+"Wer findet zuerst %s? Du bist dran!"
 ];
 const greetMsgs=[
 "Hallo %s! Schön, dass du da bist. Heute wirst du Flaggen-Profi!",
@@ -4897,7 +4940,15 @@ const voiceQuestionMsgs=[
 "Jetzt bist du dran: Sag den Ländernamen.",
 "Welche Flagge siehst du? Sprich den Namen.",
 "Erkennst du dieses Land? Sag es laut.",
-"Flagge ansehen, kurz überlegen, dann antworten."
+"Flagge ansehen, kurz überlegen, dann antworten.",
+"Wie heißt dieses Land? Sag es mir laut.",
+"Schau genau hin und sprich den Ländernamen aus.",
+"Kannst du dieses Land erkennen? Dann sag es laut.",
+"Welches Land siehst du hier? Antworte laut.",
+"Sprich den Namen des Landes, das du siehst.",
+"Eine neue Flagge – wie heißt das Land dazu?",
+"Überlege kurz und sag mir, welches Land das ist.",
+"Trau dich! Wie heißt dieses Land?"
 ];
 const voiceCorrectMsgs=[
 "Richtig gehört und richtig erkannt! Das ist %s.",
@@ -4905,14 +4956,29 @@ const voiceCorrectMsgs=[
 "Sehr gut! Deine Antwort war %s.",
 "Klasse! Das Land heißt %s.",
 "Jawohl, das war %s.",
-"Top! Sprache und Flagge passen: %s."
+"Top! Sprache und Flagge passen: %s.",
+"Genau richtig gesprochen! Das war %s.",
+"Perfekt! Du hast %s richtig gesagt.",
+"Ganz genau, %s stimmt.",
+"Wunderbar ausgesprochen: %s.",
+"Richtig erkannt und richtig gesagt: %s.",
+"Stark! %s war die richtige Antwort.",
+"Bravo, gesprochen wie ein Profi: %s.",
+"Klingt gut und stimmt auch: %s."
 ];
 const voiceWrongMsgs=[
 "Nicht ganz. Das richtige Land war %s.",
 "Guter Versuch. Diese Flagge gehört zu %s.",
 "Das war noch nicht richtig. Es war %s.",
 "Knapp daneben. Gesucht war %s.",
-"Kein Problem. Die richtige Antwort lautet %s."
+"Kein Problem. Die richtige Antwort lautet %s.",
+"Diesmal nicht richtig. Aber weiter geht's!",
+"Das war leider falsch. Merk dir %s für's nächste Mal.",
+"Kein Problem, gesucht war %s.",
+"Fast! Die richtige Antwort war %s.",
+"Nicht ganz getroffen. Gesucht war %s.",
+"Kleiner Fehler, das war %s.",
+"Macht nichts! Es war %s."
 ];
 const voiceSkipMsgs=[
 "Weiter geht’s. Diese Flagge war %s.",
@@ -4996,7 +5062,21 @@ const CLUB_correctFirstTryMsgs=[
 "Erster Versuch und direkt richtig: %s.",
 "Klasse gemacht! %s sitzt.",
 "Jaaa, genau! Das ist %s.",
-"Du bist richtig wach! Das war %s."
+"Du bist richtig wach! Das war %s.",
+"Perfekt erkannt! Das ist %s.",
+"Bravo! %s auf Anhieb richtig.",
+"Absolut richtig! %s hast du direkt gewusst.",
+"Klasse Blick! Das war %s.",
+"Genau richtig, und das sofort: %s.",
+"Wow, so schnell! Das ist %s.",
+"Ein echter Vereins-Kenner! Das war %s.",
+"Sehr sicher erkannt! Das ist %s.",
+"Hui, wie gut du das kannst! Das ist %s.",
+"Ohne Zögern richtig: %s.",
+"Das saß! %s war die richtige Antwort.",
+"Mega gemacht! Das ist %s.",
+"So schnell und so richtig: %s.",
+"Ein Blick genügt dir schon: %s."
 ];
 const CLUB_correctAfterMistakeMsgs=[
 "Jetzt passt es! Das ist %s.",
@@ -5006,7 +5086,15 @@ const CLUB_correctAfterMistakeMsgs=[
 "Geschafft! Das war %s.",
 "Gut korrigiert! %s ist richtig.",
 "Prima, du hast nicht aufgegeben. Das ist %s.",
-"Jetzt stimmt es. Das Logo gehört zu %s."
+"Jetzt stimmt es. Das Logo gehört zu %s.",
+"Dranbleiben lohnt sich! Das ist %s.",
+"Am Ende hast du's geschafft: %s.",
+"Nicht aufgegeben, gut gemacht! Das war %s.",
+"Zweiter Versuch, erste Sahne: %s.",
+"So geht's! Jetzt hast du %s erkannt.",
+"Klasse Ausdauer! Das ist %s.",
+"Beharrlichkeit zahlt sich aus: %s.",
+"Da ist es ja! Das ist %s."
 ];
 const CLUB_wrongMsgs=[
 "Noch nicht ganz. Schau dir Farben und Formen genau an.",
@@ -5016,7 +5104,15 @@ const CLUB_wrongMsgs=[
 "Nicht schlimm. Jede Runde macht dich sicherer.",
 "Atme kurz durch und schau noch einmal genau hin.",
 "Du schaffst das. Achte auf die kleinen Unterschiede.",
-"Knapp daneben. Versuch es mit einem neuen Blick."
+"Knapp daneben. Versuch es mit einem neuen Blick.",
+"Das war leider nicht richtig. Schau dir das Logo noch einmal an.",
+"Diesmal nicht ganz. Vergleiche noch einmal genau.",
+"Kein Problem, weiter geht's mit einem neuen Blick.",
+"Noch nicht das richtige. Versuch's gleich noch einmal.",
+"Fast erwischt! Schau genau auf die Farben.",
+"Das war eine Verwechslung. Beim nächsten Mal klappt's.",
+"Kleiner Ausrutscher. Bleib konzentriert!",
+"Nicht das gesuchte Logo. Du findest es bestimmt bald."
 ];
 const CLUB_questionMsgs=[
 "Welches Logo gehört zu %s?",
@@ -5028,7 +5124,21 @@ const CLUB_questionMsgs=[
 "Schau genau hin: Welches Logo ist %s?",
 "Findest du das richtige Logo für %s?",
 "Deine nächste Mission: %s.",
-"Auf geht’s! Suche %s."
+"Auf geht’s! Suche %s.",
+"Welches ist das Logo von %s?",
+"Kennst du das Logo von %s?",
+"Zeit für ein neues Logo: Wo ist %s?",
+"Kannst du %s unter den Logos entdecken?",
+"Suchbild: Finde das Logo von %s.",
+"Los geht’s! Wo steckt %s?",
+"Kleine Herausforderung: Zeig mir %s.",
+"Welches Bild passt zu %s?",
+"Bist du bereit? Finde %s.",
+"Nächste Runde: Wo ist das Logo von %s?",
+"Kannst du %s auf Anhieb entdecken?",
+"Mal sehen, ob du %s findest.",
+"Dein nächstes Ziel: das Logo von %s.",
+"Wer findet zuerst %s? Du bist dran!"
 ];
 const CLUB_learnIntroMsgs=[
 "Tippe auf ein Logo. Ich lese dir den Vereinsnamen vor.",
@@ -5043,7 +5153,15 @@ const CLUB_voiceQuestionMsgs=[
 "Jetzt bist du dran: Sag den Vereinsnamen.",
 "Welches Logo siehst du? Sprich den Namen.",
 "Erkennst du diesen Verein? Sag es laut.",
-"Logo ansehen, kurz überlegen, dann antworten."
+"Logo ansehen, kurz überlegen, dann antworten.",
+"Wie heißt dieser Verein? Sag es mir laut.",
+"Schau genau hin und sprich den Vereinsnamen aus.",
+"Kannst du diesen Verein erkennen? Dann sag es laut.",
+"Welchen Verein siehst du hier? Antworte laut.",
+"Sprich den Namen des Vereins, den du siehst.",
+"Ein neues Logo – wie heißt der Verein dazu?",
+"Überlege kurz und sag mir, welcher Verein das ist.",
+"Trau dich! Wie heißt dieser Verein?"
 ];
 const CLUB_voiceCorrectMsgs=[
 "Richtig gehört und richtig erkannt! Das ist %s.",
@@ -5051,14 +5169,29 @@ const CLUB_voiceCorrectMsgs=[
 "Sehr gut! Deine Antwort war %s.",
 "Klasse! Der Verein heißt %s.",
 "Jawohl, das war %s.",
-"Top! Sprache und Logo passen: %s."
+"Top! Sprache und Logo passen: %s.",
+"Genau richtig gesprochen! Das war %s.",
+"Perfekt! Du hast %s richtig gesagt.",
+"Ganz genau, %s stimmt.",
+"Wunderbar ausgesprochen: %s.",
+"Richtig erkannt und richtig gesagt: %s.",
+"Stark! %s war die richtige Antwort.",
+"Bravo, gesprochen wie ein Profi: %s.",
+"Klingt gut und stimmt auch: %s."
 ];
 const CLUB_voiceWrongMsgs=[
 "Nicht ganz. Der richtige Verein war %s.",
 "Guter Versuch. Dieses Logo gehört zu %s.",
 "Das war noch nicht richtig. Es war %s.",
 "Knapp daneben. Gesucht war %s.",
-"Kein Problem. Die richtige Antwort lautet %s."
+"Kein Problem. Die richtige Antwort lautet %s.",
+"Diesmal nicht richtig. Aber weiter geht's!",
+"Das war leider falsch. Merk dir %s für's nächste Mal.",
+"Kein Problem, gesucht war %s.",
+"Fast! Die richtige Antwort war %s.",
+"Nicht ganz getroffen. Gesucht war %s.",
+"Kleiner Fehler, das war %s.",
+"Macht nichts! Es war %s."
 ];
 const CLUB_voiceSkipMsgs=[
 "Weiter geht’s. Dieses Logo war %s.",
@@ -8090,11 +8223,12 @@ const MATH_VISUAL_ICONS = ["🍌","🚗","🐯","🍎","⚽","🐶","🐱","🌟
 const mathGreetMsgs=["Hallo %s! Ich bin Otti der Otter. Lust auf ein paar Rechenaufgaben?","Hi %s! Wähle oben „Lernen“ zum Üben oder „Test“ für eine Prüfung.","Schön, dass du da bist, %s! Bereit zum Rechnen?","Willkommen zurück, %s! Auf geht's mit dem Rechnen."];
 const mathGreetFallbackMsgs=["Hallo! Ich bin Otti der Otter und helfe dir beim Rechnen.","Willkommen beim Rechnen-Lernspiel! Wähle oben „Lernen“ oder „Test“."];
 const mathTestSetupMsgs=["Bereit für einen Test? Wähl unten aus, wie lang er sein soll!","Otti wartet auf deine Wahl – wie viele Aufgaben schaffst du?"];
-const mathEncourageMsgs=["Kannst du das lösen?","Rechne los!","Schaffst du diese Aufgabe?","Hier ist deine nächste Aufgabe.","Du schaffst das! 💪","Konzentrier dich, dann klappt's!"];
-const mathCorrectFirstTryMsgs=["Super gemacht! ✅","Klasse, das stimmt!","Genau richtig! 🎉","Toll gerechnet!","Richtig! Weiter so!"];
-const mathCorrectAfterMistakeMsgs=["Jetzt hast du es! ✅","Richtig! Gut gemacht.","Klasse, das stimmt jetzt!","Genau, so ist es richtig!"];
-const mathWrongRetryMsgs=["Fast! Versuch es nochmal.","Das war noch nicht ganz richtig – probier's nochmal!","Nicht ganz, schau nochmal genau hin.","Kleiner Fehler – noch ein Versuch!"];
-const mathWrongTestMsgs=["Das war leider nicht richtig. Die richtige Antwort ist %a.","Fast! Richtig wäre %a gewesen.","Nicht ganz – die Lösung ist %a."];
+const mathQuestionTemplates=["Wie viel ist %a %o %b?","Kannst du ausrechnen: %a %o %b?","Rechne mal: %a %o %b.","Was ergibt %a %o %b?","Otti fragt: Wie viel ist %a %o %b?","Deine Aufgabe: %a %o %b.","Weißt du, wie viel %a %o %b ist?","Schaffst du das: %a %o %b?"];
+const mathEncourageMsgs=["Kannst du das lösen?","Rechne los!","Schaffst du diese Aufgabe?","Hier ist deine nächste Aufgabe.","Du schaffst das! 💪","Konzentrier dich, dann klappt's!","Neue Aufgabe für dich!","Otti ist gespannt, ob du das schaffst.","Bereit? Dann los!","Zeig, was du kannst!","Kopf einschalten, los geht's!","Diese Aufgabe wartet auf dich."];
+const mathCorrectFirstTryMsgs=["Super gemacht! ✅","Klasse, das stimmt!","Genau richtig! 🎉","Toll gerechnet!","Richtig! Weiter so!","Perfekt gerechnet! ✅","Bravo, genau richtig!","Wow, das saß! 🎉","Stark gerechnet!","Volltreffer! Weiter so!","Klasse Kopfrechnen!","Otti ist stolz auf dich! ✅"];
+const mathCorrectAfterMistakeMsgs=["Jetzt hast du es! ✅","Richtig! Gut gemacht.","Klasse, das stimmt jetzt!","Genau, so ist es richtig!","Geschafft, jetzt passt es!","Sehr gut, dranbleiben hat sich gelohnt!","Jetzt stimmt die Rechnung!","Prima, beim zweiten Versuch richtig!"];
+const mathWrongRetryMsgs=["Fast! Versuch es nochmal.","Das war noch nicht ganz richtig – probier's nochmal!","Nicht ganz, schau nochmal genau hin.","Kleiner Fehler – noch ein Versuch!","Nicht schlimm, rechne noch einmal in Ruhe.","Fast geschafft, probier's noch einmal!","Schau dir die Zahlen nochmal genau an.","Kein Problem, du bekommst es gleich hin!"];
+const mathWrongTestMsgs=["Das war leider nicht richtig. Die richtige Antwort ist %a.","Fast! Richtig wäre %a gewesen.","Nicht ganz – die Lösung ist %a.","Diesmal nicht richtig, die Antwort ist %a.","Kein Problem, richtig gewesen wäre %a.","Knapp daneben – die Lösung lautet %a."];
 
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
@@ -8164,7 +8298,8 @@ function generateMathProblem(grade, difficulty){
   // Visuelle Zähl-Unterstützung (Runde 17) gibt es bewusst nur bei Plus/Minus, nicht
   // beim kleinen Einmaleins (dort keine sinnvolle 1:1-Objektdarstellung im Zahlenraum bis 100).
   const icon=(op==="×") ? null : pick(MATH_VISUAL_ICONS);
-  return {a,b,op,answer,icon,text:`${a} ${opSymbol} ${b} = ?`,speakText:`Wie viel ist ${a} ${opWord} ${b}?`};
+  const speakText=pick(mathQuestionTemplates).replace("%a",a).replace("%o",opWord).replace("%b",b);
+  return {a,b,op,answer,icon,text:`${a} ${opSymbol} ${b} = ?`,speakText};
 }
 
 // Baut das HTML für n Symbol-Icons, gruppiert in Zehner-Reihen (die vollen 10er-Reihen
